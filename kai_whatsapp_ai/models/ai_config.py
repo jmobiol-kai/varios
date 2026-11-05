@@ -1,6 +1,8 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
+from odoo.addons.kai_whatsapp_ai.services import engine
+
 
 class KaiWhatsappAiConfig(models.Model):
     """One provider setup per company, optionally narrowed to one WhatsApp account.
@@ -23,14 +25,33 @@ class KaiWhatsappAiConfig(models.Model):
     account_id = fields.Many2one(
         'om.whatsapp.account', string='WhatsApp Account', check_company=True, ondelete='cascade',
         help="Empty: this setup is the company fallback. Set: it is used only for that account.")
+    client_label = fields.Char(
+        string='Client label',
+        help="Name used on the monthly usage report. It is copied onto each consultation and does not change past rows.")
+    provider_preset = fields.Selection([
+        ('manual', 'Manual'),
+        ('gemini_flash_lite', 'Gemini 2.5 Flash-Lite'),
+    ], string='Provider preset', default='manual', groups='kai_whatsapp_ai.group_manager',
+        help="Choosing a preset fills the URL and the model. It does not enable the provider and it does not store a key.")
     api_base_url = fields.Char(
-        string='API base URL',
-        help="OpenAI-compatible root, without /chat/completions. Example shape: https://host.example/v1")
-    api_model = fields.Char(string='Model')
+        string='API base URL', groups='kai_whatsapp_ai.group_manager',
+        help="OpenAI-compatible root, without /chat/completions. "
+             "Gemini Flash-Lite: https://generativelanguage.googleapis.com/v1beta/openai")
+    api_model = fields.Char(string='Model', groups='kai_whatsapp_ai.group_manager')
     api_key = fields.Char(
         string='API secret', copy=False, groups='kai_whatsapp_ai.group_manager',
         help="Sent only as a bearer token. It is not copied onto suggestions and it is stripped from errors.")
-    api_timeout = fields.Integer(string='Timeout (seconds)', default=15)
+    api_timeout = fields.Integer(
+        string='Timeout (seconds)', default=15, groups='kai_whatsapp_ai.group_manager')
+
+    @api.onchange('provider_preset')
+    def _onchange_provider_preset(self):
+        preset = engine.provider_preset(self.provider_preset)
+        if not preset:
+            return
+        self.api_base_url = preset['api_base_url']
+        self.api_model = preset['api_model']
+        self.enabled = False
     faq_ids = fields.One2many('kai.whatsapp.ai.faq', 'config_id', string='FAQ')
     catalog_ids = fields.One2many('kai.whatsapp.ai.catalog', 'config_id', string='Catalog')
 

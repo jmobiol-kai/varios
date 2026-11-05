@@ -67,6 +67,43 @@
         <field name="domain_force">['&amp;', ('account_id.user_ids', 'in', [user.id]), '|', ('channel_id', '=', False), ('channel_id.channel_member_ids.partner_id', 'in', [user.partner_id.id])]</field>
         <field name="groups" eval="[Command.link(ref('group_user'))]"/>
     </record>
+    <record id="kai_whatsapp_ai_consultation_company" model="ir.rule">
+        <field name="name">WhatsApp AI consultation: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_consultation"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="kai_whatsapp_ai_consultation_user" model="ir.rule">
+        <field name="name">WhatsApp AI consultation: allowed users who belong to the conversation</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_consultation"/>
+        <field name="domain_force">['&amp;', ('account_id.user_ids', 'in', [user.id]), '|', ('channel_id', '=', False), ('channel_id.channel_member_ids.partner_id', 'in', [user.partner_id.id])]</field>
+        <field name="groups" eval="[Command.link(ref('group_user'))]"/>
+    </record>
+    <record id="kai_whatsapp_ai_consultation_manager" model="ir.rule">
+        <field name="name">WhatsApp AI consultation: managers</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_consultation"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[Command.link(ref('group_manager'))]"/>
+    </record>
+    <record id="kai_whatsapp_ai_call_company" model="ir.rule">
+        <field name="name">WhatsApp AI call: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_call"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="kai_whatsapp_ai_provider_rate_company" model="ir.rule">
+        <field name="name">WhatsApp AI provider rate: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_provider_rate"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="kai_whatsapp_ai_billable_rate_company" model="ir.rule">
+        <field name="name">WhatsApp AI client rate: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_billable_rate"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="kai_whatsapp_ai_usage_total_owner" model="ir.rule">
+        <field name="name">WhatsApp AI totals: own rows</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_usage_total"/>
+        <field name="domain_force">[('create_uid', '=', user.id)]</field>
+    </record>
     <record id="kai_whatsapp_ai_suggestion_manager" model="ir.rule">
         <field name="name">WhatsApp AI suggestion: managers</field>
         <field name="model_id" ref="model_kai_whatsapp_ai_suggestion"/>

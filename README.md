@@ -93,7 +93,7 @@ Los archivos de descripción (`static/description`) son imágenes y HTML del aut
 
 Addon aparte, licencia LGPL-3, versión `19.0.1.0.0`. No modifica `om_whatsapp_base` ni `om_whatsapp_device`.
 
-Al recibir un mensaje de un cliente, si hay un proveedor de IA habilitado, el webhook solo encola una sugerencia. El texto lo pide después un cron o el botón **Generate suggestion**. No envía WhatsApp solo. El envío es el botón **Send reply**. El presupuesto es el botón **Create draft quotation** y queda en borrador: no confirma, no factura y no reserva stock.
+Al recibir un mensaje de un cliente, si hay un proveedor de IA habilitado, el webhook solo encola una sugerencia. El texto lo pide después un cron o el botón **Generate suggestion**. No envía WhatsApp solo. El envío es el botón **Send reply**. El presupuesto es el botón **Create draft quotation** y queda en borrador: no confirma, no factura y no reserva stock. Cada mensaje entrante cuenta una consulta; cada intento del modelo queda en un registro que no se edita. El reporte mensual está en **WhatsApp → Usage summary** y, para el administrador, en **Configuration → Monthly usage**. No hay tarifa cargada ni factura automática.
 
 Depende de `om_whatsapp_base` y `sale`. El puente QR entra por `_om_whatsapp_receive`, que es el método que ya llama el webhook del dispositivo. Inventario es opcional: si `stock` no está instalado, la sugerencia dice que no hay dato de stock.
 

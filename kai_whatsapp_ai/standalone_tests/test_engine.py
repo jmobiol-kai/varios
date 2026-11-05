@@ -220,6 +220,97 @@ class EngineTests(unittest.TestCase):
         self.assertFalse(engine.validated_quotation(**dict(base, lines=[dict(good, quantity=20000)])))
         self.assertFalse(engine.validated_quotation(**dict(base, partner_company_id=2)))
 
+    def test_gemini_flash_lite_preset_and_usage(self):
+        preset = engine.provider_preset(engine.GEMINI_FLASH_LITE_PRESET)
+        self.assertEqual(preset["api_base_url"], "https://generativelanguage.googleapis.com/v1beta/openai")
+        self.assertEqual(preset["api_model"], "gemini-2.5-flash-lite")
+        self.assertNotIn("api_key", preset)
+        request = engine.chat_request(preset["api_base_url"], preset["api_model"], [{"role": "user", "content": "hola"}])
+        self.assertEqual(request["url"], preset["api_base_url"] + "/chat/completions")
+        self.assertEqual(request["body"]["response_format"], {"type": "json_object"})
+        self.assertNotIn("key", json.dumps(request["body"]))
+        usage = engine.parse_usage(json.dumps({
+            "choices": [{"message": {"content": "{\"intent\": \"unknown\"}"}}],
+            "usage": {
+                "prompt_tokens": 11,
+                "completion_tokens": 7,
+                "prompt_tokens_details": {"cached_tokens": 3},
+                "completion_tokens_details": {"reasoning_tokens": 2},
+            },
+        }))
+        self.assertEqual(usage["input_tokens"], 11)
+        self.assertEqual(usage["output_tokens"], 7)
+        self.assertEqual(usage["cached_tokens"], 3)
+        self.assertEqual(usage["thinking_tokens"], 2)
+        missing = engine.parse_usage(json.dumps({"usage": {"prompt_tokens": 11, "completion_tokens": 7}}))
+        self.assertFalse(missing["cached_known"])
+        self.assertIsNone(missing["cached_tokens"])
+        self.assertFalse(missing["thinking_known"])
+        absent = engine.parse_usage("{}")
+        self.assertFalse(absent["input_known"])
+        self.assertIsNone(absent["input_tokens"])
+
+    def test_retry_dedup_rate_snapshot_company_and_unknown_cost(self):
+        from datetime import datetime
+        old = {
+            "id": 1, "company_id": 1, "account_id": False,
+            "provider_preset": "gemini_flash_lite", "model_name": "gemini-2.5-flash-lite",
+            "date_start": datetime(2026, 1, 1), "date_end": datetime(2026, 6, 1),
+            "input_per_million": 0.10, "output_per_million": 0.40,
+            "cached_per_million": None, "thinking_per_million": None,
+        }
+        newer = dict(old, id=2, date_start=datetime(2026, 6, 1), date_end=None, input_per_million=0.05, output_per_million=0.20)
+        other = dict(old, id=3, company_id=2, date_end=None)
+        chosen = engine.select_dated(
+            [old, newer, other], datetime(2026, 3, 15), 1, False,
+            extra={"model_name": "gemini-2.5-flash-lite", "provider_preset": "gemini_flash_lite"})
+        self.assertEqual(chosen["id"], 1)
+        usage = {
+            "input_known": True, "input_tokens": 1_000_000,
+            "output_known": True, "output_tokens": 1_000_000,
+            "cached_known": False, "cached_tokens": None,
+            "thinking_known": False, "thinking_tokens": None,
+        }
+        self.assertEqual(engine.estimate_provider_cost(usage, chosen)["usd"], 0.5)
+        self.assertNotEqual(engine.estimate_provider_cost(usage, newer)["usd"], 0.5)
+        self.assertFalse(engine.estimate_provider_cost(
+            dict(usage, input_known=False, input_tokens=None), chosen)["known"])
+        priced_cache = dict(chosen, cached_per_million=0.01)
+        self.assertFalse(engine.estimate_provider_cost(usage, priced_cache)["known"])
+        consultations = [
+            {"company_id": 1, "account_id": 4, "client_label": "00blinis", "billable_known": False, "billable_amount": None, "billable_currency": ""},
+            {"company_id": 2, "account_id": 9, "client_label": "other", "billable_known": True, "billable_amount": 3, "billable_currency": "ARS"},
+        ]
+        customer = engine.aggregate_customer([row for row in consultations if row["company_id"] == 1], [], [])
+        self.assertEqual(len(customer), 1)
+        self.assertEqual(customer[0]["consultations"], 1)
+        self.assertEqual(customer[0]["billable_unknown"], 1)
+        self.assertEqual(customer[0]["billable_amount"], 0.0)
+        calls = [
+            {"company_id": 1, "account_id": 4, "client_label": "00blinis", "provider_label": "Google Gemini",
+             "model": "gemini-2.5-flash-lite", "attempt": 1, "outcome": "failed",
+             "input_known": False, "output_known": False, "cached_known": False, "thinking_known": False,
+             "cost_known": False, "cost_usd": None},
+            {"company_id": 1, "account_id": 4, "client_label": "00blinis", "provider_label": "Google Gemini",
+             "model": "gemini-2.5-flash-lite", "attempt": 2, "outcome": "success",
+             "input_known": True, "input_tokens": 11, "output_known": True, "output_tokens": 7,
+             "cached_known": True, "cached_tokens": 0, "thinking_known": True, "thinking_tokens": 2,
+             "cost_known": True, "cost_usd": 0.5},
+        ]
+        provider = engine.aggregate_provider(calls)
+        self.assertEqual(provider[0]["attempted"], 2)
+        self.assertEqual(provider[0]["retries"], 1)
+        self.assertEqual(provider[0]["succeeded"], 1)
+        self.assertEqual(provider[0]["failed"], 1)
+        self.assertEqual(provider[0]["input_unknown"], 1)
+        self.assertEqual(provider[0]["input_tokens"], 11)
+        start, end = engine.month_bounds_utc(2026, 3, "America/Argentina/Buenos_Aires")
+        self.assertFalse(engine.in_period(datetime(2026, 3, 1, 2, 30), start, end))
+        self.assertTrue(engine.in_period(datetime(2026, 3, 1, 3, 30), start, end))
+        self.assertNotIn("SECRET-KEY", engine.sanitize_provider_error(
+            "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions?key=SECRET-KEY failed SECRET-KEY",
+            "SECRET-KEY"))
+
     def test_module_source_does_not_send_or_confirm_by_itself(self):
         hook = (ROOT / "models" / "om_whatsapp_account.py").read_text(encoding="utf-8")
         suggestion = (ROOT / "models" / "ai_suggestion.py").read_text(encoding="utf-8")

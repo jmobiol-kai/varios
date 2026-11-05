@@ -1,4 +1,6 @@
 import logging
+import time
+from urllib.parse import urlparse
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -21,6 +23,9 @@ class KaiWhatsappAiSuggestion(models.Model):
     channel_id = fields.Many2one('discuss.channel', ondelete='set null', index=True)
     message_id = fields.Many2one('mail.message', ondelete='set null', index=True)
     whatsapp_message_id = fields.Char(index=True, copy=False)
+    consultation_id = fields.Many2one('kai.whatsapp.ai.consultation', readonly=True, copy=False)
+    reply_sent_at = fields.Datetime(readonly=True, copy=False)
+    quotation_at = fields.Datetime(readonly=True, copy=False)
     partner_id = fields.Many2one(
         'res.partner', string='Customer',
         domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]")
@@ -152,7 +157,34 @@ class KaiWhatsappAiSuggestion(models.Model):
             'generation_state': 'pending',
             'needs_human': True,
         })
+        suggestion._create_consultation(config, account, channel, message, whatsapp_id)
         return suggestion
+
+    def _create_consultation(self, config, account, channel, message, whatsapp_id):
+        self.ensure_one()
+        moment = fields.Datetime.now()
+        rates = self.env['kai.whatsapp.ai.billable.rate'].sudo().search([
+            ('company_id', '=', account.company_id.id),
+        ])
+        chosen = engine.select_dated(
+            [rate._as_engine_row() for rate in rates], moment, account.company_id.id, account.id)
+        vals = {
+            'suggestion_id': self.id,
+            'company_id': account.company_id.id,
+            'account_id': account.id,
+            'channel_id': channel.id if channel else False,
+            'message_id': message.id,
+            'whatsapp_message_id': whatsapp_id,
+            'partner_id': self.partner_id.id,
+            'occurred_at': moment,
+            'client_label': (chosen or {}).get('client_label') or config.client_label or '',
+            'billable_known': bool(chosen),
+            'billable_amount': chosen['amount'] if chosen else 0.0,
+            'billable_currency_id': chosen['currency_id'] if chosen else False,
+            'billable_rate_id': chosen['id'] if chosen else False,
+        }
+        consultation = self.env['kai.whatsapp.ai.consultation'].create(vals)
+        self.sudo().write({'consultation_id': consultation.id})
 
     def _channel_context(self):
         self.ensure_one()
@@ -255,18 +287,81 @@ class KaiWhatsappAiSuggestion(models.Model):
             context = engine.trim_context(suggestion._channel_context())
             messages = engine.build_messages(context, catalog, faqs)
             timeout = min(max(int(config.api_timeout or 15), 1), 15)
+            started = time.perf_counter()
+            usage = engine.parse_usage('')
             try:
-                body = engine.post_chat(
+                raw = engine.post_chat(
                     config.api_base_url, config.sudo().api_key, config.api_model, messages, timeout=timeout)
-                decision = engine.interpret(body, context=context, catalog=catalog, faqs=faqs)
+                usage = engine.parse_usage(raw)
+                decision = engine.interpret(raw, context=context, catalog=catalog, faqs=faqs)
                 decision['error'] = decision.get('error') or ''
+                outcome = 'failed' if decision.get('error') else 'success'
+                error_text = decision.get('error') or ''
             except engine.ProviderError as error:
-                decision = engine._decision('unknown', [], None, engine.PROVIDER_BAD, needs_human=True, error=str(error))
+                outcome = 'failed'
+                error_text = str(error)
+                decision = engine._decision('unknown', [], None, engine.PROVIDER_BAD, needs_human=True, error=error_text)
             except Exception:
                 _logger.exception("WhatsApp AI: provider call failed for suggestion %s", suggestion.id)
-                decision = engine._decision('unknown', [], None, engine.PROVIDER_BAD, needs_human=True, error=engine.PROVIDER_BAD)
+                outcome = 'failed'
+                error_text = engine.PROVIDER_BAD
+                decision = engine._decision('unknown', [], None, engine.PROVIDER_BAD, needs_human=True, error=error_text)
+            latency_ms = int((time.perf_counter() - started) * 1000)
+            suggestion._log_call(config, outcome, usage, latency_ms, error_text)
             suggestion._apply_decision(decision)
             suggestion.sudo().write({'generation_state': 'done' if not decision.get('error') else 'error'})
+
+    def _log_call(self, config, outcome, usage, latency_ms, error_text):
+        self.ensure_one()
+        if not self.consultation_id:
+            return
+        secret = config.sudo().api_key
+        preset = engine.provider_preset(config.provider_preset)
+        moment = fields.Datetime.now()
+        rates = self.env['kai.whatsapp.ai.provider.rate'].sudo().search([
+            ('company_id', '=', self.company_id.id),
+            ('model_name', '=', config.api_model),
+            ('provider_preset', '=', config.provider_preset or 'manual'),
+        ])
+        chosen = engine.select_dated(
+            [rate._as_engine_row() for rate in rates], moment, self.company_id.id, self.account_id.id,
+            extra={'model_name': config.api_model, 'provider_preset': config.provider_preset or 'manual'})
+        estimate = engine.estimate_provider_cost(usage, chosen)
+        attempt = self.env['kai.whatsapp.ai.call'].sudo().search_count([
+            ('consultation_id', '=', self.consultation_id.id),
+        ]) + 1
+        self.env['kai.whatsapp.ai.call'].sudo().create({
+            'consultation_id': self.consultation_id.id,
+            'suggestion_id': self.id,
+            'company_id': self.company_id.id,
+            'account_id': self.account_id.id,
+            'occurred_at': moment,
+            'attempt': attempt,
+            'outcome': outcome,
+            'latency_ms': max(latency_ms, 0),
+            'provider_preset': config.provider_preset or 'manual',
+            'provider_label': (preset or {}).get('provider_label') or 'Manual',
+            'model_name': config.api_model or '',
+            'endpoint_host': urlparse(config.api_base_url or '').hostname or '',
+            'error_sanitized': engine.sanitize_provider_error(error_text, secret),
+            'client_label': self.consultation_id.client_label or '',
+            'input_known': usage['input_known'],
+            'input_tokens': usage['input_tokens'] or 0,
+            'output_known': usage['output_known'],
+            'output_tokens': usage['output_tokens'] or 0,
+            'cached_known': usage['cached_known'],
+            'cached_tokens': usage['cached_tokens'] or 0,
+            'thinking_known': usage['thinking_known'],
+            'thinking_tokens': usage['thinking_tokens'] or 0,
+            'rate_id': chosen['id'] if chosen else False,
+            'rate_name': chosen.get('name') if chosen else False,
+            'input_per_million': chosen['input_per_million'] if chosen and chosen.get('input_per_million') is not None else 0.0,
+            'output_per_million': chosen['output_per_million'] if chosen and chosen.get('output_per_million') is not None else 0.0,
+            'cached_per_million': chosen['cached_per_million'] if chosen and chosen.get('cached_per_million') is not None else 0.0,
+            'thinking_per_million': chosen['thinking_per_million'] if chosen and chosen.get('thinking_per_million') is not None else 0.0,
+            'cost_known': estimate['known'],
+            'cost_usd': estimate['usd'] if estimate['known'] else 0.0,
+        })
 
     def action_generate(self):
         """A person asks for the suggestion. This does not send it."""
@@ -424,7 +519,7 @@ class KaiWhatsappAiSuggestion(models.Model):
         if not self.channel_id:
             raise UserError(_("This suggestion has no WhatsApp conversation to send from."))
         self.channel_id.message_post(body=plaintext2html(self.suggested_reply.strip()), message_type='comment')
-        self.sudo().write({'reply_sent': True})
+        self.sudo().write({'reply_sent': True, 'reply_sent_at': fields.Datetime.now()})
 
     def action_create_draft_quotation(self):
         """Create a draft sale order from reviewed lines. Never confirms it."""
@@ -452,7 +547,7 @@ class KaiWhatsappAiSuggestion(models.Model):
         })
         if order.state != 'draft':
             raise UserError(_("The quotation was not left as a draft."))
-        self.sudo().write({'sale_order_id': order.id})
+        self.sudo().write({'sale_order_id': order.id, 'quotation_at': fields.Datetime.now()})
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'sale.order',

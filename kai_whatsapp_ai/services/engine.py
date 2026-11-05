@@ -420,15 +420,286 @@ class ProviderError(Exception):
     """A provider failure whose message has already had the secret removed."""
 
 
+GEMINI_FLASH_LITE_PRESET = "gemini_flash_lite"
+GEMINI_OPENAI_BASE = "https://generativelanguage.googleapis.com/v1beta/openai"
+GEMINI_FLASH_LITE_MODEL = "gemini-2.5-flash-lite"
+
+PROVIDER_PRESETS = {
+    GEMINI_FLASH_LITE_PRESET: {
+        "api_base_url": GEMINI_OPENAI_BASE,
+        "api_model": GEMINI_FLASH_LITE_MODEL,
+        "provider_label": "Google Gemini",
+    },
+}
+
+
+def provider_preset(key):
+    """URL and model only. Never a secret and never an enabled flag."""
+    found = PROVIDER_PRESETS.get(key or "")
+    return dict(found) if found else None
+
+
+def chat_request(base_url, model, messages):
+    """OpenAI-compatible JSON body. Gemini Flash-Lite uses the same shape."""
+    return {
+        "url": str(base_url).rstrip("/") + "/chat/completions",
+        "body": {
+            "model": model,
+            "temperature": 0,
+            "messages": messages,
+            "response_format": {"type": "json_object"},
+        },
+    }
+
+
+def _count(value):
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, int) and value >= 0:
+        return value
+    if isinstance(value, float) and math.isfinite(value) and value >= 0 and value.is_integer():
+        return int(value)
+    return None
+
+
+def _unknown_usage():
+    return {
+        "input_known": False, "input_tokens": None,
+        "output_known": False, "output_tokens": None,
+        "cached_known": False, "cached_tokens": None,
+        "thinking_known": False, "thinking_tokens": None,
+    }
+
+
+def parse_usage(payload):
+    """Read only counts the provider actually sent. A missing key is unknown, not zero."""
+    usage = _unknown_usage()
+    try:
+        data = payload if isinstance(payload, dict) else json.loads(payload or "")
+    except Exception:
+        return usage
+    if not isinstance(data, dict):
+        return usage
+    reported = data.get("usage") if isinstance(data.get("usage"), dict) else None
+    native = data.get("usageMetadata") if isinstance(data.get("usageMetadata"), dict) else None
+    source = reported or native or {}
+    if reported is not None:
+        if "prompt_tokens" in reported:
+            count = _count(reported.get("prompt_tokens"))
+            if count is not None:
+                usage["input_known"] = True
+                usage["input_tokens"] = count
+        if "completion_tokens" in reported:
+            count = _count(reported.get("completion_tokens"))
+            if count is not None:
+                usage["output_known"] = True
+                usage["output_tokens"] = count
+        details = reported.get("prompt_tokens_details")
+        if isinstance(details, dict) and "cached_tokens" in details:
+            count = _count(details.get("cached_tokens"))
+            if count is not None:
+                usage["cached_known"] = True
+                usage["cached_tokens"] = count
+        details = reported.get("completion_tokens_details")
+        if isinstance(details, dict) and "reasoning_tokens" in details:
+            count = _count(details.get("reasoning_tokens"))
+            if count is not None:
+                usage["thinking_known"] = True
+                usage["thinking_tokens"] = count
+    if native is not None:
+        mapping = (
+            ("input", "promptTokenCount"),
+            ("output", "candidatesTokenCount"),
+            ("cached", "cachedContentTokenCount"),
+            ("thinking", "thoughtsTokenCount"),
+        )
+        for slot, key in mapping:
+            if usage[f"{slot}_known"] or key not in native:
+                continue
+            count = _count(native.get(key))
+            if count is not None:
+                usage[f"{slot}_known"] = True
+                usage[f"{slot}_tokens"] = count
+    return usage
+
+
+def estimate_provider_cost(usage, rate):
+    """USD estimate from a snapshotted rate card. Not a vendor invoice.
+
+    A missing count is not treated as zero. A reported count without a rate,
+    or a configured rate without a count, makes the whole estimate unknown.
+    Cached tokens, when both the count and the cached rate are known, are
+    priced at the cached rate and removed from the input bucket.
+    """
+    unknown = {"known": False, "usd": None}
+    if not usage or not rate:
+        return unknown
+    input_tokens = usage.get("input_tokens") if usage.get("input_known") else None
+    output_tokens = usage.get("output_tokens") if usage.get("output_known") else None
+    cached_tokens = usage.get("cached_tokens") if usage.get("cached_known") else None
+    thinking_tokens = usage.get("thinking_tokens") if usage.get("thinking_known") else None
+    if input_tokens is None or output_tokens is None:
+        return unknown
+    if rate.get("input_per_million") is None or rate.get("output_per_million") is None:
+        return unknown
+    if cached_tokens is None and rate.get("cached_per_million") is not None:
+        return unknown
+    if cached_tokens is not None and cached_tokens > 0 and rate.get("cached_per_million") is None:
+        return unknown
+    if cached_tokens is not None and cached_tokens > input_tokens:
+        return unknown
+    if thinking_tokens is None and rate.get("thinking_per_million") is not None:
+        return unknown
+    if thinking_tokens is not None and thinking_tokens > 0 and rate.get("thinking_per_million") is None:
+        return unknown
+    priced_input = input_tokens - (cached_tokens or 0)
+    total = priced_input * rate["input_per_million"]
+    total += output_tokens * rate["output_per_million"]
+    if cached_tokens:
+        total += cached_tokens * rate["cached_per_million"]
+    if thinking_tokens:
+        total += thinking_tokens * rate["thinking_per_million"]
+    return {"known": True, "usd": round(total / 1_000_000, 6)}
+
+
+def select_dated(rows, moment, company_id, account_id, extra=None):
+    """Latest row that covers ``moment``. An account row wins over a company row."""
+    extra = extra or {}
+
+    def covers(row):
+        if row.get("company_id") != company_id:
+            return False
+        if row.get("date_start") and row["date_start"] > moment:
+            return False
+        if row.get("date_end") and row["date_end"] <= moment:
+            return False
+        for key, value in extra.items():
+            if row.get(key) != value:
+                return False
+        return True
+
+    specific = [row for row in rows if covers(row) and row.get("account_id") == account_id]
+    shared = [row for row in rows if covers(row) and not row.get("account_id")]
+    pool = specific or shared
+    if not pool:
+        return None
+    return max(pool, key=lambda row: (row.get("date_start") or moment, row.get("id") or 0))
+
+
+def month_bounds_utc(year, month, tz_name):
+    """Half-open UTC bounds of a calendar month in ``tz_name`` (naive UTC)."""
+    from datetime import datetime, timezone
+    from zoneinfo import ZoneInfo
+
+    if month < 1 or month > 12:
+        raise ValueError("month")
+    tz = ZoneInfo(tz_name or "UTC")
+    start = datetime(year, month, 1, tzinfo=tz)
+    end = datetime(year + 1, 1, 1, tzinfo=tz) if month == 12 else datetime(year, month + 1, 1, tzinfo=tz)
+    return (
+        start.astimezone(timezone.utc).replace(tzinfo=None),
+        end.astimezone(timezone.utc).replace(tzinfo=None),
+    )
+
+
+def in_period(moment, start, end):
+    return start <= moment < end
+
+
+def aggregate_customer(consultations, sends, quotations):
+    """Counts a person may see. No provider, no tokens, no internal cost."""
+    grouped = {}
+    for row in consultations:
+        key = (row.get("company_id"), row.get("account_id"), row.get("client_label") or "")
+        bucket = grouped.setdefault(key, {
+            "company_id": row.get("company_id"),
+            "account_id": row.get("account_id"),
+            "client_label": row.get("client_label") or "",
+            "consultations": 0,
+            "billable_amount": 0.0,
+            "billable_unknown": 0,
+            "billable_currency": row.get("billable_currency") or "",
+            "sends": 0,
+            "quotations": 0,
+        })
+        bucket["consultations"] += 1
+        if row.get("billable_known") and row.get("billable_amount") is not None:
+            bucket["billable_amount"] = round(bucket["billable_amount"] + float(row["billable_amount"]), 6)
+            bucket["billable_currency"] = row.get("billable_currency") or bucket["billable_currency"]
+        else:
+            bucket["billable_unknown"] += 1
+    for row in sends:
+        key = (row.get("company_id"), row.get("account_id"), row.get("client_label") or "")
+        bucket = grouped.setdefault(key, {
+            "company_id": row.get("company_id"), "account_id": row.get("account_id"),
+            "client_label": row.get("client_label") or "", "consultations": 0,
+            "billable_amount": 0.0, "billable_unknown": 0, "billable_currency": "",
+            "sends": 0, "quotations": 0,
+        })
+        bucket["sends"] += 1
+    for row in quotations:
+        key = (row.get("company_id"), row.get("account_id"), row.get("client_label") or "")
+        bucket = grouped.setdefault(key, {
+            "company_id": row.get("company_id"), "account_id": row.get("account_id"),
+            "client_label": row.get("client_label") or "", "consultations": 0,
+            "billable_amount": 0.0, "billable_unknown": 0, "billable_currency": "",
+            "sends": 0, "quotations": 0,
+        })
+        bucket["quotations"] += 1
+    return list(grouped.values())
+
+
+def aggregate_provider(calls):
+    """Operator totals. Unknown token buckets stay out of the sum."""
+    grouped = {}
+    for row in calls:
+        key = (
+            row.get("company_id"), row.get("account_id"), row.get("client_label") or "",
+            row.get("provider_label") or "", row.get("model") or "",
+        )
+        bucket = grouped.setdefault(key, {
+            "company_id": row.get("company_id"),
+            "account_id": row.get("account_id"),
+            "client_label": row.get("client_label") or "",
+            "provider_label": row.get("provider_label") or "",
+            "model": row.get("model") or "",
+            "attempted": 0, "succeeded": 0, "failed": 0, "retries": 0,
+            "input_tokens": 0, "input_unknown": 0,
+            "output_tokens": 0, "output_unknown": 0,
+            "cached_tokens": 0, "cached_unknown": 0,
+            "thinking_tokens": 0, "thinking_unknown": 0,
+            "estimated_cost_usd": 0.0, "cost_unknown": 0,
+        })
+        bucket["attempted"] += 1
+        if row.get("attempt", 1) > 1:
+            bucket["retries"] += 1
+        if row.get("outcome") == "success":
+            bucket["succeeded"] += 1
+        else:
+            bucket["failed"] += 1
+        for slot in ("input", "output", "cached", "thinking"):
+            if row.get(f"{slot}_known"):
+                bucket[f"{slot}_tokens"] += int(row.get(f"{slot}_tokens") or 0)
+            else:
+                bucket[f"{slot}_unknown"] += 1
+        if row.get("cost_known") and row.get("cost_usd") is not None:
+            bucket["estimated_cost_usd"] = round(bucket["estimated_cost_usd"] + float(row["cost_usd"]), 6)
+        else:
+            bucket["cost_unknown"] += 1
+    return list(grouped.values())
+
+
+def sanitize_provider_error(text, secret):
+    cleaned = redact(text, secret)
+    cleaned = re.sub(r'(https?://[^\s?]+)\?\S+', r'\1', cleaned)
+    return cleaned[:500]
+
+
 def post_chat(base_url, api_key, model, messages, transport=None, timeout=20):
     """POST {base}/chat/completions. ``transport`` replaces the network in tests."""
-    url = str(base_url).rstrip("/") + "/chat/completions"
-    body = json.dumps({
-        "model": model,
-        "temperature": 0,
-        "messages": messages,
-        "response_format": {"type": "json_object"},
-    }).encode()
+    request_data = chat_request(base_url, model, messages)
+    url = request_data["url"]
+    body = json.dumps(request_data["body"]).encode()
     try:
         if transport is not None:
             return transport(url, body, api_key)
@@ -440,4 +711,4 @@ def post_chat(base_url, api_key, model, messages, transport=None, timeout=20):
             return response.read().decode()
     except Exception as error:
         detail = error.read().decode(errors="replace") if isinstance(error, urllib.error.HTTPError) else str(error)
-        raise ProviderError(redact(detail, api_key)) from None
+        raise ProviderError(sanitize_provider_error(detail, api_key)) from None

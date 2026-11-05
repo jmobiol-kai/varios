@@ -44,7 +44,7 @@ Qué hace esta versión
 Qué no hace
 ===========
 
-* No responde solo, ni de noche ni por cron.
+* No responde solo. El cron prepara sugerencias; no envía ni crea pedidos.
 * No confirma el pedido, no crea factura, no reserva mercadería.
 * No conoce horarios, medios de pago ni zonas de envío. Esas frases no están
   cargadas. Hay que escribirlas en la FAQ si se quieren usar. Si no hay FAQ
@@ -80,6 +80,47 @@ de WhatsApp AI (grupo **Administrator** del privilegio **WhatsApp AI**) abre
   se pueden repetir.
 * **Catalog**: productos con **Can be Sold**. Solo esos se pueden citar o
   pedir.
+
+Gemini 2.5 Flash-Lite, para la primera prueba, se elige en **Provider preset**.
+Eso completa la URL ``https://generativelanguage.googleapis.com/v1beta/openai`` y el
+modelo ``gemini-2.5-flash-lite``. No guarda una clave y deja **Enabled** apagado:
+hay que pegar el secreto de la cuenta de Google y volver a activar a mano.
+La llamada es ``POST {base}/chat/completions`` con ``response_format``
+``json_object`` y el token en ``Authorization``. No se manda la clave en la URL.
+Si la respuesta trae ``usage.prompt_tokens``, ``completion_tokens``,
+``prompt_tokens_details.cached_tokens`` o ``completion_tokens_details.reasoning_tokens``,
+se guardan. Si un número no viene, queda desconocido: no se anota como cero.
+
+Medición y reporte mensual
+==========================
+
+Una consulta facturable es un mensaje de texto entrante del cliente, una sola
+vez por id de WhatsApp. Un reintento del modelo no abre otra consulta.
+Cada intento del proveedor es una fila que no se edita: fecha UTC, resultado,
+latencia, error ya sin secreto, proveedor y modelo de ese momento, y la
+tarjeta de precio copiada en esa fila. Cambiar la tarjeta después no reescribe
+el historial.
+
+La tarjeta de precio del proveedor está en USD por millón de tokens y la carga
+el administrador. Es una estimación, no la factura de Google. Si falta un
+consumo que la tarjeta cobra, o falta la tarifa de un consumo informado, el
+costo estimado queda desconocido. La tarifa que se le cobra al cliente, por
+consulta, también la carga el administrador: hoy no hay un importe. Si no hay
+tarifa vigente, el importe a facturar queda desconocido, no cero.
+
+**WhatsApp → Usage summary** lo ve un usuario de la cuenta: mes, compañía,
+cuenta, etiqueta de cliente, cantidad de consultas e importe a facturar si
+existe. No muestra proveedor, modelo, tokens ni costo interno.
+**WhatsApp → Configuration → Monthly usage** arma el mes en la zona horaria
+del usuario de Odoo. **Provider calls**, **Provider rate cards** y **Client
+rates** son solo del administrador. La lista y la tabla dinámica se exportan
+con la exportación normal de Odoo. No se programa el envío del reporte y no
+se crea una factura.
+
+El usuario de la empresa cliente no ve el proveedor, la clave, los tokens ni
+el costo interno: eso está en los grupos y en las reglas de registro, no solo
+en el menú. No reemplaza un aviso de privacidad. Si un modelo externo lee el
+mensaje, el cliente final tiene que poder saberlo por el canal que corresponda.
 
 El POST a ``{API base URL}/chat/completions`` lo hace el cron o **Generate
 suggestion**, con ``temperature`` 0 y ``response_format`` JSON. El webhook de
@@ -117,7 +158,9 @@ Sin Odoo, desde la raíz del repositorio::
 
 Cubren proveedor apagado, mensajes propios, duplicados, otra compañía,
 precio del modelo ignorado, FAQ textual, unidad incorrecta, inyección de
-instrucciones y que el secreto no queda en el error.
+instrucciones, el secreto fuera del error, el preset de Gemini, el consumo
+desconocido, el reintento sin otra consulta, la tarjeta de precio histórica
+y el corte de mes en ``America/Argentina/Buenos_Aires``.
 
 ``kai_whatsapp_ai/tests/test_suggestion.py`` es un ``TransactionCase`` de
 Odoo 19. En el entorno que armó el módulo no había Odoo ni una base, así que

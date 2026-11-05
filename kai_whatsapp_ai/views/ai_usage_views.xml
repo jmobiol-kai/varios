@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="kai_whatsapp_ai_consultation_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.consultation.list</field>
+        <field name="model">kai.whatsapp.ai.consultation</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0" >
+                <field name="occurred_at"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="account_id"/>
+                <field name="client_label"/>
+                <field name="partner_id"/>
+                <field name="billable_known"/>
+                <field name="billable_amount"/>
+                <field name="billable_currency_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_consultation_view_pivot" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.consultation.pivot</field>
+        <field name="model">kai.whatsapp.ai.consultation</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="occurred_at" type="row" interval="month"/>
+                <field name="company_id" type="row"/>
+                <field name="client_label" type="row"/>
+                <field name="account_id" type="col"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_consultation_view_search" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.consultation.search</field>
+        <field name="model">kai.whatsapp.ai.consultation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="client_label"/>
+                <field name="account_id"/>
+                <field name="partner_id"/>
+                <filter name="occurred" string="Month" date="occurred_at"/>
+                <filter name="group_month" string="Month" context="{'group_by': 'occurred_at:month'}"/>
+                <filter name="group_company" string="Company" context="{'group_by': 'company_id'}"/>
+                <filter name="group_account" string="Account" context="{'group_by': 'account_id'}"/>
+                <filter name="group_label" string="Client label" context="{'group_by': 'client_label'}"/>
+            </search>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_consultation_action" model="ir.actions.act_window">
+        <field name="name">Usage summary</field>
+        <field name="res_model">kai.whatsapp.ai.consultation</field>
+        <field name="view_mode">list,pivot</field>
+    </record>
+
+    <record id="kai_whatsapp_ai_call_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.call.list</field>
+        <field name="model">kai.whatsapp.ai.call</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0" >
+                <field name="occurred_at"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="account_id"/>
+                <field name="client_label"/>
+                <field name="attempt"/>
+                <field name="outcome"/>
+                <field name="provider_label"/>
+                <field name="model_name"/>
+                <field name="latency_ms"/>
+                <field name="input_tokens_display"/>
+                <field name="output_tokens_display"/>
+                <field name="cached_tokens_display"/>
+                <field name="thinking_tokens_display"/>
+                <field name="cost_display"/>
+                <field name="rate_name"/>
+                <field name="error_sanitized"/>
+            </list>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_call_view_pivot" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.call.pivot</field>
+        <field name="model">kai.whatsapp.ai.call</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="occurred_at" type="row" interval="month"/>
+                <field name="provider_label" type="row"/>
+                <field name="model_name" type="row"/>
+                <field name="outcome" type="col"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_call_view_search" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.call.search</field>
+        <field name="model">kai.whatsapp.ai.call</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="client_label"/>
+                <field name="model_name"/>
+                <field name="provider_label"/>
+                <filter name="occurred" string="Month" date="occurred_at"/>
+                <filter name="failed" string="Failed" domain="[('outcome', '=', 'failed')]"/>
+                <filter name="retries" string="Retries" domain="[('attempt', '&gt;', 1)]"/>
+                <filter name="unknown_usage" string="Usage unknown" domain="['|', ('input_known', '=', False), ('output_known', '=', False)]"/>
+                <filter name="group_month" string="Month" context="{'group_by': 'occurred_at:month'}"/>
+                <filter name="group_provider" string="Provider" context="{'group_by': 'provider_label'}"/>
+                <filter name="group_model" string="Model" context="{'group_by': 'model_name'}"/>
+                <filter name="group_company" string="Company" context="{'group_by': 'company_id'}"/>
+            </search>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_call_action" model="ir.actions.act_window">
+        <field name="name">Provider calls</field>
+        <field name="res_model">kai.whatsapp.ai.call</field>
+        <field name="view_mode">list,pivot</field>
+    </record>
+
+    <record id="kai_whatsapp_ai_provider_rate_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.provider.rate.list</field>
+        <field name="model">kai.whatsapp.ai.provider.rate</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="provider_preset"/>
+                <field name="model_name"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+            </list>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_provider_rate_view_form" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.provider.rate.form</field>
+        <field name="model">kai.whatsapp.ai.provider.rate</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="account_id"/>
+                        <field name="provider_preset"/>
+                        <field name="model_name"/>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                    </group>
+                    <group string="USD per 1M tokens (estimate, not an invoice)">
+                        <field name="input_rate_set"/>
+                        <field name="input_per_million" invisible="not input_rate_set"/>
+                        <field name="output_rate_set"/>
+                        <field name="output_per_million" invisible="not output_rate_set"/>
+                        <field name="cached_rate_set"/>
+                        <field name="cached_per_million" invisible="not cached_rate_set"/>
+                        <field name="thinking_rate_set"/>
+                        <field name="thinking_per_million" invisible="not thinking_rate_set"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_provider_rate_action" model="ir.actions.act_window">
+        <field name="name">Provider rate cards</field>
+        <field name="res_model">kai.whatsapp.ai.provider.rate</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="kai_whatsapp_ai_billable_rate_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.billable.rate.list</field>
+        <field name="model">kai.whatsapp.ai.billable.rate</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="account_id"/>
+                <field name="client_label"/>
+                <field name="date_start"/>
+                <field name="amount_per_consultation"/>
+                <field name="currency_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_billable_rate_view_form" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.billable.rate.form</field>
+        <field name="model">kai.whatsapp.ai.billable.rate</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="account_id"/>
+                        <field name="client_label"/>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                        <field name="amount_per_consultation"/>
+                        <field name="currency_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_billable_rate_action" model="ir.actions.act_window">
+        <field name="name">Client rates</field>
+        <field name="res_model">kai.whatsapp.ai.billable.rate</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="kai_whatsapp_ai_usage_wizard_view_form" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.usage.wizard.form</field>
+        <field name="model">kai.whatsapp.ai.usage.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="month"/>
+                    <field name="year"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="account_id"/>
+                    <field name="client_label"/>
+                </group>
+                <footer>
+                    <button name="action_fill_totals" type="object" string="Monthly totals" class="btn-primary"/>
+                    <button name="action_open_consultations" type="object" string="Consultations"/>
+                    <button name="action_open_calls" type="object" string="Provider calls" groups="kai_whatsapp_ai.group_manager"/>
+                    <button string="Close" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_usage_wizard_action" model="ir.actions.act_window">
+        <field name="name">Monthly usage</field>
+        <field name="res_model">kai.whatsapp.ai.usage.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="kai_whatsapp_ai_usage_total_view_list_customer" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.usage.total.customer</field>
+        <field name="model">kai.whatsapp.ai.usage.total</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0" >
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="account_id"/>
+                <field name="client_label"/>
+                <field name="consultations"/>
+                <field name="sends"/>
+                <field name="quotations"/>
+                <field name="billable_amount"/>
+                <field name="billable_unknown"/>
+                <field name="billable_currency_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_usage_total_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.usage.total.list</field>
+        <field name="model">kai.whatsapp.ai.usage.total</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0" >
+                <field name="line_kind"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="account_id"/>
+                <field name="client_label"/>
+                <field name="consultations"/>
+                <field name="sends"/>
+                <field name="quotations"/>
+                <field name="billable_amount"/>
+                <field name="billable_unknown"/>
+                <field name="billable_currency_id"/>
+                <field name="provider_label" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="model_name" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="attempted" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="succeeded" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="failed" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="retries" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="input_tokens" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="input_unknown" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="output_tokens" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="output_unknown" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="cached_tokens" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="cached_unknown" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="thinking_tokens" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="thinking_unknown" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="estimated_cost_usd" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="cost_unknown" groups="kai_whatsapp_ai.group_manager"/>
+            </list>
+        </field>
+    </record>
+</odoo>

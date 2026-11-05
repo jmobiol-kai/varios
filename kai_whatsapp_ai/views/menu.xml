@@ -4,8 +4,28 @@
               parent="om_whatsapp_base.om_whatsapp_menu_root"
               action="kai_whatsapp_ai_suggestion_action" sequence="15"
               groups="group_user"/>
+    <menuitem id="menu_kai_whatsapp_ai_usage" name="Usage summary"
+              parent="om_whatsapp_base.om_whatsapp_menu_root"
+              action="kai_whatsapp_ai_consultation_action" sequence="16"
+              groups="group_user"/>
     <menuitem id="menu_kai_whatsapp_ai_config" name="AI Provider"
               parent="om_whatsapp_base.om_whatsapp_menu_config"
               action="kai_whatsapp_ai_config_action" sequence="20"
+              groups="group_manager"/>
+    <menuitem id="menu_kai_whatsapp_ai_usage_wizard" name="Monthly usage"
+              parent="om_whatsapp_base.om_whatsapp_menu_config"
+              action="kai_whatsapp_ai_usage_wizard_action" sequence="21"
+              groups="group_user"/>
+    <menuitem id="menu_kai_whatsapp_ai_calls" name="Provider calls"
+              parent="om_whatsapp_base.om_whatsapp_menu_config"
+              action="kai_whatsapp_ai_call_action" sequence="22"
+              groups="group_manager"/>
+    <menuitem id="menu_kai_whatsapp_ai_provider_rates" name="Provider rate cards"
+              parent="om_whatsapp_base.om_whatsapp_menu_config"
+              action="kai_whatsapp_ai_provider_rate_action" sequence="23"
+              groups="group_manager"/>
+    <menuitem id="menu_kai_whatsapp_ai_billable_rates" name="Client rates"
+              parent="om_whatsapp_base.om_whatsapp_menu_config"
+              action="kai_whatsapp_ai_billable_rate_action" sequence="24"
               groups="group_manager"/>
 </odoo>
