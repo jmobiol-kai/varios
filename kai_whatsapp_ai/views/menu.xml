@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_kai_whatsapp_ai_suggestions" name="AI Suggestions"
+              parent="om_whatsapp_base.om_whatsapp_menu_root"
+              action="kai_whatsapp_ai_suggestion_action" sequence="15"
+              groups="group_user"/>
+    <menuitem id="menu_kai_whatsapp_ai_config" name="AI Provider"
+              parent="om_whatsapp_base.om_whatsapp_menu_config"
+              action="kai_whatsapp_ai_config_action" sequence="20"
+              groups="group_manager"/>
+</odoo>

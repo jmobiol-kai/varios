@@ -88,3 +88,13 @@ Esta incorporación no instaló el módulo, no reinició servicios, no actualiz�
 - Los tests de Python del autor (`tests/test_om_whatsapp.py`, `tests/test_om_whatsapp_device.py`) son casos de Odoo (`TransactionCase`, `HttpCase`). No se ejecutaron: no hay una base de Odoo en esta copia.
 
 Los archivos de descripción (`static/description`) son imágenes y HTML del autor. No hay ejecutables sueltos ni un secreto fijo en el código.
+
+## kai_whatsapp_ai
+
+Addon aparte, licencia LGPL-3, versión `19.0.1.0.0`. No modifica `om_whatsapp_base` ni `om_whatsapp_device`.
+
+Al recibir un mensaje de un cliente, si hay un proveedor de IA habilitado para esa cuenta o para la compañía, crea una sugerencia para revisar. No envía WhatsApp solo. El envío es el botón **Send reply**. El presupuesto es el botón **Create draft quotation** y queda en borrador: no confirma, no factura y no reserva stock.
+
+Depende de `om_whatsapp_base` y `sale`. El puente QR entra por `_om_whatsapp_receive`, que es el método que ya llama el webhook del dispositivo. Inventario es opcional: si `stock` no está instalado, la sugerencia dice que no hay dato de stock.
+
+La configuración, las etiquetas y lo que todavía no hace está en `kai_whatsapp_ai/README.rst`. La FAQ y las políticas de horario, pago y envío quedan vacías hasta que alguien las escriba. No hay una clave de API en el repositorio. Esta copia no instaló el módulo ni llamó a ningún proveedor.

@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_kai_whatsapp_ai_config_user,kai.whatsapp.ai.config.user,model_kai_whatsapp_ai_config,group_user,1,0,0,0
+access_kai_whatsapp_ai_config_manager,kai.whatsapp.ai.config.manager,model_kai_whatsapp_ai_config,group_manager,1,1,1,1
+access_kai_whatsapp_ai_faq_user,kai.whatsapp.ai.faq.user,model_kai_whatsapp_ai_faq,group_user,1,0,0,0
+access_kai_whatsapp_ai_faq_manager,kai.whatsapp.ai.faq.manager,model_kai_whatsapp_ai_faq,group_manager,1,1,1,1
+access_kai_whatsapp_ai_catalog_user,kai.whatsapp.ai.catalog.user,model_kai_whatsapp_ai_catalog,group_user,1,0,0,0
+access_kai_whatsapp_ai_catalog_manager,kai.whatsapp.ai.catalog.manager,model_kai_whatsapp_ai_catalog,group_manager,1,1,1,1
+access_kai_whatsapp_ai_suggestion_user,kai.whatsapp.ai.suggestion.user,model_kai_whatsapp_ai_suggestion,group_user,1,1,0,0
+access_kai_whatsapp_ai_suggestion_manager,kai.whatsapp.ai.suggestion.manager,model_kai_whatsapp_ai_suggestion,group_manager,1,1,1,1
+access_kai_whatsapp_ai_suggestion_line_user,kai.whatsapp.ai.suggestion.line.user,model_kai_whatsapp_ai_suggestion_line,group_user,1,1,0,0
+access_kai_whatsapp_ai_suggestion_line_manager,kai.whatsapp.ai.suggestion.line.manager,model_kai_whatsapp_ai_suggestion_line,group_manager,1,1,1,1

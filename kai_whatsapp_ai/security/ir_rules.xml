@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="kai_whatsapp_ai_config_company" model="ir.rule">
+        <field name="name">WhatsApp AI provider: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_config"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="kai_whatsapp_ai_faq_company" model="ir.rule">
+        <field name="name">WhatsApp AI FAQ: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_faq"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="kai_whatsapp_ai_catalog_company" model="ir.rule">
+        <field name="name">WhatsApp AI catalog: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_catalog"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="kai_whatsapp_ai_suggestion_company" model="ir.rule">
+        <field name="name">WhatsApp AI suggestion: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_suggestion"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="kai_whatsapp_ai_suggestion_line_company" model="ir.rule">
+        <field name="name">WhatsApp AI suggestion line: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_suggestion_line"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="kai_whatsapp_ai_suggestion_user" model="ir.rule">
+        <field name="name">WhatsApp AI suggestion: allowed account users</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_suggestion"/>
+        <field name="domain_force">[('account_id.user_ids', 'in', [user.id])]</field>
+        <field name="groups" eval="[Command.link(ref('group_user'))]"/>
+    </record>
+    <record id="kai_whatsapp_ai_suggestion_manager" model="ir.rule">
+        <field name="name">WhatsApp AI suggestion: managers</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_suggestion"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[Command.link(ref('group_manager'))]"/>
+    </record>
+</odoo>
