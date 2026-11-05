@@ -5,6 +5,8 @@ from odoo import Command
 from odoo.exceptions import AccessError, UserError
 from odoo.tests import TransactionCase, new_test_user, tagged
 
+from odoo.addons.kai_whatsapp_ai.services import engine as kai_engine
+
 
 def _provider_body(payload):
     return json.dumps({"choices": [{"message": {"content": json.dumps(payload)}}]})
@@ -170,6 +172,36 @@ class TestKaiWhatsappAi(TransactionCase):
         self.assertEqual(order.partner_id, self.partner)
         self.assertEqual(order.order_line.product_uom_qty, 2)
         self.assertEqual(suggestion.sale_order_id, order)
+
+    def test_volume_price_comes_from_the_pricelist_tiers(self):
+        self.env['product.pricelist.item'].create({
+            'pricelist_id': self.pricelist.id,
+            'applied_on': '0_product_variant',
+            'product_tmpl_id': self.product.product_tmpl_id.id,
+            'product_id': self.product.id,
+            'compute_price': 'fixed',
+            'fixed_price': 100.0,
+            'min_quantity': 0,
+        })
+        self.env['product.pricelist.item'].create({
+            'pricelist_id': self.pricelist.id,
+            'applied_on': '0_product_variant',
+            'product_tmpl_id': self.product.product_tmpl_id.id,
+            'product_id': self.product.id,
+            'compute_price': 'fixed',
+            'fixed_price': 80.0,
+            'min_quantity': 500,
+        })
+        suggestion = self.env['kai.whatsapp.ai.suggestion']
+        tiers = suggestion._volume_tiers(self.pricelist, self.product, self.env.company)
+        by_min = {tier['min_quantity']: tier['price'] for tier in tiers}
+        self.assertEqual(by_min[1.0], 100.0)
+        self.assertEqual(by_min[500.0], 80.0)
+        reply = kai_engine.render_price_reply(
+            {'name': self.product.display_name, 'uom_name': self.product.uom_id.name, 'currency': 'ARS'},
+            500, tiers)
+        self.assertIn('80', reply)
+        self.assertNotIn('50%', reply)
 
     def test_user_cannot_read_the_secret(self):
         with self.assertRaises(AccessError):

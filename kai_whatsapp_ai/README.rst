@@ -149,6 +149,39 @@ Menús, en inglés como el resto de la pantalla de WhatsApp:
 * Botones: **Send reply**, **Refresh prices**, **Create draft quotation**,
   **Discard**
 
+Envases, tapas y descuento por volumen
+=======================================
+
+El precio sale de la lista de precios del contacto (``property_product_pricelist``),
+que es la que define si ese cliente es B2B o B2C. Los escalones son las reglas
+de Odoo con **Min. Quantity** (``min_quantity``), expresadas en la unidad del
+producto. El módulo pide el precio a Odoo con ``_get_product_price`` para la
+cantidad pedida y para cada mínimo cargado. No calcula un descuento propio:
+si los dos precios de Odoo coinciden, dice que no hay descuento por volumen
+cargado.
+
+Odoo 19 Community no trae un modelo de bulto en ``product``. La ficha del
+producto tiene **Units per pack**. Si el cliente pide cajas y ese dato está
+vacío, la sugerencia pregunta. No inventa cuántas unidades entran.
+
+**Product sheets**, **Activity guide** y **Jar and closure fit** los puede
+cargar un usuario de WhatsApp AI. Ahí va capacidad, material, boca (63 mm,
+82 mm TO), apto alimento, llenado en caliente, pasteurización, usos y qué
+tapa va con qué envase. Si el dato no está, la sugerencia pregunta o deriva
+a una persona. No completa la ficha por su cuenta.
+
+Actualizar una base que ya tiene ``19.0.1.1.0``
+================================================
+
+1. Dejar **Enabled** apagado.
+2. Actualizar el código de la rama y, en Odoo, actualizar el módulo
+   ``kai_whatsapp_ai`` (Apps, actualizar lista, Upgrade). No hace falta
+   desinstalar. Las sugerencias y la medición anteriores quedan.
+3. Cargar fichas, guía por actividad y compatibilidad de tapas.
+4. En la lista de precios de cada contacto, cargar los mínimos de cantidad.
+5. Recién después, si corresponde, volver a pegar la clave y activar el
+   proveedor a mano.
+
 Pruebas
 =======
 

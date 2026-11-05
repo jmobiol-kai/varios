@@ -15,6 +15,21 @@
         <field name="model_id" ref="model_kai_whatsapp_ai_catalog"/>
         <field name="domain_force">[('company_id', 'in', company_ids)]</field>
     </record>
+    <record id="kai_whatsapp_ai_spec_company" model="ir.rule">
+        <field name="name">WhatsApp AI product sheet: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_spec"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="kai_whatsapp_ai_advisory_company" model="ir.rule">
+        <field name="name">WhatsApp AI activity guide: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_advisory"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="kai_whatsapp_ai_fit_company" model="ir.rule">
+        <field name="name">WhatsApp AI jar and closure fit: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_fit"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
     <record id="kai_whatsapp_ai_suggestion_company" model="ir.rule">
         <field name="name">WhatsApp AI suggestion: company</field>
         <field name="model_id" ref="model_kai_whatsapp_ai_suggestion"/>

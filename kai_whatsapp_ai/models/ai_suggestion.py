@@ -217,11 +217,18 @@ class KaiWhatsappAiSuggestion(models.Model):
                 continue
             price = None
             currency = company.currency_id.name or ''
+            tiers = self._volume_tiers(pricelist, product, company)
             if pricelist:
                 amount = pricelist.with_company(company)._get_product_price(
                     product.with_company(company), 1.0, uom=product.uom_id)
                 price = float(amount)
                 currency = pricelist.currency_id.name or currency
+            spec = self.env['kai.whatsapp.ai.spec'].search([
+                ('company_id', '=', company.id), ('product_id', '=', product.id),
+            ], limit=1)
+            fits = self.env['kai.whatsapp.ai.fit'].search([
+                ('company_id', '=', company.id), ('jar_product_id', '=', product.id),
+            ])
             free_qty = None
             if stock_known:
                 free_qty = float(product.with_company(company).free_qty)
@@ -236,8 +243,51 @@ class KaiWhatsappAiSuggestion(models.Model):
                 'free_qty': free_qty,
                 'company_id': product.company_id.id or False,
                 'sale_ok': True,
+                'tiers': tiers,
+                'pack_units': spec.pack_units if spec and spec.pack_units else None,
+                'spec': spec._public_dict() if spec else None,
+                'fits': [{
+                    'product_id': fit.closure_product_id.id,
+                    'name': fit.closure_product_id.display_name,
+                    'note': fit.note or '',
+                } for fit in fits],
             })
         return rows
+
+    def _volume_tiers(self, pricelist, product, company):
+        """Prices at each Odoo min_quantity breakpoint. No discount is invented here."""
+        if not pricelist:
+            return []
+        product = product.with_company(company)
+        pricelist = pricelist.with_company(company)
+        quantities = {1.0}
+        for item in pricelist.item_ids:
+            try:
+                applies = item._is_applicable_for(product, engine.MAX_QTY)
+            except Exception:
+                applies = False
+            if not applies:
+                continue
+            minimum = float(item.min_quantity or 0.0)
+            quantities.add(minimum if minimum > 0 else 1.0)
+        currency = pricelist.currency_id.name or company.currency_id.name or ''
+        tiers = []
+        for qty in sorted(quantity for quantity in quantities if 0 < quantity <= engine.MAX_QTY):
+            amount = pricelist._get_product_price(product, qty, uom=product.uom_id)
+            tiers.append({'min_quantity': qty, 'price': float(amount), 'currency': currency})
+        return tiers
+
+    def _advisory_rows(self):
+        self.ensure_one()
+        rows = self.env['kai.whatsapp.ai.advisory'].search([
+            ('company_id', '=', self.company_id.id), ('active', '=', True),
+        ])
+        return [{
+            'activity': row.activity,
+            'product_id': row.product_id.id,
+            'note': row.note or '',
+            'company_id': row.company_id.id,
+        } for row in rows]
 
     def _faq_rows(self):
         self.ensure_one()
@@ -293,7 +343,8 @@ class KaiWhatsappAiSuggestion(models.Model):
                 raw = engine.post_chat(
                     config.api_base_url, config.sudo().api_key, config.api_model, messages, timeout=timeout)
                 usage = engine.parse_usage(raw)
-                decision = engine.interpret(raw, context=context, catalog=catalog, faqs=faqs)
+                decision = engine.interpret(
+                    raw, context=context, catalog=catalog, faqs=faqs, advisory=suggestion._advisory_rows())
                 decision['error'] = decision.get('error') or ''
                 outcome = 'failed' if decision.get('error') else 'success'
                 error_text = decision.get('error') or ''

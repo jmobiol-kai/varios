@@ -4,6 +4,18 @@
               parent="om_whatsapp_base.om_whatsapp_menu_root"
               action="kai_whatsapp_ai_suggestion_action" sequence="15"
               groups="group_user"/>
+    <menuitem id="menu_kai_whatsapp_ai_specs" name="Product sheets"
+              parent="om_whatsapp_base.om_whatsapp_menu_root"
+              action="kai_whatsapp_ai_spec_action" sequence="17"
+              groups="group_user"/>
+    <menuitem id="menu_kai_whatsapp_ai_advisory" name="Activity guide"
+              parent="om_whatsapp_base.om_whatsapp_menu_root"
+              action="kai_whatsapp_ai_advisory_action" sequence="18"
+              groups="group_user"/>
+    <menuitem id="menu_kai_whatsapp_ai_fit" name="Jar and closure fit"
+              parent="om_whatsapp_base.om_whatsapp_menu_root"
+              action="kai_whatsapp_ai_fit_action" sequence="19"
+              groups="group_user"/>
     <menuitem id="menu_kai_whatsapp_ai_usage" name="Usage summary"
               parent="om_whatsapp_base.om_whatsapp_menu_root"
               action="kai_whatsapp_ai_consultation_action" sequence="16"
