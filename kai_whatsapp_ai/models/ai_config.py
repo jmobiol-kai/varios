@@ -30,7 +30,7 @@ class KaiWhatsappAiConfig(models.Model):
     api_key = fields.Char(
         string='API secret', copy=False, groups='kai_whatsapp_ai.group_manager',
         help="Sent only as a bearer token. It is not copied onto suggestions and it is stripped from errors.")
-    api_timeout = fields.Integer(string='Timeout (seconds)', default=20)
+    api_timeout = fields.Integer(string='Timeout (seconds)', default=15)
     faq_ids = fields.One2many('kai.whatsapp.ai.faq', 'config_id', string='FAQ')
     catalog_ids = fields.One2many('kai.whatsapp.ai.catalog', 'config_id', string='Catalog')
 
@@ -42,8 +42,8 @@ class KaiWhatsappAiConfig(models.Model):
     @api.constrains('enabled', 'api_base_url', 'api_model', 'api_key', 'api_timeout')
     def _check_enabled_has_provider(self):
         for config in self:
-            if config.api_timeout and (config.api_timeout < 1 or config.api_timeout > 30):
-                raise ValidationError(_("The provider timeout must be between 1 and 30 seconds."))
+            if config.api_timeout and (config.api_timeout < 1 or config.api_timeout > 15):
+                raise ValidationError(_("The provider timeout must be between 1 and 15 seconds."))
             if config.enabled and not (config.api_base_url and config.api_model and config.api_key):
                 raise ValidationError(_("Set the API base URL, the model and the secret before enabling suggestions."))
 

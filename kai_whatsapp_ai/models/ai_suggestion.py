@@ -39,6 +39,11 @@ class KaiWhatsappAiSuggestion(models.Model):
         ('review', 'To review'),
         ('discarded', 'Discarded'),
     ], default='review', required=True, index=True)
+    generation_state = fields.Selection([
+        ('pending', 'Queued'),
+        ('done', 'Ready'),
+        ('error', 'Provider error'),
+    ], default='pending', required=True, index=True, readonly=True)
     reply_sent = fields.Boolean(readonly=True, copy=False)
     sale_order_id = fields.Many2one('sale.order', string='Draft quotation', readonly=True, copy=False)
     line_ids = fields.One2many('kai.whatsapp.ai.suggestion.line', 'suggestion_id')
@@ -48,23 +53,70 @@ class KaiWhatsappAiSuggestion(models.Model):
     _suggestion_whatsapp_unique = models.UniqueIndex(
         "(account_id, whatsapp_message_id) WHERE whatsapp_message_id IS NOT NULL")
 
-    @api.depends('state', 'intent', 'partner_id', 'sale_order_id', 'line_ids.status', 'line_ids.price_unit',
-                 'line_ids.quantity', 'line_ids.product_id', 'line_ids.uom_id')
+    @api.depends('state', 'intent', 'partner_id', 'partner_id.company_id', 'sale_order_id',
+                 'channel_id.om_whatsapp_partner_id', 'company_id', 'config_id.catalog_ids.product_id',
+                 'line_ids.quantity', 'line_ids.product_id', 'line_ids.uom_id', 'line_ids.product_id.uom_id',
+                 'line_ids.product_id.sale_ok', 'line_ids.product_id.company_id')
     def _compute_quotation_ready(self):
         for suggestion in self:
-            suggestion.quotation_ready = engine.order_creation_allowed(
-                discarded=suggestion.state == 'discarded',
-                intent=suggestion.intent,
-                lines=[{
-                    'status': line.status,
-                    'product_id': line.product_id.id,
-                    'uom_id': line.uom_id.id,
-                    'price': line.price_unit,
-                    'quantity': line.quantity,
-                } for line in suggestion.line_ids],
-                partner_id=suggestion.partner_id.id,
-                existing_order_id=suggestion.sale_order_id.id,
-            )
+            suggestion.quotation_ready = suggestion._quotation_is_valid()
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        if not self.env.su:
+            raise UserError(_("Suggestions are created from inbound WhatsApp messages."))
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if not self.env.su:
+            if set(vals) - {'suggested_reply', 'partner_id'}:
+                raise UserError(_("Only the reply text and the customer can be edited."))
+            if 'partner_id' in vals:
+                partner = self.env['res.partner'].browse(vals['partner_id']).exists() if vals['partner_id'] else self.env['res.partner']
+                for suggestion in self:
+                    suggestion._check_partner_value(partner)
+        return super().write(vals)
+
+    def _check_partner_value(self, partner):
+        self.ensure_one()
+        if not partner:
+            return
+        if partner.company_id and partner.company_id != self.company_id:
+            raise UserError(_("The customer belongs to another company."))
+        channel_partner = self.channel_id.om_whatsapp_partner_id
+        if channel_partner and partner != channel_partner:
+            raise UserError(_("The customer must be the contact of this WhatsApp conversation."))
+
+    def _quotation_is_valid(self):
+        self.ensure_one()
+        partner = self.partner_id
+        company = self.company_id
+        pricelist = partner.with_company(company).property_product_pricelist if partner else False
+        catalog_ids = set(self.config_id.catalog_ids.product_id.ids)
+        lines = []
+        for line in self.line_ids:
+            product = line.product_id
+            lines.append({
+                'product_id': product.id,
+                'sale_ok': bool(product.sale_ok) if product else False,
+                'product_company_id': product.company_id.id if product and product.company_id else False,
+                'product_uom_id': product.uom_id.id if product and product.uom_id else False,
+                'uom_id': line.uom_id.id,
+                'quantity': line.quantity,
+                'in_catalog': bool(product) and product.id in catalog_ids,
+            })
+        return engine.validated_quotation(
+            discarded=self.state == 'discarded',
+            intent=self.intent,
+            partner_id=partner.id,
+            partner_company_id=partner.company_id.id if partner and partner.company_id else False,
+            company_id=company.id,
+            channel_partner_id=self.channel_id.om_whatsapp_partner_id.id or False,
+            has_pricelist=bool(pricelist),
+            pricelist_company_id=pricelist.company_id.id if pricelist and pricelist.company_id else False,
+            existing_order_id=self.sale_order_id.id,
+            lines=lines,
+        )
 
     @api.model
     def _register_inbound(self, account, message, body, from_me=False):
@@ -97,15 +149,16 @@ class KaiWhatsappAiSuggestion(models.Model):
             'partner_id': channel.om_whatsapp_partner_id.id if channel and channel.om_whatsapp_partner_id else False,
             'inbound_body': inbound,
             'state': 'review',
+            'generation_state': 'pending',
+            'needs_human': True,
         })
-        suggestion._fill_from_provider()
         return suggestion
 
     def _channel_context(self):
         self.ensure_one()
         if not self.channel_id:
             return [{"direction": "customer", "body": self.inbound_body or ""}]
-        messages = self.env['mail.message'].sudo().search([
+        messages = self.env['mail.message'].search([
             ('model', '=', 'discuss.channel'),
             ('res_id', '=', self.channel_id.id),
             ('message_type', '=', 'om_whatsapp'),
@@ -164,34 +217,87 @@ class KaiWhatsappAiSuggestion(models.Model):
             'company_id': faq.company_id.id,
         } for faq in self.config_id.faq_ids if faq.active]
 
-    def _fill_from_provider(self):
+    def _provider_may_run(self, from_queue):
+        """Enabled, same company and account, and not already generated. Does not read the secret until allowed."""
+        self.ensure_one()
+        config = self.config_id
+        enabled = bool(
+            config.enabled and config.active
+            and config.company_id == self.company_id
+            and self.account_id.company_id == self.company_id
+            and (not config.account_id or config.account_id == self.account_id)
+        )
+        if not enabled:
+            return False
+        return engine.should_call_provider(
+            enabled=True,
+            configured=engine.provider_is_configured(config.api_base_url, config.api_model, config.sudo().api_key),
+            generation_state=self.generation_state,
+            from_queue=from_queue,
+        )
+
+    def _generate_bounded(self, from_queue=False):
+        """Call the provider with a short timeout. Never sends WhatsApp or creates a sale."""
         for suggestion in self:
-            catalog = suggestion._catalog_rows()
-            faqs = suggestion._faq_rows()
-            context = engine.trim_context(suggestion._channel_context())
-            public_catalog = engine.public_catalog(catalog, suggestion.company_id.id)
-            public_faqs = engine.public_faqs(faqs, suggestion.company_id.id)
+            if not suggestion._provider_may_run(from_queue):
+                if suggestion.generation_state == 'pending':
+                    suggestion.sudo().write({
+                        'generation_state': 'error',
+                        'intent': 'unknown',
+                        'needs_human': True,
+                        'provider_error': engine.PROVIDER_MISSING,
+                        'suggested_reply': engine.HANDOFF,
+                    })
+                continue
             config = suggestion.config_id
-            if not engine.provider_is_configured(config.api_base_url, config.api_model, config.api_key):
-                decision = engine._decision('unknown', [], None, engine.PROVIDER_MISSING, needs_human=True, error=engine.PROVIDER_MISSING)
-            else:
-                messages = engine.build_messages(context, public_catalog, public_faqs)
-                try:
-                    body = engine.post_chat(
-                        config.api_base_url, config.api_key, config.api_model, messages,
-                        timeout=config.api_timeout or 20,
-                    )
-                    decision = engine.interpret(body, context=context, catalog=public_catalog, faqs=public_faqs)
-                except engine.ProviderError as error:
-                    decision = engine._decision('unknown', [], None, engine.PROVIDER_BAD, needs_human=True, error=str(error))
-                except Exception:
-                    _logger.exception("WhatsApp AI: provider call failed for suggestion %s", suggestion.id)
-                    decision = engine._decision('unknown', [], None, engine.PROVIDER_BAD, needs_human=True, error=engine.PROVIDER_BAD)
+            catalog = engine.public_catalog(suggestion._catalog_rows(), suggestion.company_id.id)
+            faqs = engine.public_faqs(suggestion._faq_rows(), suggestion.company_id.id)
+            context = engine.trim_context(suggestion._channel_context())
+            messages = engine.build_messages(context, catalog, faqs)
+            timeout = min(max(int(config.api_timeout or 15), 1), 15)
+            try:
+                body = engine.post_chat(
+                    config.api_base_url, config.sudo().api_key, config.api_model, messages, timeout=timeout)
+                decision = engine.interpret(body, context=context, catalog=catalog, faqs=faqs)
+                decision['error'] = decision.get('error') or ''
+            except engine.ProviderError as error:
+                decision = engine._decision('unknown', [], None, engine.PROVIDER_BAD, needs_human=True, error=str(error))
+            except Exception:
+                _logger.exception("WhatsApp AI: provider call failed for suggestion %s", suggestion.id)
+                decision = engine._decision('unknown', [], None, engine.PROVIDER_BAD, needs_human=True, error=engine.PROVIDER_BAD)
             suggestion._apply_decision(decision)
+            suggestion.sudo().write({'generation_state': 'done' if not decision.get('error') else 'error'})
+
+    def action_generate(self):
+        """A person asks for the suggestion. This does not send it."""
+        for suggestion in self:
+            suggestion._check_open()
+            suggestion._generate_bounded(from_queue=False)
+
+    @api.model
+    def _cron_generate_suggestions(self, limit=5):
+        """Prepare a few queued suggestions. Never sends and never creates a quotation."""
+        limit = min(max(int(limit or 5), 1), 5)
+        self.env.cr.execute(
+            """
+            SELECT id FROM kai_whatsapp_ai_suggestion
+            WHERE generation_state = 'pending'
+            ORDER BY id
+            LIMIT %s
+            FOR UPDATE SKIP LOCKED
+            """,
+            [limit],
+        )
+        suggestions = self.browse(row[0] for row in self.env.cr.fetchall())
+        for suggestion in suggestions:
+            try:
+                with self.env.cr.savepoint():
+                    suggestion._generate_bounded(from_queue=True)
+            except Exception:
+                _logger.exception("WhatsApp AI: suggestion %s stayed queued", suggestion.id)
 
     def _apply_decision(self, decision):
         self.ensure_one()
-        products = {line['product_id']: line for line in decision['lines'] if line.get('product_id')}
         allowed = set(self.config_id.catalog_ids.product_id.ids)
         commands = [(5, 0, 0)]
         for sequence, line in enumerate(decision['lines'], start=1):
@@ -214,12 +320,12 @@ class KaiWhatsappAiSuggestion(models.Model):
                 'stock_checked': line.get('free_qty') is not None,
                 'status': line.get('status') or 'unknown',
             }))
-        self.write({
+        self.sudo().write({
             'intent': decision['intent'],
             'needs_human': decision['needs_human'] or any(line.get('status') != 'matched' for line in decision['lines'] if decision['intent'] == 'order'),
             'clarification': decision.get('clarification') or False,
             'suggested_reply': decision.get('reply') or '',
-            'provider_error': decision.get('error') or False,
+            'provider_error': engine.redact(decision.get('error') or '', self.config_id.sudo().api_key),
             'line_ids': commands,
         })
 
@@ -235,21 +341,26 @@ class KaiWhatsappAiSuggestion(models.Model):
             rows = {row['id']: row for row in suggestion._catalog_rows()}
             for line in suggestion.line_ids:
                 row = rows.get(line.product_id.id)
-                if not row or line.status in ('unknown', 'ambiguous', 'bad_uom'):
-                    continue
-                price = row['price']
-                status = line.status
-                if line.quantity <= 0:
-                    status = 'bad_qty'
-                elif price is None:
-                    status = 'no_price'
-                elif status == 'no_price':
-                    status = 'matched'
-                line.write({
-                    'price_unit': price or 0.0,
-                    'free_qty': row['free_qty'] if row['free_qty'] is not None else 0.0,
-                    'stock_checked': row['free_qty'] is not None,
-                    'currency_id': suggestion._currency_for({'currency': row['currency']}, line.product_id).id,
+                product = line.product_id
+                if not row or not product or line.uom_id != product.uom_id:
+                    status = 'bad_uom' if product and line.uom_id and line.uom_id != product.uom_id else 'unknown'
+                    price = None
+                    free_qty = None
+                else:
+                    price = row['price']
+                    free_qty = row['free_qty']
+                    if engine._quantity(line.quantity) is None:
+                        status = 'bad_qty'
+                    elif price is None:
+                        status = 'no_price'
+                    else:
+                        status = 'matched'
+                line.sudo().write({
+                    'price_unit': 0.0 if price is None else price,
+                    'free_qty': 0.0 if free_qty is None else free_qty,
+                    'stock_checked': free_qty is not None,
+                    'currency_id': suggestion._currency_for({'currency': row['currency'] if row else ''}, product).id if product else False,
+                    'uom_id': product.uom_id.id if product and status != 'bad_uom' else line.uom_id.id,
                     'status': status,
                 })
             suggestion._rebuild_reply_from_lines()
@@ -272,7 +383,7 @@ class KaiWhatsappAiSuggestion(models.Model):
         else:
             needs_human = self.intent != 'catalog' or any(line['status'] != 'matched' for line in lines) or not lines
         clarification = '' if not needs_human else (self.clarification or '')
-        self.write({
+        self.sudo().write({
             'needs_human': needs_human,
             'clarification': clarification or False,
             'suggested_reply': engine._render(self.intent or 'unknown', lines, None, clarification),
@@ -288,42 +399,46 @@ class KaiWhatsappAiSuggestion(models.Model):
         self._check_open()
         if self.reply_sent or self.sale_order_id:
             raise UserError(_("A sent reply or a draft quotation stays. Discard is only for an open suggestion."))
-        self.state = 'discarded'
+        self.sudo().write({'state': 'discarded'})
+
+    def _lock(self):
+        self.ensure_one()
+        self.env.cr.execute(
+            "SELECT id FROM kai_whatsapp_ai_suggestion WHERE id = %s FOR UPDATE",
+            [self.id],
+        )
+        self.invalidate_recordset()
 
     def action_send(self):
         """The only WhatsApp send in this module. A person presses the button."""
         self.ensure_one()
+        self._lock()
         self._check_open()
-        if self.reply_sent:
-            raise UserError(_("This reply was already sent."))
-        reply = (self.suggested_reply or '').strip()
-        if not reply:
-            raise UserError(_("Write the reply before sending it."))
+        if not engine.send_allowed(
+            reply_sent=self.reply_sent,
+            discarded=self.state == 'discarded',
+            reply_text=self.suggested_reply,
+            allowed_user=self.env.user in self.account_id.user_ids,
+        ):
+            raise UserError(_("This reply cannot be sent."))
         if not self.channel_id:
             raise UserError(_("This suggestion has no WhatsApp conversation to send from."))
-        self.channel_id.message_post(body=plaintext2html(reply), message_type='comment')
-        self.reply_sent = True
+        self.channel_id.message_post(body=plaintext2html(self.suggested_reply.strip()), message_type='comment')
+        self.sudo().write({'reply_sent': True})
 
     def action_create_draft_quotation(self):
         """Create a draft sale order from reviewed lines. Never confirms it."""
         self.ensure_one()
+        self._lock()
         self._check_open()
         self.action_refresh_prices()
-        if not self.quotation_ready:
-            raise UserError(_("Choose the customer and resolve every line, with a tariff price, before the draft."))
+        if not self._quotation_is_valid():
+            raise UserError(_("Choose the customer on this conversation and resolve every line against the tariff before the draft."))
         self.env['sale.order'].check_access('create')
         company = self.company_id
-        if self.partner_id.company_id and self.partner_id.company_id != company:
-            raise UserError(_("The customer belongs to another company."))
         lines = []
         for line in self.line_ids:
             product = line.product_id
-            if product.company_id and product.company_id != company:
-                raise UserError(_("%s belongs to another company.", product.display_name))
-            if not product.sale_ok or line.uom_id != product.uom_id or line.quantity <= 0:
-                raise UserError(_("Line %s is not ready for a draft.", product.display_name or line.raw_request))
-            if line.product_id.id not in self.config_id.catalog_ids.product_id.ids:
-                raise UserError(_("%s is not on the allowlisted catalog.", product.display_name))
             lines.append((0, 0, {
                 'product_id': product.id,
                 'product_uom_qty': line.quantity,
@@ -337,7 +452,7 @@ class KaiWhatsappAiSuggestion(models.Model):
         })
         if order.state != 'draft':
             raise UserError(_("The quotation was not left as a draft."))
-        self.sale_order_id = order.id
+        self.sudo().write({'sale_order_id': order.id})
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'sale.order',
@@ -370,3 +485,17 @@ class KaiWhatsappAiSuggestionLine(models.Model):
         ('bad_uom', 'Wrong unit'),
         ('no_price', 'No tariff'),
     ], required=True, readonly=True)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        if not self.env.su:
+            raise UserError(_("Suggestion lines are created by the assistant, not by hand."))
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if not self.env.su:
+            if set(vals) - {'quantity'}:
+                raise UserError(_("Only the quantity can be corrected."))
+            if 'quantity' in vals and engine._quantity(vals['quantity']) is None:
+                raise UserError(_("The quantity has to be greater than zero and at most %s.", engine.MAX_QTY))
+        return super().write(vals)

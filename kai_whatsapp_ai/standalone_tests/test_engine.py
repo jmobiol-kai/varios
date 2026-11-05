@@ -178,15 +178,67 @@ class EngineTests(unittest.TestCase):
         self.assertFalse(engine.order_creation_allowed(
             discarded=False, intent="order", lines=[line], partner_id=1, existing_order_id=9))
 
+    def test_provider_call_stays_off_the_webhook_and_when_disabled(self):
+        self.assertFalse(engine.should_call_provider(
+            enabled=False, configured=True, generation_state="pending", from_queue=True))
+        self.assertFalse(engine.should_call_provider(
+            enabled=True, configured=False, generation_state="pending"))
+        self.assertFalse(engine.should_call_provider(
+            enabled=True, configured=True, generation_state="done", from_queue=True))
+        self.assertFalse(engine.should_call_provider(
+            enabled=True, configured=True, generation_state="error", from_queue=True))
+        self.assertTrue(engine.should_call_provider(
+            enabled=True, configured=True, generation_state="pending", from_queue=True))
+        self.assertTrue(engine.should_call_provider(
+            enabled=True, configured=True, generation_state="error", from_queue=False))
+
+    def test_send_and_quotation_reject_forged_rows(self):
+        self.assertFalse(engine.send_allowed(
+            reply_sent=True, discarded=False, reply_text="Hola", allowed_user=True))
+        self.assertFalse(engine.send_allowed(
+            reply_sent=False, discarded=False, reply_text="Hola", allowed_user=False))
+        self.assertTrue(engine.send_allowed(
+            reply_sent=False, discarded=False, reply_text="Hola", allowed_user=True))
+        good = {
+            "product_id": 7, "sale_ok": True, "product_company_id": False,
+            "product_uom_id": 1, "uom_id": 1, "quantity": 2, "in_catalog": True,
+        }
+        base = dict(
+            discarded=False, intent="order", partner_id=3, partner_company_id=False,
+            company_id=1, channel_partner_id=3, has_pricelist=True, pricelist_company_id=False,
+            existing_order_id=False, lines=[good],
+        )
+        self.assertTrue(engine.validated_quotation(**base))
+        forged = dict(good, in_catalog=False)
+        self.assertFalse(engine.validated_quotation(**dict(base, lines=[forged])))
+        wrong_uom = dict(good, uom_id=99)
+        self.assertFalse(engine.validated_quotation(**dict(base, lines=[wrong_uom])))
+        other_company = dict(good, product_company_id=2)
+        self.assertFalse(engine.validated_quotation(**dict(base, lines=[other_company])))
+        self.assertFalse(engine.validated_quotation(**dict(base, partner_id=8, channel_partner_id=3)))
+        self.assertFalse(engine.validated_quotation(**dict(base, has_pricelist=False)))
+        self.assertFalse(engine.validated_quotation(**dict(base, lines=[dict(good, quantity=20000)])))
+        self.assertFalse(engine.validated_quotation(**dict(base, partner_company_id=2)))
+
     def test_module_source_does_not_send_or_confirm_by_itself(self):
         hook = (ROOT / "models" / "om_whatsapp_account.py").read_text(encoding="utf-8")
         suggestion = (ROOT / "models" / "ai_suggestion.py").read_text(encoding="utf-8")
         self.assertNotIn("message_post", hook)
+        self.assertNotIn("post_chat", hook)
+        self.assertNotIn("sale.order", hook)
         self.assertNotIn("action_confirm", suggestion)
         self.assertNotIn("_invoice", suggestion)
         self.assertNotIn("stock.quant", suggestion)
         self.assertEqual(suggestion.count("message_post"), 1)
+        self.assertEqual(suggestion.count("post_chat"), 1)
         self.assertIn("def action_send", suggestion)
+        self.assertIn("def _cron_generate_suggestions", suggestion)
+        register = suggestion.split("def _register_inbound", 1)[1].split("def _channel_context", 1)[0]
+        self.assertNotIn("post_chat", register)
+        self.assertNotIn("_generate_bounded", register)
+        cron = suggestion.split("def _cron_generate_suggestions", 1)[1].split("def _apply_decision", 1)[0]
+        self.assertNotIn("message_post", cron)
+        self.assertNotIn("sale.order", cron)
         paths = []
         for folder, suffix in (("models", ".py"), ("views", ".xml"), ("security", ".xml"), ("security", ".csv")):
             paths.extend((ROOT / folder).rglob("*" + suffix))

@@ -11,6 +11,7 @@
                 <field name="intent"/>
                 <field name="needs_human"/>
                 <field name="state"/>
+                <field name="generation_state"/>
                 <field name="reply_sent"/>
                 <field name="sale_order_id"/>
             </list>
@@ -23,6 +24,8 @@
         <field name="arch" type="xml">
             <form create="0" delete="0">
                 <header>
+                    <button name="action_generate" type="object" string="Generate suggestion"
+                            invisible="state == 'discarded' or generation_state == 'done'"/>
                     <button name="action_send" type="object" string="Send reply" class="btn-primary"
                             invisible="state == 'discarded' or reply_sent or not suggested_reply"/>
                     <button name="action_refresh_prices" type="object" string="Refresh prices"
@@ -46,6 +49,7 @@
                             <field name="needs_human" readonly="1"/>
                             <field name="clarification" readonly="1"/>
                             <field name="reply_sent" readonly="1"/>
+                            <field name="generation_state" readonly="1"/>
                             <field name="provider_error" readonly="1" invisible="not provider_error"/>
                             <field name="quotation_ready" invisible="1"/>
                         </group>

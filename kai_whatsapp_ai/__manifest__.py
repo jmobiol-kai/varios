@@ -15,6 +15,7 @@ invoice or reserve stock by itself.
         'security/groups.xml',
         'security/ir.model.access.csv',
         'security/ir_rules.xml',
+        'data/ir_cron.xml',
         'views/ai_config_views.xml',
         'views/ai_suggestion_views.xml',
         'views/menu.xml',

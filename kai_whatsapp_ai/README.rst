@@ -8,16 +8,19 @@ revisa el texto y, si corresponde, confirma un presupuesto en borrador.
 
 El módulo no modifica esos addons. Se engancha en
 ``om.whatsapp.account._om_whatsapp_receive``, que es el método con el que el
-webhook del puente QR termina guardando el mensaje. No hay cron y no hay envío
-automático.
+webhook del puente QR termina guardando el mensaje. El webhook no llama al
+proveedor. Un cron solo prepara el texto de las sugerencias en cola. No hay
+envío automático.
 
 Qué hace esta versión
 =====================
 
 * Empieza apagada. Sin **Enabled**, un mensaje entrante no llama al proveedor
   y no crea sugerencia.
-* Con el proveedor habilitado, un mensaje del cliente crea un registro en
-  **WhatsApp → AI Suggestions**. El texto propuesto se puede editar.
+* Con el proveedor habilitado, el webhook solo deja la sugerencia en cola
+  (**Queued**). No espera al proveedor. El cron toma hasta cinco por ejecución,
+  cada una con tope de 15 segundos, o una persona usa **Generate suggestion**.
+  Si el proveedor falla, el mensaje de WhatsApp ya está guardado.
 * **Send reply** es el único envío. Lo aprieta una persona. Usa el
   ``message_post`` de la conversación de Discuss, el mismo camino que ya manda
   WhatsApp. Esta copia del repositorio no apretó ese botón contra una base real.
@@ -78,13 +81,18 @@ de WhatsApp AI (grupo **Administrator** del privilegio **WhatsApp AI**) abre
 * **Catalog**: productos con **Can be Sold**. Solo esos se pueden citar o
   pedir.
 
-Cada sugerencia, con el proveedor habilitado, hace un POST a
-``{API base URL}/chat/completions`` con ``temperature`` 0 y
-``response_format`` JSON. No se llama si está apagado, si el mensaje es
-saliente o si ese id de WhatsApp ya tiene sugerencia. El timeout por defecto
-es 20 segundos y queda dentro del webhook: si el proveedor tarda, el mensaje
-de WhatsApp igual se guardó; la sugerencia queda para una persona con el
-error, sin reintentos.
+El POST a ``{API base URL}/chat/completions`` lo hace el cron o **Generate
+suggestion**, con ``temperature`` 0 y ``response_format`` JSON. El webhook de
+WhatsApp no lo hace. No se llama si el proveedor está apagado, si el mensaje
+es saliente, si ese id ya tiene sugerencia, o si la sugerencia ya está
+**Ready**. El timeout máximo es 15 segundos. Un error no reintenta solo: queda
+en **Provider error** y una persona puede volver a pedir **Generate suggestion**.
+
+Quién ve cada cosa: la compañía del registro, y además los **Allowed Users**
+de la cuenta. Si la sugerencia tiene conversación, el usuario también tiene
+que ser miembro de ese canal. El secreto no lo lee el grupo User. Una
+configuración de toda la compañía (cuenta vacía) la ven los usuarios de esa
+compañía.
 
 Quien aprieta **Send reply** tiene que estar en **Allowed Users** de la
 cuenta. Quien aprieta **Create draft quotation** además necesita permiso de

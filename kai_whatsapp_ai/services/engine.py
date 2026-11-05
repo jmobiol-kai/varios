@@ -70,8 +70,44 @@ def should_register(*, enabled, from_me, has_outgoing_notification, already_regi
     return bool(enabled) and not from_me and not has_outgoing_notification and not already_registered
 
 
+def should_call_provider(*, enabled, configured, generation_state, from_queue=False):
+    """The network call is never part of registering the inbound message.
+
+    The queue retries only ``pending``. A person can retry ``error`` from the form.
+    """
+    allowed = ("pending",) if from_queue else ("pending", "error")
+    return bool(enabled) and bool(configured) and generation_state in allowed
+
+
 def provider_is_configured(base_url, model, api_key):
     return bool(str(base_url or "").strip() and str(model or "").strip() and str(api_key or "").strip())
+
+
+def send_allowed(*, reply_sent, discarded, reply_text, allowed_user):
+    return bool(allowed_user) and not reply_sent and not discarded and bool(str(reply_text or "").strip())
+
+
+def validated_quotation(*, discarded, intent, partner_id, partner_company_id, company_id,
+                        channel_partner_id, has_pricelist, pricelist_company_id, existing_order_id, lines):
+    """Live checks for a draft. Stored status and prices are not trusted."""
+    if discarded or existing_order_id or intent != "order" or not partner_id or not lines:
+        return False
+    if partner_company_id not in (None, False, company_id):
+        return False
+    if channel_partner_id and partner_id != channel_partner_id:
+        return False
+    if not has_pricelist or pricelist_company_id not in (None, False, company_id):
+        return False
+    for line in lines:
+        if not line.get("in_catalog") or not line.get("sale_ok") or not line.get("product_id"):
+            return False
+        if line.get("product_company_id") not in (None, False, company_id):
+            return False
+        if not line.get("product_uom_id") or line.get("uom_id") != line.get("product_uom_id"):
+            return False
+        if _quantity(line.get("quantity")) is None:
+            return False
+    return True
 
 
 def trim_context(messages):
