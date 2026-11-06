@@ -24,3 +24,9 @@ access_kai_whatsapp_ai_usage_wizard_user,kai.whatsapp.ai.usage.wizard.user,model
 access_kai_whatsapp_ai_usage_wizard_manager,kai.whatsapp.ai.usage.wizard.manager,model_kai_whatsapp_ai_usage_wizard,group_manager,1,1,1,1
 access_kai_whatsapp_ai_usage_total_user,kai.whatsapp.ai.usage.total.user,model_kai_whatsapp_ai_usage_total,group_user,1,1,1,1
 access_kai_whatsapp_ai_usage_total_manager,kai.whatsapp.ai.usage.total.manager,model_kai_whatsapp_ai_usage_total,group_manager,1,1,1,1
+access_kai_whatsapp_ai_trainer_user,kai.whatsapp.ai.trainer.user,model_kai_whatsapp_ai_trainer,group_user,1,0,0,0
+access_kai_whatsapp_ai_trainer_manager,kai.whatsapp.ai.trainer.manager,model_kai_whatsapp_ai_trainer,group_manager,1,1,1,1
+access_kai_whatsapp_ai_rule_user,kai.whatsapp.ai.rule.user,model_kai_whatsapp_ai_rule,group_user,1,1,1,0
+access_kai_whatsapp_ai_rule_manager,kai.whatsapp.ai.rule.manager,model_kai_whatsapp_ai_rule,group_manager,1,1,1,1
+access_kai_whatsapp_ai_training_user,kai.whatsapp.ai.training.user,model_kai_whatsapp_ai_training,group_user,1,0,0,0
+access_kai_whatsapp_ai_training_manager,kai.whatsapp.ai.training.manager,model_kai_whatsapp_ai_training,group_manager,1,1,1,0

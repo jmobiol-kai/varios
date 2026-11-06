@@ -16,10 +16,22 @@
               parent="om_whatsapp_base.om_whatsapp_menu_root"
               action="kai_whatsapp_ai_fit_action" sequence="19"
               groups="group_user"/>
+    <menuitem id="menu_kai_whatsapp_ai_rules" name="Reglas del agente"
+              parent="om_whatsapp_base.om_whatsapp_menu_root"
+              action="kai_whatsapp_ai_rule_action" sequence="20"
+              groups="group_user"/>
+    <menuitem id="menu_kai_whatsapp_ai_training" name="Respuestas al entrenador"
+              parent="om_whatsapp_base.om_whatsapp_menu_root"
+              action="kai_whatsapp_ai_training_action" sequence="21"
+              groups="group_user"/>
     <menuitem id="menu_kai_whatsapp_ai_usage" name="Usage summary"
               parent="om_whatsapp_base.om_whatsapp_menu_root"
               action="kai_whatsapp_ai_consultation_action" sequence="16"
               groups="group_user"/>
+    <menuitem id="menu_kai_whatsapp_ai_trainers" name="Entrenadores"
+              parent="om_whatsapp_base.om_whatsapp_menu_config"
+              action="kai_whatsapp_ai_trainer_action" sequence="19"
+              groups="group_manager"/>
     <menuitem id="menu_kai_whatsapp_ai_config" name="AI Provider"
               parent="om_whatsapp_base.om_whatsapp_menu_config"
               action="kai_whatsapp_ai_config_action" sequence="20"

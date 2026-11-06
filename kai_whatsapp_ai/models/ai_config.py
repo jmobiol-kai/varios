@@ -56,6 +56,12 @@ class KaiWhatsappAiConfig(models.Model):
     allowed_image_mimes = fields.Char(
         string='Allowed photo types', default='image/jpeg,image/png,image/webp',
         groups='kai_whatsapp_ai.group_manager')
+    auto_reply_trainer = fields.Boolean(
+        string='Responder automáticamente al entrenador', default=False,
+        groups='kai_whatsapp_ai.group_manager',
+        help="Off: a person sends the trainer's WhatsApp reply. On: an authorized trainer number "
+             "receives the reply on WhatsApp. Customer replies are never sent by this option. "
+             "The internal Discuss chat with Agente IA replies by itself when the provider is on.")
 
     @api.onchange('provider_preset')
     def _onchange_provider_preset(self):
@@ -99,6 +105,18 @@ class KaiWhatsappAiConfig(models.Model):
         if specific:
             return specific
         return self.search(domain + [('account_id', '=', False)], limit=1)
+
+    @api.model
+    def _enabled_for_company(self, company):
+        """Enabled company setup. Account-specific rows are not used for the internal chat."""
+        if not company:
+            return self.browse()
+        return self.search([
+            ('enabled', '=', True), ('active', '=', True),
+            ('company_id', '=', company.id), ('account_id', '=', False),
+        ], limit=1) or self.search([
+            ('enabled', '=', True), ('active', '=', True), ('company_id', '=', company.id),
+        ], limit=1)
 
 
 class KaiWhatsappAiFaq(models.Model):

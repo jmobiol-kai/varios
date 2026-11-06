@@ -273,6 +273,61 @@ Actualizar una base que ya tiene ``19.0.1.1.0``
 5. Recién después, si corresponde, volver a pegar la clave y activar el
    proveedor a mano.
 
+Entrenamiento del dueño
+=======================
+
+El dueño no se identifica con una frase. Un cliente que escribe «soy el dueño»
+sigue siendo un cliente. Entran al entrenamiento solo las personas cargadas en
+**WhatsApp → Configuration → Entrenadores**: un usuario interno de Odoo, un
+número de WhatsApp en formato internacional, o los dos. La lista la carga un
+administrador, por compañía.
+
+En Odoo el agente es un contacto de Discuss, **Agente IA**, armado como
+OdooBot: usuario interno sin contraseña y sin licencia (queda inactivo, igual
+que el usuario de OdooBot), con avatar, y visible en **Mensajes directos**.
+Al entrar a Conversaciones se abre ese chat. Si quien escribe está en
+Entrenadores, es entrenamiento. Si no, el agente contesta una frase fija y no
+llama al modelo ni cuenta una consulta. Los mensajes del propio agente no
+vuelven a entrar, así que no hay un bucle.
+
+Ese chat es interno: cuando el proveedor está encendido, el agente responde
+solo. Primero deja «Pensando…» y el cron, con el tope de 15 segundos, publica
+la respuesta. Si el proveedor está apagado, no hay llamada ni consulta; los
+comandos locales igual andan.
+
+Por WhatsApp, el número autorizado va a entrenamiento en lugar de una
+sugerencia de cliente. **Responder automáticamente al entrenador** nace
+apagado: la respuesta queda para que una persona apriete **Send reply** en
+**Respuestas al entrenador**. Encenderlo no manda nada a los clientes.
+
+El agente propone reglas (título, texto, alcance, prioridad) en estado
+**propuesta**. Pasan a **activa** solo si el entrenador responde ``confirmar``
+o ``confirmar N``, o aprieta **Confirmar** en **Reglas del agente**.
+``mostrar reglas`` y ``borrar regla N`` también andan por WhatsApp o por ese
+chat. Cada regla guarda quién la creó, quién la confirmó, el canal, y el
+historial en el chatter.
+
+Una regla no puede fijar un precio, un descuento, una ficha técnica, el stock,
+la seguridad, el proveedor ni el envío automático. Si lo intenta, queda
+marcada y no se puede confirmar. Aunque alguien la active a mano, no entra en
+la sugerencia al cliente. Las reglas activas que sí sirven se agregan al
+pedido del modelo, solo las globales y las que coinciden con el producto, la
+categoría o la actividad, con un tope de tamaño. El precio, la tarifa, el
+stock y la ficha siguen saliendo de Odoo.
+
+Esas consultas se cuentan igual que las de un cliente. El reporte mensual no
+tiene una columna ni una categoría aparte. En la llamada al proveedor queda
+una marca interna, que ese reporte no muestra.
+
+Actualizar una base que ya tiene ``19.0.1.3.0``
+================================================
+
+1. Dejar **Enabled** y **Responder automáticamente al entrenador** apagados.
+2. Actualizar el módulo ``kai_whatsapp_ai``. Aparece el contacto **Agente IA**.
+3. Cargar **Entrenadores**.
+4. El dueño abre **Mensajes directos** y le escribe al agente. Las reglas
+   quedan propuestas hasta que las confirma.
+
 Pruebas
 =======
 
@@ -286,7 +341,11 @@ instrucciones, el secreto fuera del error, el preset de Gemini, el consumo
 desconocido, el reintento sin otra consulta, la tarjeta de precio histórica,
 el corte de mes en ``America/Argentina/Buenos_Aires``, el armado de la foto
 en el mensaje, el rechazo por tamaño o tipo, la derivación si la foto está
-apagada y el conteo aparte de consultas de imagen.
+apagada, el conteo de fotos, el número autorizado, el intento de hacerse
+pasar por dueño, la confirmación de una regla, el rechazo de un precio
+inventado, el tope de reglas en el pedido y que el entrenamiento suma como
+una consulta común. También el chat directo: entrenador, no entrenador y el
+agente que no se responde a sí mismo.
 
 ``kai_whatsapp_ai/tests/test_suggestion.py`` es un ``TransactionCase`` de
 Odoo 19. En el entorno que armó el módulo no había Odoo ni una base, así que

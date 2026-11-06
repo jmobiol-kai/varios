@@ -150,11 +150,15 @@ class KaiWhatsappAiSuggestion(models.Model):
             already_registered=already,
         ):
             return self.browse()
+        channel = self.env['discuss.channel'].browse(message.res_id).exists() if message.model == 'discuss.channel' else self.env['discuss.channel']
+        number = channel.om_whatsapp_number if channel else ''
+        if self.env['kai.whatsapp.ai.training']._route_whatsapp(account, number) == 'training':
+            return self.env['kai.whatsapp.ai.training']._register_whatsapp(
+                account, config, channel, message, body, whatsapp_id)
         inbound = engine.strip_markup(body or message.body)
         image_meta = self._image_meta(message)
         if not inbound and not image_meta:
             return self.browse()
-        channel = self.env['discuss.channel'].browse(message.res_id).exists() if message.model == 'discuss.channel' else self.env['discuss.channel']
         suggestion = self.create({
             'config_id': config.id,
             'account_id': account.id,
@@ -300,6 +304,7 @@ class KaiWhatsappAiSuggestion(models.Model):
                 'free_qty': free_qty,
                 'company_id': product.company_id.id or False,
                 'sale_ok': True,
+                'category_id': product.categ_id.id or False,
                 'tiers': tiers,
                 'pack_units': spec.pack_units if spec and spec.pack_units else None,
                 'spec': spec._public_dict() if spec else None,
@@ -414,7 +419,13 @@ class KaiWhatsappAiSuggestion(models.Model):
             catalog = engine.public_catalog(suggestion._catalog_rows(), suggestion.company_id.id)
             faqs = engine.public_faqs(suggestion._faq_rows(), suggestion.company_id.id)
             context = engine.trim_context(suggestion._channel_context())
-            messages = engine.build_messages(context, catalog, faqs, suggestion._advisory_rows(), images or None)
+            preferences = engine.select_preference_rules(
+                suggestion._preference_rows(),
+                customer_text="\n".join(item.get("body") or "" for item in context),
+                catalog=suggestion._catalog_rows(),
+            )
+            messages = engine.build_messages(
+                context, catalog, faqs, suggestion._advisory_rows(), images or None, preferences)
             timeout = min(max(int(config.api_timeout or 15), 1), 15)
             started = time.perf_counter()
             usage = engine.parse_usage('')
@@ -497,6 +508,7 @@ class KaiWhatsappAiSuggestion(models.Model):
             'image_count': int(image_count or 0),
             'image_tokens_known': bool(usage.get('image_known')),
             'image_tokens': usage.get('image_tokens') or 0,
+            'is_training': False,
         })
 
     def action_generate(self):
@@ -526,6 +538,15 @@ class KaiWhatsappAiSuggestion(models.Model):
                     suggestion._generate_bounded(from_queue=True)
             except Exception:
                 _logger.exception("WhatsApp AI: suggestion %s stayed queued", suggestion.id)
+        self.env['kai.whatsapp.ai.training']._cron_generate_training(limit=limit)
+
+    def _preference_rows(self):
+        self.ensure_one()
+        rules = self.env['kai.whatsapp.ai.rule'].sudo().search([
+            ('company_id', '=', self.company_id.id),
+            ('state', '=', 'activa'),
+        ])
+        return [rule._as_engine_row() for rule in rules]
 
     def _apply_decision(self, decision):
         self.ensure_one()

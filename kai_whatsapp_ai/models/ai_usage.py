@@ -16,6 +16,7 @@ class KaiWhatsappAiProviderRate(models.Model):
     provider_preset = fields.Selection([
         ('manual', 'Manual'),
         ('gemini_flash_lite', 'Gemini 2.5 Flash-Lite'),
+        ('grok', 'Grok'),
     ], required=True, default='manual')
     model_name = fields.Char(string='Model', required=True)
     date_start = fields.Datetime(required=True)
@@ -85,7 +86,7 @@ class KaiWhatsappAiConsultation(models.Model):
 
     suggestion_id = fields.Many2one('kai.whatsapp.ai.suggestion', ondelete='set null', index=True)
     company_id = fields.Many2one('res.company', required=True, index=True)
-    account_id = fields.Many2one('om.whatsapp.account', required=True, ondelete='cascade', index=True)
+    account_id = fields.Many2one('om.whatsapp.account', ondelete='cascade', index=True)
     channel_id = fields.Many2one('discuss.channel', ondelete='set null')
     message_id = fields.Many2one('mail.message', ondelete='set null')
     whatsapp_message_id = fields.Char(index=True)
@@ -127,7 +128,7 @@ class KaiWhatsappAiCall(models.Model):
     consultation_id = fields.Many2one('kai.whatsapp.ai.consultation', required=True, ondelete='restrict', index=True)
     suggestion_id = fields.Many2one('kai.whatsapp.ai.suggestion', ondelete='set null', index=True)
     company_id = fields.Many2one('res.company', required=True, index=True)
-    account_id = fields.Many2one('om.whatsapp.account', required=True, ondelete='restrict', index=True)
+    account_id = fields.Many2one('om.whatsapp.account', ondelete='restrict', index=True)
     occurred_at = fields.Datetime(required=True, index=True)
     attempt = fields.Integer(required=True)
     outcome = fields.Selection([('success', 'Succeeded'), ('failed', 'Failed')], required=True)
@@ -135,6 +136,7 @@ class KaiWhatsappAiCall(models.Model):
     provider_preset = fields.Selection([
         ('manual', 'Manual'),
         ('gemini_flash_lite', 'Gemini 2.5 Flash-Lite'),
+        ('grok', 'Grok'),
     ], required=True)
     provider_label = fields.Char(required=True)
     model_name = fields.Char(string='Model', required=True)
@@ -178,6 +180,7 @@ class KaiWhatsappAiCall(models.Model):
     image_count = fields.Integer(readonly=True)
     image_tokens_known = fields.Boolean(readonly=True)
     image_tokens = fields.Integer(readonly=True)
+    is_training = fields.Boolean(readonly=True)
 
     @api.model_create_multi
     def create(self, vals_list):

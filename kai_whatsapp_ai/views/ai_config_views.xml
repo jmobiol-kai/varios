@@ -44,6 +44,13 @@
                         Enabling photo interpretation sends the customer's WhatsApp photo to the external AI provider.
                         Use a paid plan that does not train on customer data. This screen is not the notice the customer should receive.
                     </div>
+                    <div class="alert alert-warning" role="alert" groups="kai_whatsapp_ai.group_manager">
+                        Responder automáticamente al entrenador manda la respuesta por WhatsApp solo a un número de Entrenadores.
+                        Los clientes no se envían solos. El chat interno con Agente IA responde solo cuando el proveedor está encendido.
+                    </div>
+                    <group groups="kai_whatsapp_ai.group_manager">
+                        <field name="auto_reply_trainer"/>
+                    </group>
                     <group groups="kai_whatsapp_ai.group_manager">
                         <group>
                             <field name="vision_supported"/>
