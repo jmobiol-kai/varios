@@ -91,10 +91,10 @@ Los archivos de descripción (`static/description`) son imágenes y HTML del aut
 
 ## kai_whatsapp_ai
 
-Addon aparte, licencia LGPL-3, versión `19.0.1.0.0`. No modifica `om_whatsapp_base` ni `om_whatsapp_device`.
+Addon aparte, licencia LGPL-3, versión `19.0.1.3.0`. No modifica `om_whatsapp_base` ni `om_whatsapp_device`.
 
 Al recibir un mensaje de un cliente, si hay un proveedor de IA habilitado, el webhook solo encola una sugerencia. El texto lo pide después un cron o el botón **Generate suggestion**. No envía WhatsApp solo. El envío es el botón **Send reply**. El presupuesto es el botón **Create draft quotation** y queda en borrador: no confirma, no factura y no reserva stock. Cada mensaje entrante cuenta una consulta; cada intento del modelo queda en un registro que no se edita. El reporte mensual está en **WhatsApp → Usage summary** y, para el administrador, en **Configuration → Monthly usage**. No hay tarifa cargada ni factura automática.
 
-Depende de `om_whatsapp_base` y `sale`. El puente QR entra por `_om_whatsapp_receive`, que es el método que ya llama el webhook del dispositivo. Inventario es opcional: si `stock` no está instalado, la sugerencia dice que no hay dato de stock.
+Depende de `om_whatsapp_base` y `sale`. El puente QR entra por `_om_whatsapp_receive`, que es el método que ya llama el webhook del dispositivo. Inventario es opcional: si `stock` no está instalado, la sugerencia dice que no hay dato de stock. La lectura de fotos está apagada: si se enciende, la imagen sale del adjunto del mensaje y se manda al proveedor. El reporte mensual separa las consultas que trajeron foto. La planilla vacía para fichas técnicas está en `kai_whatsapp_ai/data/templates/`.
 
 La configuración, las etiquetas y lo que todavía no hace está en `kai_whatsapp_ai/README.rst`. La FAQ y las políticas de horario, pago y envío quedan vacías hasta que alguien las escriba. No hay una clave de API en el repositorio. Esta copia no instaló el módulo ni llamó a ningún proveedor.

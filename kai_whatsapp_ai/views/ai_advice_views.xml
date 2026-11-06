@@ -10,7 +10,8 @@
                 <field name="capacity"/>
                 <field name="capacity_uom"/>
                 <field name="material"/>
-                <field name="finish"/>
+                <field name="mouth_mm"/>
+                <field name="thread_type"/>
                 <field name="company_id" groups="base.group_multi_company"/>
             </list>
         </field>
@@ -28,12 +29,18 @@
                         <field name="capacity"/>
                         <field name="capacity_uom"/>
                         <field name="material"/>
+                        <field name="mouth_mm"/>
+                        <field name="thread_type"/>
+                        <field name="height_mm"/>
+                        <field name="diameter_mm"/>
+                        <field name="colour"/>
                         <field name="finish"/>
                         <field name="food_grade"/>
                         <field name="hot_fill"/>
                         <field name="pasteurization"/>
                         <field name="pack_name"/>
                         <field name="pack_units"/>
+                        <field name="min_order_qty"/>
                     </group>
                     <field name="uses" placeholder="Only uses you want repeated, for example miel or cosmética."/>
                 </sheet>

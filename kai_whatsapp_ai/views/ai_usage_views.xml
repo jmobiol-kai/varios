@@ -238,6 +238,7 @@
                 <field name="account_id"/>
                 <field name="client_label"/>
                 <field name="consultations"/>
+                <field name="image_consultations"/>
                 <field name="sends"/>
                 <field name="quotations"/>
                 <field name="billable_amount"/>
@@ -256,6 +257,7 @@
                 <field name="account_id"/>
                 <field name="client_label"/>
                 <field name="consultations"/>
+                <field name="image_consultations"/>
                 <field name="sends"/>
                 <field name="quotations"/>
                 <field name="billable_amount"/>
@@ -277,6 +279,9 @@
                 <field name="thinking_unknown" groups="kai_whatsapp_ai.group_manager"/>
                 <field name="estimated_cost_usd" groups="kai_whatsapp_ai.group_manager"/>
                 <field name="cost_unknown" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="image_count" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="image_tokens" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="image_unknown" groups="kai_whatsapp_ai.group_manager"/>
             </list>
         </field>
     </record>

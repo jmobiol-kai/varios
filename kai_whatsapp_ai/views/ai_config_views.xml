@@ -40,6 +40,20 @@
                             <field name="api_timeout" groups="kai_whatsapp_ai.group_manager"/>
                         </group>
                     </group>
+                    <div class="alert alert-warning" role="alert" groups="kai_whatsapp_ai.group_manager">
+                        Enabling photo interpretation sends the customer's WhatsApp photo to the external AI provider.
+                        Use a paid plan that does not train on customer data. This screen is not the notice the customer should receive.
+                    </div>
+                    <group groups="kai_whatsapp_ai.group_manager">
+                        <group>
+                            <field name="vision_supported"/>
+                            <field name="allow_images"/>
+                        </group>
+                        <group>
+                            <field name="max_image_bytes"/>
+                            <field name="allowed_image_mimes"/>
+                        </group>
+                    </group>
                     <notebook>
                         <page string="FAQ" name="faq">
                             <field name="faq_ids">

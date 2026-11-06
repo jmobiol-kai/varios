@@ -378,6 +378,74 @@ class EngineTests(unittest.TestCase):
         self.assertIn("unidades trae el bulto", no_pack["reply"])
         self.assertNotIn("20", no_pack["reply"])
 
+    def test_image_payload_rejection_and_meter(self):
+        jpeg = {"mimetype": "image/jpeg", "size": 10, "data_b64": "aG9sYQ=="}
+        disabled = engine.classify_images(
+            [jpeg], allow_images=False, vision_supported=True, max_bytes=100,
+            allowed_mimes=engine.ALLOWED_IMAGE_MIMES)
+        self.assertTrue(disabled["has_image"])
+        self.assertFalse(disabled["send"])
+        self.assertEqual(disabled["reason"], "disabled")
+        self.assertIn("persona", engine.HANDOFF_PHOTO)
+        oversized = engine.classify_images(
+            [{"mimetype": "image/png", "size": 50}], allow_images=True, vision_supported=True,
+            max_bytes=10, allowed_mimes=engine.ALLOWED_IMAGE_MIMES)
+        self.assertEqual(oversized["reason"], "rejected")
+        gif = engine.classify_images(
+            [{"mimetype": "image/gif", "size": 5}], allow_images=True, vision_supported=True,
+            max_bytes=100, allowed_mimes=engine.ALLOWED_IMAGE_MIMES)
+        self.assertEqual(gif["reason"], "rejected")
+        no_vision = engine.classify_images(
+            [jpeg], allow_images=True, vision_supported=False, max_bytes=100,
+            allowed_mimes=engine.ALLOWED_IMAGE_MIMES)
+        self.assertEqual(no_vision["reason"], "disabled")
+        accepted = engine.classify_images(
+            [jpeg, {"mimetype": "application/pdf", "size": 4}],
+            allow_images=True, vision_supported=True, max_bytes=100,
+            allowed_mimes=engine.ALLOWED_IMAGE_MIMES)
+        self.assertEqual(accepted["accepted"], [0])
+        messages = engine.build_messages(
+            [{"direction": "customer", "body": "qué tapa es"}], [], [], images=[{
+                "mimetype": "image/jpeg", "data_b64": "aG9sYQ==",
+            }])
+        parts = messages[1]["content"]
+        self.assertEqual(parts[0]["type"], "text")
+        self.assertIn("qué tapa es", parts[0]["text"])
+        self.assertEqual(parts[1]["image_url"]["url"], "data:image/jpeg;base64,aG9sYQ==")
+        dumped = json.dumps(messages)
+        self.assertNotIn("api_key", dumped)
+        self.assertNotIn("Authorization", dumped)
+        grok = engine.provider_preset(engine.GROK_PRESET)
+        self.assertEqual(grok["api_base_url"], "")
+        self.assertFalse(grok["vision_supported"])
+        self.assertTrue(engine.provider_preset(engine.GEMINI_FLASH_LITE_PRESET)["vision_supported"])
+        known = engine.parse_usage(json.dumps({"usage": {
+            "prompt_tokens": 20, "completion_tokens": 4,
+            "prompt_tokens_details": {"image_tokens": 12},
+        }}))
+        self.assertTrue(known["image_known"])
+        self.assertEqual(known["image_tokens"], 12)
+        self.assertEqual(known["input_tokens"], 20)
+        unknown = engine.parse_usage(json.dumps({"usage": {"prompt_tokens": 20, "completion_tokens": 4}}))
+        self.assertFalse(unknown["image_known"])
+        self.assertIsNone(unknown["image_tokens"])
+        customer = engine.aggregate_customer([
+            {"company_id": 1, "account_id": 1, "client_label": "Date", "has_image": True, "billable_known": False},
+            {"company_id": 1, "account_id": 1, "client_label": "Date", "has_image": False, "billable_known": False},
+        ], [], [])
+        self.assertEqual(customer[0]["consultations"], 2)
+        self.assertEqual(customer[0]["image_consultations"], 1)
+        provider = engine.aggregate_provider([{
+            "company_id": 1, "account_id": 1, "client_label": "Date", "provider_label": "Google Gemini",
+            "model": "gemini-2.5-flash-lite", "attempt": 1, "outcome": "success", "image_count": 1,
+            "image_known": False, "input_known": True, "input_tokens": 20,
+            "output_known": True, "output_tokens": 4, "cached_known": False, "thinking_known": False,
+            "cost_known": False, "cost_usd": None,
+        }])
+        self.assertEqual(provider[0]["image_count"], 1)
+        self.assertEqual(provider[0]["image_unknown"], 1)
+        self.assertEqual(provider[0]["image_tokens"], 0)
+
     def test_module_source_does_not_send_or_confirm_by_itself(self):
         hook = (ROOT / "models" / "om_whatsapp_account.py").read_text(encoding="utf-8")
         suggestion = (ROOT / "models" / "ai_suggestion.py").read_text(encoding="utf-8")
@@ -389,6 +457,12 @@ class EngineTests(unittest.TestCase):
         self.assertNotIn("stock.quant", suggestion)
         self.assertEqual(suggestion.count("message_post"), 1)
         self.assertEqual(suggestion.count("post_chat"), 1)
+        self.assertIn("attachment_ids", suggestion)
+        self.assertIn("HANDOFF_PHOTO", suggestion)
+        self.assertNotIn("image_128", suggestion)
+        config = (ROOT / "models" / "ai_config.py").read_text(encoding="utf-8")
+        self.assertIn("allow_images = fields.Boolean", config)
+        self.assertIn("default=False", config.split("allow_images", 1)[1][:240])
         self.assertIn("def action_send", suggestion)
         self.assertIn("def _cron_generate_suggestions", suggestion)
         register = suggestion.split("def _register_inbound", 1)[1].split("def _channel_context", 1)[0]

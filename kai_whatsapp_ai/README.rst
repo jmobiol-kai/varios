@@ -53,8 +53,10 @@ Qué no hace
   pide kilos y el producto está en unidades, hace falta una persona.
 * No adivina un producto parecido. Si el nombre matchea más de uno, o no está
   en el catálogo habilitado, no arma el presupuesto.
-* Un archivo sin texto no crea sugerencia. El mensaje sigue en
-  **WhatsApp → Messages**.
+* Una foto sin texto sí crea una sugerencia. Si la interpretación de fotos
+  está apagada, el tipo no es jpeg/png/webp o el archivo supera el máximo,
+  el texto dice que una persona tiene que mirar la foto. No se adivina el
+  producto. Un adjunto que no es imagen y no tiene texto no crea sugerencia.
 * No lee costos, notas internas ni conversaciones de otros números.
 * No incluye el conector Meta ni el de WhatsApp Web.
 * El solapamiento de palabras de la FAQ es débil. Igual nadie envía sin el
@@ -83,8 +85,10 @@ de WhatsApp AI (grupo **Administrator** del privilegio **WhatsApp AI**) abre
 
 Gemini 2.5 Flash-Lite, para la primera prueba, se elige en **Provider preset**.
 Eso completa la URL ``https://generativelanguage.googleapis.com/v1beta/openai`` y el
-modelo ``gemini-2.5-flash-lite``. No guarda una clave y deja **Enabled** apagado:
-hay que pegar el secreto de la cuenta de Google y volver a activar a mano.
+modelo ``gemini-2.5-flash-lite``. Ese preset marca que el modelo puede leer
+fotos, pero deja **Interpret customer photos** y **Enabled** apagados.
+El preset Grok no completa URL, modelo ni lectura de fotos: hay que cargarlos
+a mano si el endpoint que se use acepta imágenes. No guarda una clave.
 La llamada es ``POST {base}/chat/completions`` con ``response_format``
 ``json_object`` y el token en ``Authorization``. No se manda la clave en la URL.
 Si la respuesta trae ``usage.prompt_tokens``, ``completion_tokens``,
@@ -94,8 +98,15 @@ se guardan. Si un número no viene, queda desconocido: no se anota como cero.
 Medición y reporte mensual
 ==========================
 
-Una consulta facturable es un mensaje de texto entrante del cliente, una sola
-vez por id de WhatsApp. Un reintento del modelo no abre otra consulta.
+Una consulta facturable es un mensaje entrante del cliente, una sola vez por
+id de WhatsApp. Si ese mensaje trae una foto, la consulta queda marcada como
+consulta de imagen aunque la foto no se haya mandado al modelo. El reporte
+mensual muestra **Image consultations** aparte de **Consultations**. Un
+reintento del modelo no abre otra consulta. Cada llamada guarda cuántas
+fotos se mandaron de verdad (cero si se derivó la foto). Si el proveedor
+informa ``prompt_tokens_details.image_tokens``, se guardan; si no, el conteo
+de tokens de imagen queda desconocido. Los ``prompt_tokens`` se guardan
+enteros cuando vienen, y ahí ya incluyen lo que el proveedor contó por la foto.
 Cada intento del proveedor es una fila que no se edita: fecha UTC, resultado,
 latencia, error ya sin secreto, proveedor y modelo de ese momento, y la
 tarjeta de precio copiada en esa fila. Cambiar la tarjeta después no reescribe
@@ -109,8 +120,9 @@ consulta, también la carga el administrador: hoy no hay un importe. Si no hay
 tarifa vigente, el importe a facturar queda desconocido, no cero.
 
 **WhatsApp → Usage summary** lo ve un usuario de la cuenta: mes, compañía,
-cuenta, etiqueta de cliente, cantidad de consultas e importe a facturar si
-existe. No muestra proveedor, modelo, tokens ni costo interno.
+cuenta, etiqueta de cliente, cantidad de consultas, consultas de imagen e
+importe a facturar si existe. No muestra proveedor, modelo, tokens ni costo
+interno.
 **WhatsApp → Configuration → Monthly usage** arma el mes en la zona horaria
 del usuario de Odoo. **Provider calls**, **Provider rate cards** y **Client
 rates** son solo del administrador. La lista y la tabla dinámica se exportan
@@ -165,10 +177,89 @@ producto tiene **Units per pack**. Si el cliente pide cajas y ese dato está
 vacío, la sugerencia pregunta. No inventa cuántas unidades entran.
 
 **Product sheets**, **Activity guide** y **Jar and closure fit** los puede
-cargar un usuario de WhatsApp AI. Ahí va capacidad, material, boca (63 mm,
-82 mm TO), apto alimento, llenado en caliente, pasteurización, usos y qué
-tapa va con qué envase. Si el dato no está, la sugerencia pregunta o deriva
-a una persona. No completa la ficha por su cuenta.
+cargar un usuario de WhatsApp AI. La ficha tiene capacidad (ml o cc),
+material (vidrio, PET, PP), diámetro de boca en mm, tipo de rosca (TO /
+twist-off o rosca), alto y diámetro, color, apto alimento, llenado en
+caliente, pasteurización, usos, unidades por bulto y pedido mínimo. Qué
+tapa va con qué envase sigue en **Jar and closure fit**. Si el dato no está,
+la sugerencia pregunta o deriva a una persona. No completa la ficha por su
+cuenta.
+
+Fotos del cliente
+=================
+
+**Interpret customer photos** está apagado. Solo lo ve el administrador, por
+compañía o por cuenta, igual que el resto del proveedor. También se cargan
+el máximo en bytes (4 MB por defecto) y los tipos ``image/jpeg``,
+``image/png`` y ``image/webp``.
+
+La foto se lee del ``ir.attachment`` del ``mail.message`` de la conversación.
+Odoo Mates la guarda ahí cuando el puente QR manda ``media`` (nombre, tipo y
+base64): ``om_whatsapp_base`` la decodifica y la adjunta con ``message_post``.
+No se usa la foto de perfil del canal. Si hay epígrafe, se usan los dos.
+Si la foto se acepta, va en el mensaje del usuario como parte
+``image_url`` con un data URL base64, el formato de la API compatible con
+OpenAI. Gemini Flash-Lite acepta ese formato. La clave no viaja en la URL
+ni en el texto que se guarda si el proveedor falla.
+
+Encender esto manda la foto del cliente al proveedor externo. El formulario
+lo dice. Conviene un plan pago que no entrene con esos datos. Igual hay que
+avisarle al cliente por el canal que corresponda: ocultar el proveedor en
+Odoo no reemplaza ese aviso.
+
+La sugerencia sigue sin enviarse sola. **Send reply** lo aprieta una persona.
+
+Planilla para Date SRL
+======================
+
+``data/templates/date_srl_fichas_producto.xlsx`` y los CSV del mismo
+directorio. No traen productos: Date SRL completa una fila por producto que
+ya exista en Odoo, con su referencia interna.
+
+La hoja **Instrucciones** explica las columnas. La hoja **Fichas** y
+``date_srl_fichas_producto.csv`` tienen en la fila 1 los nombres que Odoo
+importa y en la fila 2 la explicación y los valores permitidos. Hay que
+borrar la fila 2 antes de importar. La columna ``product_name`` y
+``compatible_closure_refs`` no se mapean: la primera es para quien llena la
+planilla y la segunda es un recordatorio. La compatibilidad se importa
+aparte, desde la hoja **Compatibilidad** o
+``date_srl_compatibilidad.csv``, también borrando la fila 2.
+
+Importar fichas:
+
+1. Crear los productos en Odoo con **Internal Reference** igual a
+   ``product_id/default_code``. Marcar **Can be Sold**.
+2. Borrar la fila 2 del CSV (o de la hoja, si se exporta solo esa hoja).
+3. **WhatsApp → Product sheets** (modelo ``kai.whatsapp.ai.spec``), menú de
+   la lista (engranaje) → **Import records**.
+4. Subir el archivo. La primera fila debe quedar como nombres de campo.
+5. Mapear ``product_id/default_code`` al producto. Dejar sin mapear
+   ``product_name`` y ``compatible_closure_refs``.
+6. Valores: ``role`` es ``jar``, ``closure`` u ``other``. ``material`` es
+   ``glass`` (vidrio), ``pet``, ``pp``, ``other`` o ``unknown``.
+   ``thread_type`` es ``to`` (TO / twist-off), ``rosca``, ``other`` o
+   ``unknown``. ``food_grade``, ``hot_fill`` y ``pasteurization`` son
+   ``yes``, ``no`` o ``unknown``. ``capacity_uom`` es texto, por ejemplo
+   ``ml`` o ``cc``. Lo que no esté medido se deja vacío o ``unknown``: no
+   se completa con un valor supuesto.
+7. Probar la importación. Si la referencia no existe, no se crea el producto.
+
+Importar compatibilidad en **Jar and closure fit**
+(``kai.whatsapp.ai.fit``): ``jar_product_id/default_code`` y
+``closure_product_id/default_code`` tienen que ser referencias ya cargadas.
+``note`` es el único texto que la sugerencia puede repetir sobre ese par.
+
+Actualizar una base que ya tiene ``19.0.1.2.0``
+================================================
+
+1. Dejar **Enabled** y **Interpret customer photos** apagados.
+2. Actualizar el código de la rama y, en Odoo, actualizar el módulo
+   ``kai_whatsapp_ai``. No hace falta desinstalar. Las fichas anteriores
+   quedan; los campos nuevos nacen vacíos o en **Not loaded**.
+3. Completar boca, rosca, medidas, color y pedido mínimo, o importar la
+   planilla.
+4. Recién después, si corresponde, marcar **Provider can read photos** y
+   **Interpret customer photos**, y volver a activar el proveedor a mano.
 
 Actualizar una base que ya tiene ``19.0.1.1.0``
 ================================================
@@ -192,8 +283,10 @@ Sin Odoo, desde la raíz del repositorio::
 Cubren proveedor apagado, mensajes propios, duplicados, otra compañía,
 precio del modelo ignorado, FAQ textual, unidad incorrecta, inyección de
 instrucciones, el secreto fuera del error, el preset de Gemini, el consumo
-desconocido, el reintento sin otra consulta, la tarjeta de precio histórica
-y el corte de mes en ``America/Argentina/Buenos_Aires``.
+desconocido, el reintento sin otra consulta, la tarjeta de precio histórica,
+el corte de mes en ``America/Argentina/Buenos_Aires``, el armado de la foto
+en el mensaje, el rechazo por tamaño o tipo, la derivación si la foto está
+apagada y el conteo aparte de consultas de imagen.
 
 ``kai_whatsapp_ai/tests/test_suggestion.py`` es un ``TransactionCase`` de
 Odoo 19. En el entorno que armó el módulo no había Odoo ni una base, así que

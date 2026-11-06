@@ -31,6 +31,7 @@ class KaiWhatsappAiConfig(models.Model):
     provider_preset = fields.Selection([
         ('manual', 'Manual'),
         ('gemini_flash_lite', 'Gemini 2.5 Flash-Lite'),
+        ('grok', 'Grok'),
     ], string='Provider preset', default='manual', groups='kai_whatsapp_ai.group_manager',
         help="Choosing a preset fills the URL and the model. It does not enable the provider and it does not store a key.")
     api_base_url = fields.Char(
@@ -43,14 +44,28 @@ class KaiWhatsappAiConfig(models.Model):
         help="Sent only as a bearer token. It is not copied onto suggestions and it is stripped from errors.")
     api_timeout = fields.Integer(
         string='Timeout (seconds)', default=15, groups='kai_whatsapp_ai.group_manager')
+    vision_supported = fields.Boolean(
+        string='Provider can read photos', default=False, groups='kai_whatsapp_ai.group_manager',
+        help="Gemini Flash-Lite can. Grok is left off until you know the endpoint accepts images. "
+             "This does not send photos by itself.")
+    allow_images = fields.Boolean(
+        string='Interpret customer photos', default=False, groups='kai_whatsapp_ai.group_manager',
+        help="Off by default. When on, accepted photos are sent to the external provider.")
+    max_image_bytes = fields.Integer(
+        string='Max photo size (bytes)', default=4 * 1024 * 1024, groups='kai_whatsapp_ai.group_manager')
+    allowed_image_mimes = fields.Char(
+        string='Allowed photo types', default='image/jpeg,image/png,image/webp',
+        groups='kai_whatsapp_ai.group_manager')
 
     @api.onchange('provider_preset')
     def _onchange_provider_preset(self):
         preset = engine.provider_preset(self.provider_preset)
         if not preset:
             return
-        self.api_base_url = preset['api_base_url']
-        self.api_model = preset['api_model']
+        self.api_base_url = preset.get('api_base_url') or False
+        self.api_model = preset.get('api_model') or False
+        self.vision_supported = bool(preset.get('vision_supported'))
+        self.allow_images = False
         self.enabled = False
     faq_ids = fields.One2many('kai.whatsapp.ai.faq', 'config_id', string='FAQ')
     catalog_ids = fields.One2many('kai.whatsapp.ai.catalog', 'config_id', string='Catalog')

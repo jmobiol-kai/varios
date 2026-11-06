@@ -1,4 +1,6 @@
+import base64
 import logging
+import os
 import time
 from urllib.parse import urlparse
 
@@ -9,6 +11,13 @@ from odoo.tools import plaintext2html
 from odoo.addons.kai_whatsapp_ai.services import engine
 
 _logger = logging.getLogger(__name__)
+
+_IMAGE_EXT = {
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.webp': 'image/webp',
+}
 
 
 class KaiWhatsappAiSuggestion(models.Model):
@@ -142,7 +151,8 @@ class KaiWhatsappAiSuggestion(models.Model):
         ):
             return self.browse()
         inbound = engine.strip_markup(body or message.body)
-        if not inbound:
+        image_meta = self._image_meta(message)
+        if not inbound and not image_meta:
             return self.browse()
         channel = self.env['discuss.channel'].browse(message.res_id).exists() if message.model == 'discuss.channel' else self.env['discuss.channel']
         suggestion = self.create({
@@ -157,10 +167,56 @@ class KaiWhatsappAiSuggestion(models.Model):
             'generation_state': 'pending',
             'needs_human': True,
         })
-        suggestion._create_consultation(config, account, channel, message, whatsapp_id)
+        suggestion._create_consultation(config, account, channel, message, whatsapp_id, has_image=bool(image_meta))
         return suggestion
 
-    def _create_consultation(self, config, account, channel, message, whatsapp_id):
+    @api.model
+    def _image_meta(self, message):
+        """Metadata of image attachments on the Odoo Mates channel message.
+
+        Incoming media is posted by om_whatsapp_base as ir.attachment rows on
+        mail.message (name, mimetype, raw). This does not read profile photos.
+        """
+        if not message:
+            return []
+        metas = []
+        for attachment in message.attachment_ids:
+            name = attachment.name or ''
+            mime = (attachment.mimetype or '').split(';', 1)[0].strip().lower()
+            if not mime:
+                mime = _IMAGE_EXT.get(os.path.splitext(name)[1].lower(), '')
+            if not mime.startswith('image/'):
+                continue
+            raw = attachment.raw or b''
+            metas.append({
+                'id': attachment.id,
+                'name': name,
+                'mimetype': mime,
+                'size': len(raw),
+            })
+        return metas
+
+    def _accepted_images(self, accepted_ids):
+        """Base64 data URLs only for attachments this config already accepted."""
+        self.ensure_one()
+        if not self.message_id or not accepted_ids:
+            return []
+        by_id = {meta['id']: meta for meta in self._image_meta(self.message_id)}
+        images = []
+        for attachment in self.message_id.attachment_ids:
+            meta = by_id.get(attachment.id)
+            if not meta or attachment.id not in accepted_ids:
+                continue
+            raw = attachment.raw or b''
+            if not raw:
+                continue
+            images.append({
+                'mimetype': meta['mimetype'],
+                'data_b64': base64.b64encode(raw).decode('ascii'),
+            })
+        return images
+
+    def _create_consultation(self, config, account, channel, message, whatsapp_id, has_image=False):
         self.ensure_one()
         moment = fields.Datetime.now()
         rates = self.env['kai.whatsapp.ai.billable.rate'].sudo().search([
@@ -182,6 +238,7 @@ class KaiWhatsappAiSuggestion(models.Model):
             'billable_amount': chosen['amount'] if chosen else 0.0,
             'billable_currency_id': chosen['currency_id'] if chosen else False,
             'billable_rate_id': chosen['id'] if chosen else False,
+            'has_image': bool(has_image),
         }
         consultation = self.env['kai.whatsapp.ai.consultation'].create(vals)
         self.sudo().write({'consultation_id': consultation.id})
@@ -332,10 +389,32 @@ class KaiWhatsappAiSuggestion(models.Model):
                     })
                 continue
             config = suggestion.config_id
+            metas = suggestion._image_meta(suggestion.message_id)
+            image_decision = engine.classify_images(
+                metas,
+                allow_images=bool(config.allow_images),
+                vision_supported=bool(config.vision_supported),
+                max_bytes=int(config.max_image_bytes or 0),
+                allowed_mimes=(config.allowed_image_mimes or '').split(','),
+            )
+            images = []
+            if image_decision['send']:
+                accepted_ids = {metas[index]['id'] for index in image_decision['accepted']}
+                images = suggestion._accepted_images(accepted_ids)
+            photo_handoff = image_decision['has_image'] and not images
+            if photo_handoff and not (suggestion.inbound_body or '').strip():
+                suggestion.sudo().write({
+                    'generation_state': 'done',
+                    'intent': 'unknown',
+                    'needs_human': True,
+                    'provider_error': False,
+                    'suggested_reply': engine.HANDOFF_PHOTO,
+                })
+                continue
             catalog = engine.public_catalog(suggestion._catalog_rows(), suggestion.company_id.id)
             faqs = engine.public_faqs(suggestion._faq_rows(), suggestion.company_id.id)
             context = engine.trim_context(suggestion._channel_context())
-            messages = engine.build_messages(context, catalog, faqs)
+            messages = engine.build_messages(context, catalog, faqs, suggestion._advisory_rows(), images or None)
             timeout = min(max(int(config.api_timeout or 15), 1), 15)
             started = time.perf_counter()
             usage = engine.parse_usage('')
@@ -358,11 +437,14 @@ class KaiWhatsappAiSuggestion(models.Model):
                 error_text = engine.PROVIDER_BAD
                 decision = engine._decision('unknown', [], None, engine.PROVIDER_BAD, needs_human=True, error=error_text)
             latency_ms = int((time.perf_counter() - started) * 1000)
-            suggestion._log_call(config, outcome, usage, latency_ms, error_text)
+            suggestion._log_call(config, outcome, usage, latency_ms, error_text, image_count=len(images))
+            if photo_handoff:
+                decision['needs_human'] = True
+                decision['reply'] = (engine.HANDOFF_PHOTO + '\n\n' + (decision.get('reply') or '')).strip()
             suggestion._apply_decision(decision)
             suggestion.sudo().write({'generation_state': 'done' if not decision.get('error') else 'error'})
 
-    def _log_call(self, config, outcome, usage, latency_ms, error_text):
+    def _log_call(self, config, outcome, usage, latency_ms, error_text, image_count=0):
         self.ensure_one()
         if not self.consultation_id:
             return
@@ -412,6 +494,9 @@ class KaiWhatsappAiSuggestion(models.Model):
             'thinking_per_million': chosen['thinking_per_million'] if chosen and chosen.get('thinking_per_million') is not None else 0.0,
             'cost_known': estimate['known'],
             'cost_usd': estimate['usd'] if estimate['known'] else 0.0,
+            'image_count': int(image_count or 0),
+            'image_tokens_known': bool(usage.get('image_known')),
+            'image_tokens': usage.get('image_tokens') or 0,
         })
 
     def action_generate(self):

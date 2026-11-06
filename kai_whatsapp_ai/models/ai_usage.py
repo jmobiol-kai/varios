@@ -96,6 +96,7 @@ class KaiWhatsappAiConsultation(models.Model):
     billable_amount = fields.Float(digits=(16, 6), readonly=True)
     billable_currency_id = fields.Many2one('res.currency', readonly=True)
     billable_rate_id = fields.Many2one('kai.whatsapp.ai.billable.rate', readonly=True)
+    has_image = fields.Boolean(string='Photo', readonly=True)
 
     _consultation_whatsapp_unique = models.UniqueIndex(
         "(account_id, whatsapp_message_id) WHERE whatsapp_message_id IS NOT NULL")
@@ -174,6 +175,9 @@ class KaiWhatsappAiCall(models.Model):
     thinking_per_million = fields.Float(digits=(16, 6), readonly=True)
     cost_known = fields.Boolean(readonly=True)
     cost_usd = fields.Float(string='Estimated USD', digits=(16, 6), readonly=True)
+    image_count = fields.Integer(readonly=True)
+    image_tokens_known = fields.Boolean(readonly=True)
+    image_tokens = fields.Integer(readonly=True)
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -292,6 +296,7 @@ class KaiWhatsappAiUsageWizard(models.TransientModel):
             'company_id': row.company_id.id,
             'account_id': row.account_id.id,
             'client_label': row.client_label or '',
+            'has_image': row.has_image,
             'billable_known': row.billable_known,
             'billable_amount': row.billable_amount if row.billable_known else None,
             'billable_currency': row.billable_currency_id.name or '',
@@ -316,6 +321,9 @@ class KaiWhatsappAiUsageWizard(models.TransientModel):
             'thinking_known': row.thinking_known, 'thinking_tokens': row.thinking_tokens,
             'cost_known': row.cost_known,
             'cost_usd': row.cost_usd if row.cost_known else None,
+            'image_count': row.image_count,
+            'image_known': row.image_tokens_known,
+            'image_tokens': row.image_tokens,
         }
 
     def _customer_vals(self, row):
@@ -325,6 +333,7 @@ class KaiWhatsappAiUsageWizard(models.TransientModel):
             'account_id': row['account_id'],
             'client_label': row['client_label'],
             'consultations': row['consultations'],
+            'image_consultations': row.get('image_consultations') or 0,
             'sends': row['sends'],
             'quotations': row['quotations'],
             'billable_amount': row['billable_amount'],
@@ -336,7 +345,8 @@ class KaiWhatsappAiUsageWizard(models.TransientModel):
     def _provider_vals(self, row):
         vals = self._customer_vals({
             'company_id': row['company_id'], 'account_id': row['account_id'],
-            'client_label': row['client_label'], 'consultations': 0, 'sends': 0, 'quotations': 0,
+            'client_label': row['client_label'],
+            'consultations': 0, 'image_consultations': 0, 'sends': 0, 'quotations': 0,
             'billable_amount': 0.0, 'billable_unknown': 0, 'billable_currency': '',
         })
         vals.update({
@@ -357,6 +367,9 @@ class KaiWhatsappAiUsageWizard(models.TransientModel):
             'thinking_unknown': row['thinking_unknown'],
             'estimated_cost_usd': row['estimated_cost_usd'],
             'cost_unknown': row['cost_unknown'],
+            'image_count': row.get('image_count') or 0,
+            'image_tokens': row.get('image_tokens') or 0,
+            'image_unknown': row.get('image_unknown') or 0,
         })
         return vals
 
@@ -370,6 +383,7 @@ class KaiWhatsappAiUsageTotal(models.TransientModel):
     account_id = fields.Many2one('om.whatsapp.account')
     client_label = fields.Char()
     consultations = fields.Integer()
+    image_consultations = fields.Integer()
     sends = fields.Integer()
     quotations = fields.Integer()
     billable_amount = fields.Float(digits=(16, 6))
@@ -391,3 +405,6 @@ class KaiWhatsappAiUsageTotal(models.TransientModel):
     thinking_unknown = fields.Integer(groups='kai_whatsapp_ai.group_manager')
     estimated_cost_usd = fields.Float(digits=(16, 6), groups='kai_whatsapp_ai.group_manager')
     cost_unknown = fields.Integer(groups='kai_whatsapp_ai.group_manager')
+    image_count = fields.Integer(groups='kai_whatsapp_ai.group_manager')
+    image_tokens = fields.Integer(groups='kai_whatsapp_ai.group_manager')
+    image_unknown = fields.Integer(groups='kai_whatsapp_ai.group_manager')

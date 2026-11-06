@@ -27,7 +27,18 @@ class KaiWhatsappAiSpec(models.Model):
         ('other', 'Other'),
         ('unknown', 'Not loaded'),
     ], default='unknown', required=True)
-    finish = fields.Char(string='Mouth / finish', help="For example 63 mm or 82 mm TO. Leave empty if it is not loaded.")
+    finish = fields.Char(string='Mouth / finish', help="Free text kept for older sheets. Prefer mouth diameter and thread type.")
+    mouth_mm = fields.Float(string='Mouth diameter (mm)')
+    thread_type = fields.Selection([
+        ('to', 'TO / twist-off'),
+        ('rosca', 'Screw / rosca'),
+        ('other', 'Other'),
+        ('unknown', 'Not loaded'),
+    ], default='unknown', required=True)
+    height_mm = fields.Float(string='Height (mm)')
+    diameter_mm = fields.Float(string='Body diameter (mm)')
+    colour = fields.Char(string='Colour')
+    min_order_qty = fields.Float(string='Minimum order', help="In the product sales unit. Empty means it is not loaded.")
     food_grade = fields.Selection([
         ('yes', 'Yes'),
         ('no', 'No'),
@@ -66,6 +77,12 @@ class KaiWhatsappAiSpec(models.Model):
             'capacity_uom': self.capacity_uom or '',
             'material': self.material,
             'finish': self.finish or '',
+            'mouth_mm': self.mouth_mm or None,
+            'thread_type': self.thread_type,
+            'height_mm': self.height_mm or None,
+            'diameter_mm': self.diameter_mm or None,
+            'colour': self.colour or '',
+            'min_order_qty': self.min_order_qty or None,
             'food_grade': self.food_grade,
             'hot_fill': self.hot_fill,
             'pasteurization': self.pasteurization,
