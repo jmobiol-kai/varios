@@ -1,6 +1,6 @@
 {
     'name': 'WhatsApp AI Suggestions',
-    'version': '19.0.1.4.0',
+    'version': '19.0.1.5.0',
     'category': 'Marketing',
     'summary': 'Supervised reply and draft-quotation suggestions for Odoo Mates WhatsApp',
     'description': """

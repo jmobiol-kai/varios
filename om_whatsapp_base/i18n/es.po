@@ -1,0 +1,188 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* om_whatsapp_base
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-06 00:00+0000\n"
+"PO-Revision-Date: 2026-11-06 00:00+0000\n"
+"Last-Translator: jmobiol-kai\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: om_whatsapp_base
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_composer__account_id
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_template__account_id
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.ir_actions_server_view_form_om_whatsapp
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_search
+msgid "Account"
+msgstr "Cuenta"
+
+#. module: om_whatsapp_base
+#: model:ir.ui.menu,name:om_whatsapp_base.om_whatsapp_menu_accounts
+msgid "Accounts"
+msgstr "Cuentas"
+
+#. module: om_whatsapp_base
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_template_view_form
+msgid "Add Action Menu"
+msgstr "Agregar al menú de acciones"
+
+#. module: om_whatsapp_base
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_account__user_ids
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_account_view_form
+msgid "Allowed Users"
+msgstr "Usuarios habilitados"
+
+#. module: om_whatsapp_base
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: om_whatsapp_base
+#: model:ir.model.fields.selection,name:om_whatsapp_base.selection__mail_message__om_whatsapp_status__cancel
+msgid "Cancelled"
+msgstr "Cancelado"
+
+#. module: om_whatsapp_base
+#: model:ir.ui.menu,name:om_whatsapp_base.om_whatsapp_menu_config
+msgid "Configuration"
+msgstr "Configuración"
+
+#. module: om_whatsapp_base
+#: model:ir.model,name:om_whatsapp_base.model_res_partner
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_form
+msgid "Contact"
+msgstr "Contacto"
+
+#. module: om_whatsapp_base
+#: model:ir.model.fields.selection,name:om_whatsapp_base.selection__mail_message__om_whatsapp_status__delivered
+msgid "Delivered"
+msgstr "Entregado"
+
+#. module: om_whatsapp_base
+#: code:addons/om_whatsapp_base/models/om_whatsapp_account.py:0
+#: code:addons/om_whatsapp_base/models/om_whatsapp_template.py:0
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_form
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_list
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_search
+msgid "Document"
+msgstr "Documento"
+
+#. module: om_whatsapp_base
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_search
+msgid "Document Type"
+msgstr "Tipo de documento"
+
+#. module: om_whatsapp_base
+#: model:ir.model.fields.selection,name:om_whatsapp_base.selection__mail_message__om_whatsapp_status__failed
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_search
+msgid "Failed"
+msgstr "Fallido"
+
+#. module: om_whatsapp_base
+#: model:ir.model,name:om_whatsapp_base.model_mail_message
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_composer__body
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_list
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_search
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_template_view_form
+msgid "Message"
+msgstr "Mensaje"
+
+#. module: om_whatsapp_base
+#: model:ir.ui.menu,name:om_whatsapp_base.om_whatsapp_menu_messages
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_account_view_form
+msgid "Messages"
+msgstr "Mensajes"
+
+#. module: om_whatsapp_base
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_composer__number
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_search
+msgid "Number"
+msgstr "Número"
+
+#. module: om_whatsapp_base
+#: model:ir.model.fields.selection,name:om_whatsapp_base.selection__mail_message__om_whatsapp_status__queued
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_search
+msgid "Queued"
+msgstr "En cola"
+
+#. module: om_whatsapp_base
+#: code:addons/om_whatsapp_base/static/src/core/notification_model_patch.js:0
+#: model:ir.model.fields.selection,name:om_whatsapp_base.selection__mail_message__om_whatsapp_receipt__read
+#: model:ir.model.fields.selection,name:om_whatsapp_base.selection__mail_message__om_whatsapp_status__read
+msgid "Read"
+msgstr "Leído"
+
+#. module: om_whatsapp_base
+#: model:ir.model.fields.selection,name:om_whatsapp_base.selection__mail_message__om_whatsapp_status__received
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_search
+msgid "Received"
+msgstr "Recibido"
+
+#. module: om_whatsapp_base
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_template_view_form
+msgid "Remove Action Menu"
+msgstr "Quitar del menú de acciones"
+
+#. module: om_whatsapp_base
+#: code:addons/om_whatsapp_base/static/src/core/message_patch.js:0
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_form
+msgid "Send Again"
+msgstr "Enviar de nuevo"
+
+#. module: om_whatsapp_base
+#: code:addons/om_whatsapp_base/models/res_partner.py:0
+#: code:addons/om_whatsapp_base/static/src/whatsapp_composer.js:0
+#: model:ir.actions.act_window,name:om_whatsapp_base.om_whatsapp_composer_action
+#: model:ir.actions.server,name:om_whatsapp_base.res_partner_action_om_whatsapp_send
+#: model:ir.model,name:om_whatsapp_base.model_om_whatsapp_composer
+#: model:ir.model.fields.selection,name:om_whatsapp_base.selection__ir_actions_server__state__om_whatsapp
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_composer_view_form
+msgid "Send WhatsApp"
+msgstr "Enviar WhatsApp"
+
+#. module: om_whatsapp_base
+#: model:ir.model.fields.selection,name:om_whatsapp_base.selection__mail_message__om_whatsapp_status__sent
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_search
+msgid "Sent"
+msgstr "Enviado"
+
+#. module: om_whatsapp_base
+#: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_form
+msgid "Status"
+msgstr "Estado"
+
+#. module: om_whatsapp_base
+#: model:ir.ui.menu,name:om_whatsapp_base.om_whatsapp_menu_templates
+msgid "Templates"
+msgstr "Plantillas"
+
+#. module: om_whatsapp_base
+#: model:ir.actions.act_window,name:om_whatsapp_base.om_whatsapp_account_action
+msgid "WhatsApp Accounts"
+msgstr "Cuentas de WhatsApp"
+
+#. module: om_whatsapp_base
+#: model:ir.actions.act_window,name:om_whatsapp_base.om_whatsapp_message_action
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__om_whatsapp_message_count
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_users__om_whatsapp_message_count
+msgid "WhatsApp Messages"
+msgstr "Mensajes de WhatsApp"
+
+#. module: om_whatsapp_base
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_mail_mail__om_whatsapp_status
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_mail_message__om_whatsapp_status
+msgid "WhatsApp Status"
+msgstr "Estado de WhatsApp"
+
+#. module: om_whatsapp_base
+#: model:ir.actions.act_window,name:om_whatsapp_base.om_whatsapp_template_action
+msgid "WhatsApp Templates"
+msgstr "Plantillas de WhatsApp"

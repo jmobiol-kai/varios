@@ -328,6 +328,31 @@ Actualizar una base que ya tiene ``19.0.1.3.0``
 4. El dueño abre **Mensajes directos** y le escribe al agente. Las reglas
    quedan propuestas hasta que las confirma.
 
+Traducción al español (19.0.1.5.0)
+==================================
+
+Los menús y las listas que se veían en inglés tienen traducción en
+``i18n/es.po``. Odoo la carga para ``es_AR`` y para ``es_ES``: es el archivo
+base del español. No hay un ``es_AR.po`` ni un ``es_ES.po`` aparte porque
+estas etiquetas son las mismas (Mensajes, Configuración, Sugerencias de IA).
+
+Los textos que ya estaban en español (Reglas del agente, Respuestas al
+entrenador, Entrenadores) no se tocan.
+
+En ``om_whatsapp_base`` el único agregado es ``i18n/es.po`` y la versión
+``1.1.0.1``, para que la actualización del módulo importe Mensajes, Plantillas,
+Configuración, Documento, Mensaje y Estado de WhatsApp. No cambia el conector.
+
+Actualizar una base que ya tiene ``19.0.1.4.0``
+================================================
+
+1. Dejar el proveedor apagado. No hace falta tocar crons: este cambio no
+   los reescribe.
+2. Copiar el código y, en Odoo, actualizar la lista de aplicaciones.
+3. Actualizar ``kai_whatsapp_ai`` y ``om_whatsapp_base``. No reinstalar.
+4. Recargar el navegador. El idioma del usuario tiene que ser español
+   (Argentina) o español (España).
+
 Pruebas
 =======
 
