@@ -8,14 +8,14 @@ La ficha de Odoo Apps pide iniciar sesión para descargar el ZIP. La copia de es
 
 ## om_whatsapp_base
 
-WhatsApp Connector Base, de Odoo Mates. El código sigue el manifiesto `1.1` de ese autor. Esta copia usa la versión `1.1.0.1` solo para poder actualizar el módulo e importar `i18n/es.po`. No hay otro cambio de lógica.
+WhatsApp Connector Base, de Odoo Mates. El código sigue el manifiesto `1.1` de ese autor, que Odoo 19 adapta a `19.0.1.1`. Esta copia usa `19.0.1.1.1` solo para poder actualizar el módulo e importar `i18n/es.po`. No hay otro cambio de lógica.
 
 - Nombre técnico: `om_whatsapp_base`
 - Licencia del manifiesto y de la ficha: LGPL-3 (`https://www.gnu.org/licenses/lgpl-3.0-standalone.html`)
 - Autor y mantenedor: Odoo Mates, `odoomates@gmail.com`
 - Fuente: `https://github.com/odoomates/odooapps/tree/19.0/om_whatsapp_base`
 - Último commit del módulo: `fba5f3cb8447a2e4d954c8e7d71dd8f07fa84793` (23 Oct 2026, mensaje `[IMP] om_whatsapp_base: link the three connectors`)
-- Árbol de código: `c8c647c0786d829214585a560058454b0c1ec796`. Encima de eso solo está `i18n/es.po` y la versión `1.1.0.1`.
+- Árbol de código: `c8c647c0786d829214585a560058454b0c1ec796`. Encima de eso solo está `i18n/es.po` y la versión `19.0.1.1.1`.
 - Ficha: `https://apps.odoo.com/apps/modules/19.0/om_whatsapp_base` (serie 19.0, Community y Enterprise, nombre técnico `om_whatsapp_base`, licencia LGPL-3)
 - Dependencias del manifiesto: `mail` y `phone_validation`. Las dos están en Odoo 19 Community (`https://github.com/odoo/odoo`, rama `19.0`, directorio `addons/`, licencia LGPL-3). `phone_validation` depende de `base` y `mail`.
 

@@ -340,7 +340,7 @@ Los textos que ya estaban en español (Reglas del agente, Respuestas al
 entrenador, Entrenadores) no se tocan.
 
 En ``om_whatsapp_base`` el único agregado es ``i18n/es.po`` y la versión
-``1.1.0.1``, para que la actualización del módulo importe Mensajes, Plantillas,
+``19.0.1.1.1``, para que la actualización del módulo importe Mensajes, Plantillas,
 Configuración, Documento, Mensaje y Estado de WhatsApp. No cambia el conector.
 
 Actualizar una base que ya tiene ``19.0.1.4.0``

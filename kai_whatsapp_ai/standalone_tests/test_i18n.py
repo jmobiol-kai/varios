@@ -67,7 +67,7 @@ class SpanishCatalogTests(unittest.TestCase):
         manifest = (ROOT / "kai_whatsapp_ai" / "__manifest__.py").read_text(encoding="utf-8")
         self.assertIn("'version': '19.0.1.5.0'", manifest)
         base_manifest = (ROOT / "om_whatsapp_base" / "__manifest__.py").read_text(encoding="utf-8")
-        self.assertIn("'version': '1.1.0.1'", base_manifest)
+        self.assertIn("'version': '19.0.1.1.1'", base_manifest)
 
 
 if __name__ == "__main__":
