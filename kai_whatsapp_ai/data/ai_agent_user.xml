@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="partner_ai_agent" model="res.partner">
+        <field name="name">Agente IA</field>
+        <field name="email">agente-ia@invalid.example</field>
+        <field name="active" eval="False"/>
+        <field name="partner_share" eval="False"/>
+        <field name="image_1920" type="base64" file="kai_whatsapp_ai/static/img/agente_ia.png"/>
+    </record>
+    <record id="user_ai_agent" model="res.users" context="{'no_reset_password': True}">
+        <field name="login">__kai_ai_agent__</field>
+        <field name="partner_id" ref="partner_ai_agent"/>
+        <field name="active" eval="False"/>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="company_ids" eval="[Command.link(ref('base.main_company'))]"/>
+        <field name="group_ids" eval="[Command.link(ref('base.group_user'))]"/>
+    </record>
+</odoo>

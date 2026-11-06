@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="kai_whatsapp_ai_trainer_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.trainer.list</field>
+        <field name="model">kai.whatsapp.ai.trainer</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="phone"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_trainer_view_form" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.trainer.form</field>
+        <field name="model">kai.whatsapp.ai.trainer</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="user_id"/>
+                        <field name="phone"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_trainer_action" model="ir.actions.act_window">
+        <field name="name">Entrenadores</field>
+        <field name="res_model">kai.whatsapp.ai.trainer</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="kai_whatsapp_ai_rule_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.rule.list</field>
+        <field name="model">kai.whatsapp.ai.rule</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="id"/>
+                <field name="title"/>
+                <field name="scope"/>
+                <field name="priority"/>
+                <field name="state"/>
+                <field name="flagged"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_rule_view_form" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.rule.form</field>
+        <field name="model">kai.whatsapp.ai.rule</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" type="object" string="Confirmar" invisible="state != 'propuesta' or flagged"/>
+                    <button name="action_deactivate" type="object" string="Desactivar" invisible="state == 'inactiva'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="propuesta,activa,inactiva"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="title"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="scope"/>
+                        <field name="category_id" invisible="scope != 'category'"/>
+                        <field name="product_id" invisible="scope != 'product'"/>
+                        <field name="activity" invisible="scope != 'activity'"/>
+                        <field name="priority"/>
+                        <field name="origin"/>
+                        <field name="trainer_id"/>
+                        <field name="author_user_id"/>
+                        <field name="approved_by_user_id"/>
+                        <field name="flagged"/>
+                        <field name="flag_reason" invisible="not flagged"/>
+                    </group>
+                    <field name="body"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_rule_action" model="ir.actions.act_window">
+        <field name="name">Reglas del agente</field>
+        <field name="res_model">kai.whatsapp.ai.rule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="kai_whatsapp_ai_training_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.training.list</field>
+        <field name="model">kai.whatsapp.ai.training</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0">
+                <field name="origin"/>
+                <field name="trainer_id"/>
+                <field name="inbound_body"/>
+                <field name="generation_state"/>
+                <field name="reply_sent"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_training_view_form" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.training.form</field>
+        <field name="model">kai.whatsapp.ai.training</field>
+        <field name="arch" type="xml">
+            <form create="0" delete="0">
+                <header>
+                    <button name="action_send" type="object" string="Send reply" invisible="origin != 'whatsapp' or reply_sent"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="origin"/>
+                        <field name="trainer_id"/>
+                        <field name="phone_e164"/>
+                        <field name="generation_state"/>
+                        <field name="reply_sent"/>
+                        <field name="provider_error"/>
+                    </group>
+                    <group>
+                        <field name="inbound_body"/>
+                        <field name="suggested_reply"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_training_action" model="ir.actions.act_window">
+        <field name="name">Respuestas al entrenador</field>
+        <field name="res_model">kai.whatsapp.ai.training</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('origin', '=', 'whatsapp')]</field>
+    </record>
+</odoo>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="kai_whatsapp_ai_suggestion_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.suggestion.list</field>
+        <field name="model">kai.whatsapp.ai.suggestion</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0">
+                <field name="create_date"/>
+                <field name="account_id"/>
+                <field name="partner_id"/>
+                <field name="intent"/>
+                <field name="needs_human"/>
+                <field name="state"/>
+                <field name="generation_state"/>
+                <field name="reply_sent"/>
+                <field name="sale_order_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="kai_whatsapp_ai_suggestion_view_form" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.suggestion.form</field>
+        <field name="model">kai.whatsapp.ai.suggestion</field>
+        <field name="arch" type="xml">
+            <form create="0" delete="0">
+                <header>
+                    <button name="action_generate" type="object" string="Generate suggestion"
+                            invisible="state == 'discarded' or generation_state == 'done'"/>
+                    <button name="action_send" type="object" string="Send reply" class="btn-primary"
+                            invisible="state == 'discarded' or reply_sent or not suggested_reply"/>
+                    <button name="action_refresh_prices" type="object" string="Refresh prices"
+                            invisible="state == 'discarded' or sale_order_id"/>
+                    <button name="action_create_draft_quotation" type="object" string="Create draft quotation"
+                            invisible="not quotation_ready"/>
+                    <button name="action_discard" type="object" string="Discard"
+                            invisible="state == 'discarded' or reply_sent or sale_order_id"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="account_id" readonly="1"/>
+                            <field name="partner_id" readonly="sale_order_id or state == 'discarded'"/>
+                            <field name="channel_id" readonly="1"/>
+                            <field name="intent" readonly="1"/>
+                            <field name="sale_order_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="needs_human" readonly="1"/>
+                            <field name="clarification" readonly="1"/>
+                            <field name="reply_sent" readonly="1"/>
+                            <field name="generation_state" readonly="1"/>
+                            <field name="provider_error" readonly="1" invisible="not provider_error"/>
+                            <field name="quotation_ready" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="inbound_body" readonly="1"/>
+                        <field name="suggested_reply" readonly="reply_sent or state == 'discarded'"/>
+                    </group>
+                    <field name="line_ids">
+                        <list create="0" delete="0" editable="bottom">
+                            <field name="raw_request" readonly="1"/>
+                            <field name="product_id" readonly="1"/>
+                            <field name="quantity" readonly="parent.sale_order_id or parent.state == 'discarded'"/>
+                            <field name="uom_id" readonly="1"/>
+                            <field name="price_unit" readonly="1"/>
+                            <field name="currency_id" readonly="1"/>
+                            <field name="free_qty" readonly="1"/>
+                            <field name="stock_checked" readonly="1"/>
+                            <field name="status" readonly="1"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="kai_whatsapp_ai_suggestion_view_search" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.suggestion.search</field>
+        <field name="model">kai.whatsapp.ai.suggestion</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="inbound_body"/>
+                <field name="partner_id"/>
+                <field name="account_id"/>
+                <filter name="review" string="To review" domain="[('state', '=', 'review'), ('reply_sent', '=', False)]"/>
+                <filter name="needs_human" string="Needs a person" domain="[('needs_human', '=', True)]"/>
+                <filter name="orders" string="Order requests" domain="[('intent', '=', 'order')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="kai_whatsapp_ai_suggestion_action" model="ir.actions.act_window">
+        <field name="name">AI Suggestions</field>
+        <field name="res_model">kai.whatsapp.ai.suggestion</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_review': 1}</field>
+    </record>
+</odoo>

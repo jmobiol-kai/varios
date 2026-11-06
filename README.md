@@ -8,14 +8,14 @@ La ficha de Odoo Apps pide iniciar sesión para descargar el ZIP. La copia de es
 
 ## om_whatsapp_base
 
-WhatsApp Connector Base, versión de manifiesto `1.1`, de Odoo Mates.
+WhatsApp Connector Base, de Odoo Mates. El código sigue el manifiesto `1.1` de ese autor, que Odoo 19 adapta a `19.0.1.1`. Esta copia usa `19.0.1.1.1` solo para poder actualizar el módulo e importar `i18n/es.po`. No hay otro cambio de lógica.
 
 - Nombre técnico: `om_whatsapp_base`
 - Licencia del manifiesto y de la ficha: LGPL-3 (`https://www.gnu.org/licenses/lgpl-3.0-standalone.html`)
 - Autor y mantenedor: Odoo Mates, `odoomates@gmail.com`
 - Fuente: `https://github.com/odoomates/odooapps/tree/19.0/om_whatsapp_base`
 - Último commit del módulo: `fba5f3cb8447a2e4d954c8e7d71dd8f07fa84793` (23 Oct 2026, mensaje `[IMP] om_whatsapp_base: link the three connectors`)
-- Árbol: `c8c647c0786d829214585a560058454b0c1ec796`
+- Árbol de código: `c8c647c0786d829214585a560058454b0c1ec796`. Encima de eso solo está `i18n/es.po` y la versión `19.0.1.1.1`.
 - Ficha: `https://apps.odoo.com/apps/modules/19.0/om_whatsapp_base` (serie 19.0, Community y Enterprise, nombre técnico `om_whatsapp_base`, licencia LGPL-3)
 - Dependencias del manifiesto: `mail` y `phone_validation`. Las dos están en Odoo 19 Community (`https://github.com/odoo/odoo`, rama `19.0`, directorio `addons/`, licencia LGPL-3). `phone_validation` depende de `base` y `mail`.
 
@@ -88,3 +88,13 @@ Esta incorporación no instaló el módulo, no reinició servicios, no actualiz�
 - Los tests de Python del autor (`tests/test_om_whatsapp.py`, `tests/test_om_whatsapp_device.py`) son casos de Odoo (`TransactionCase`, `HttpCase`). No se ejecutaron: no hay una base de Odoo en esta copia.
 
 Los archivos de descripción (`static/description`) son imágenes y HTML del autor. No hay ejecutables sueltos ni un secreto fijo en el código.
+
+## kai_whatsapp_ai
+
+Addon aparte, licencia LGPL-3, versión `19.0.1.5.0`. No cambia la lógica de `om_whatsapp_base` ni de `om_whatsapp_device`.
+
+Al recibir un mensaje de un cliente, si hay un proveedor de IA habilitado, el webhook solo encola una sugerencia. El texto lo pide después un cron o el botón **Generate suggestion**. No envía WhatsApp solo. El envío es el botón **Send reply**. El presupuesto es el botón **Create draft quotation** y queda en borrador: no confirma, no factura y no reserva stock. Cada mensaje entrante cuenta una consulta; cada intento del modelo queda en un registro que no se edita. El reporte mensual está en **WhatsApp → Usage summary** y, para el administrador, en **Configuration → Monthly usage**. No hay tarifa cargada ni factura automática.
+
+Depende de `om_whatsapp_base` y `sale`. El puente QR entra por `_om_whatsapp_receive`, que es el método que ya llama el webhook del dispositivo. Inventario es opcional: si `stock` no está instalado, la sugerencia dice que no hay dato de stock. La lectura de fotos está apagada: si se enciende, la imagen sale del adjunto del mensaje y se manda al proveedor. El reporte mensual separa las consultas que trajeron foto. La planilla vacía para fichas técnicas está en `kai_whatsapp_ai/data/templates/`. El dueño entrena al agente desde el contacto **Agente IA** en Mensajes directos, o desde un número cargado en Entrenadores. Esas consultas se cuentan igual que las de un cliente.
+
+La configuración, las etiquetas y lo que todavía no hace está en `kai_whatsapp_ai/README.rst`. La FAQ y las políticas de horario, pago y envío quedan vacías hasta que alguien las escriba. No hay una clave de API en el repositorio. Esta copia no instaló el módulo ni llamó a ningún proveedor.
