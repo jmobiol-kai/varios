@@ -57,6 +57,12 @@ class KaiWhatsappAiSpec(models.Model):
     uses = fields.Text(string='Loaded uses', help="Activities this product is loaded for. The assistant repeats this text and does not add others.")
     pack_name = fields.Char(string='Pack name', help="For example Caja. Leave empty if packs are not loaded.")
     pack_units = fields.Float(string='Units per pack', help="How many sales units are in one pack. Empty means the assistant must ask.")
+    verified = fields.Boolean(
+        string='Verified', default=False,
+        help="Off: this sheet is orientative. The assistant must not state it as a fact.")
+    verification_note = fields.Text(
+        string='Verification note',
+        help="Internal only. It is not sent to the customer or to the AI provider.")
 
     _spec_product_unique = models.UniqueIndex("(company_id, product_id)")
 
@@ -87,6 +93,7 @@ class KaiWhatsappAiSpec(models.Model):
             'hot_fill': self.hot_fill,
             'pasteurization': self.pasteurization,
             'uses': self.uses or '',
+            'verified': bool(self.verified),
         }
 
 
@@ -124,6 +131,12 @@ class KaiWhatsappAiFit(models.Model):
         'product.product', string='Closure', required=True, check_company=True, ondelete='restrict',
         domain="[('sale_ok', '=', True), '|', ('company_id', '=', False), ('company_id', '=', company_id)]")
     note = fields.Text()
+    verified = fields.Boolean(
+        string='Verified', default=False,
+        help="Off: this fit is orientative. The assistant must not state it as a fact.")
+    verification_note = fields.Text(
+        string='Verification note',
+        help="Internal only. It is not sent to the customer or to the AI provider.")
 
     _fit_unique = models.UniqueIndex("(company_id, jar_product_id, closure_product_id)")
 

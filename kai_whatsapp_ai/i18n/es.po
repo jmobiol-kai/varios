@@ -902,3 +902,45 @@ msgstr "Correcta"
 #: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_billable_rate__amount_per_consultation
 msgid "Amount Per Consultation"
 msgstr "Importe por consulta"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__verified
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__verified
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_spec_view_search
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_fit_view_search
+msgid "Verified"
+msgstr "Verificado"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__verification_note
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__verification_note
+msgid "Verification note"
+msgstr "Nota de verificación"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_spec_view_search
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_fit_view_search
+msgid "To confirm"
+msgstr "A confirmar"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_help:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__verified
+msgid "Off: this sheet is orientative. The assistant must not state it as a fact."
+msgstr "Apagado: la ficha es orientativa. El asistente no debe decirla como un hecho."
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_help:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__verified
+msgid "Off: this fit is orientative. The assistant must not state it as a fact."
+msgstr "Apagado: la compatibilidad es orientativa. El asistente no debe decirla como un hecho."
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_help:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__verification_note
+#: model:ir.model.fields,field_help:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__verification_note
+msgid "Internal only. It is not sent to the customer or to the AI provider."
+msgstr "Solo interno. No se envía al cliente ni al proveedor de IA."
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_spec_view_form
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_fit_view_form
+msgid "Internal note. It is not sent to the customer or to the AI."
+msgstr "Nota interna. No se envía al cliente ni a la IA."

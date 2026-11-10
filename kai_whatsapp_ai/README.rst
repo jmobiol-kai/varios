@@ -328,6 +328,16 @@ Actualizar una base que ya tiene ``19.0.1.3.0``
 4. El dueño abre **Mensajes directos** y le escribe al agente. Las reglas
    quedan propuestas hasta que las confirma.
 
+Fichas y compatibilidades por confirmar (19.0.1.6.0)
+======================================================
+
+En **Product sheets** y **Jar and closure fit**, **Verified** / **Verificado**
+nace apagado. Mientras esté apagado, la sugerencia dice que el dato es
+orientativo y que hay que confirmarlo con un asesor. **Verification note** /
+**Nota de verificación** queda en la ficha: no se manda al cliente ni entra
+en el contexto del modelo. Los filtros de la lista son **Verificado** y
+**A confirmar**.
+
 Traducción al español (19.0.1.5.0)
 ==================================
 

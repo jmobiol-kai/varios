@@ -320,8 +320,8 @@ class EngineTests(unittest.TestCase):
                 {"min_quantity": 1, "price": 100.0, "currency": "ARS"},
                 {"min_quantity": 500, "price": 80.0, "currency": "ARS"},
             ],
-            "spec": {"material": "unknown", "capacity": 500, "capacity_uom": "ml", "finish": "63 mm"},
-            "fits": [{"product_id": 8, "name": "Tapa TO 63 mm", "note": "solo para este frasco"}],
+            "spec": {"material": "unknown", "capacity": 500, "capacity_uom": "ml", "finish": "63 mm", "verified": True},
+            "fits": [{"product_id": 8, "name": "Tapa TO 63 mm", "note": "solo para este frasco", "verified": True}],
         }
         closure = {
             "id": 8, "name": "Tapa TO 63 mm", "code": "T63", "uom_id": 1, "uom_name": "Units",
@@ -377,6 +377,58 @@ class EngineTests(unittest.TestCase):
             catalog=catalog, faqs=[])
         self.assertIn("unidades trae el bulto", no_pack["reply"])
         self.assertNotIn("20", no_pack["reply"])
+
+    def test_unverified_sheet_is_orientative_and_note_stays_out(self):
+        secret = "NOTA-SECRETA-DE-VERIFICACION"
+        product = {
+            "id": 7, "name": "Frasco 500 ml", "code": "F500", "uom_id": 1, "uom_name": "Units",
+            "price": 100.0, "currency": "ARS", "free_qty": None, "company_id": 1, "sale_ok": True,
+            "spec": {
+                "capacity": 500, "capacity_uom": "ml", "finish": "63 mm",
+                "verified": False, "verification_note": secret,
+            },
+            "fits": [{
+                "product_id": 8, "name": "Tapa TO 63 mm", "note": "para este frasco",
+                "verified": False, "verification_note": secret,
+            }],
+        }
+        closure = {
+            "id": 8, "name": "Tapa TO 63 mm", "code": "T63", "uom_id": 1, "uom_name": "Units",
+            "price": 20.0, "currency": "ARS", "free_qty": None, "company_id": 1, "sale_ok": True,
+        }
+        catalog = engine.public_catalog([product, closure], 1)
+        messages = engine.build_messages(
+            [{"direction": "customer", "body": "qué tapa va"}], catalog, [])
+        payload = messages[1]["content"]
+        self.assertNotIn(secret, payload)
+        self.assertNotIn("verification_note", payload)
+        self.assertIn('"verified": false', payload)
+        self.assertIn("not confirmed", messages[0]["content"])
+        decision = engine.interpret(json.dumps({
+            "intent": "advice", "ask": "advice", "lines": [{"product_id": 7}],
+        }), context=[{"direction": "customer", "body": "qué tapa va"}],
+            catalog=catalog, faqs=[])
+        self.assertIn("no confirmado", decision["reply"])
+        self.assertIn("asesor", decision["reply"])
+        self.assertIn("no confirmada", decision["reply"])
+        self.assertNotIn("Tapa compatible cargada", decision["reply"])
+        self.assertNotIn(secret, decision["reply"])
+        self.assertTrue(decision["needs_human"])
+        verified = dict(product, spec=dict(product["spec"], verified=True), fits=[{
+            "product_id": 8, "name": "Tapa TO 63 mm", "note": "para este frasco", "verified": True,
+            "verification_note": secret,
+        }])
+        confirmed = engine.interpret(json.dumps({
+            "intent": "advice", "ask": "advice", "lines": [{"product_id": 7}],
+        }), context=[{"direction": "customer", "body": "qué tapa va"}],
+            catalog=engine.public_catalog([verified, closure], 1), faqs=[])
+        self.assertIn("Tapa compatible cargada", confirmed["reply"])
+        self.assertIn("63 mm", confirmed["reply"])
+        self.assertNotIn("no confirmado", confirmed["reply"])
+        self.assertNotIn(secret, confirmed["reply"])
+        self.assertNotIn(secret, json.dumps(engine.build_messages(
+            [{"direction": "customer", "body": "qué tapa va"}],
+            engine.public_catalog([verified, closure], 1), [])))
 
     def test_image_payload_rejection_and_meter(self):
         jpeg = {"mimetype": "image/jpeg", "size": 10, "data_b64": "aG9sYQ=="}

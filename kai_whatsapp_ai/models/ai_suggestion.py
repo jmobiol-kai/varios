@@ -312,6 +312,7 @@ class KaiWhatsappAiSuggestion(models.Model):
                     'product_id': fit.closure_product_id.id,
                     'name': fit.closure_product_id.display_name,
                     'note': fit.note or '',
+                    'verified': bool(fit.verified),
                 } for fit in fits],
             })
         return rows

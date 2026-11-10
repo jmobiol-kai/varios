@@ -39,6 +39,9 @@ class SpanishCatalogTests(unittest.TestCase):
                 "Jar and closure fit": "Compatibilidad de envases y tapas",
                 "AI Provider": "Proveedor de IA",
                 "Monthly usage": "Uso mensual",
+                "Verified": "Verificado",
+                "Verification note": "Nota de verificación",
+                "To confirm": "A confirmar",
             }),
             (base, {
                 "Messages": "Mensajes",
@@ -65,7 +68,7 @@ class SpanishCatalogTests(unittest.TestCase):
         self.assertIn('name="Reglas del agente"', menu)
         self.assertIn('name="Respuestas al entrenador"', menu)
         manifest = (ROOT / "kai_whatsapp_ai" / "__manifest__.py").read_text(encoding="utf-8")
-        self.assertIn("'version': '19.0.1.5.0'", manifest)
+        self.assertIn("'version': '19.0.1.6.0'", manifest)
         base_manifest = (ROOT / "om_whatsapp_base" / "__manifest__.py").read_text(encoding="utf-8")
         self.assertIn("'version': '19.0.1.1.1'", base_manifest)
 
