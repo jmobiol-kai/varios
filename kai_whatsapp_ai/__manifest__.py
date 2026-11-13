@@ -1,12 +1,13 @@
 {
     'name': 'WhatsApp AI Suggestions',
-    'version': '19.0.1.7.0',
+    'version': '19.0.1.8.0',
     'category': 'Marketing',
     'summary': 'Supervised reply and draft-quotation suggestions for Odoo Mates WhatsApp',
     'description': """
-Suggestions for inbound WhatsApp messages. A person reviews the text and,
-separately, confirms a draft quotation. The module does not send, confirm,
-invoice or reserve stock by itself.
+Suggestions for inbound WhatsApp messages. By default a person reviews the
+text and sends it. An automatic reply exists only for numbers on the customer
+allowlist, and only when that switch is on. The module does not confirm,
+invoice or reserve stock.
     """,
     'author': 'jmobiol-kai',
     'license': 'LGPL-3',

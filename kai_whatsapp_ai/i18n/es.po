@@ -848,8 +848,8 @@ msgstr "Manual"
 #: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_config__provider_preset__gemini_flash_lite
 #: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_provider_rate__provider_preset__gemini_flash_lite
 #: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_call__provider_preset__gemini_flash_lite
-msgid "Gemini 2.5 Flash-Lite"
-msgstr "Gemini 2.5 Flash-Lite"
+msgid "Gemini 3.5 Flash-Lite"
+msgstr "Gemini 3.5 Flash-Lite"
 
 #. module: kai_whatsapp_ai
 #: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_config__provider_preset__grok
@@ -909,6 +909,32 @@ msgstr "Importe por consulta"
 #: model:res.groups,name:kai_whatsapp_ai.group_trainer
 msgid "AI trainer"
 msgstr "Entrenador de IA"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__auto_reply_customers
+msgid "Auto-reply customers"
+msgstr "Responder automáticamente a clientes"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__restrict_to_allowlist
+msgid "Only allowlisted numbers reach the provider"
+msgstr "Solo los números de la lista llegan al proveedor"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__allow_ids
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_config_view_form
+msgid "Customer allowlist"
+msgstr "Lista de clientes"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_config_view_form
+msgid "Customer numbers"
+msgstr "Números de clientes"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__reply_sent_auto
+msgid "Sent automatically"
+msgstr "Enviado automáticamente"
 
 #. module: kai_whatsapp_ai
 #: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__verified

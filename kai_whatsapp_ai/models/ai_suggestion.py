@@ -59,6 +59,7 @@ class KaiWhatsappAiSuggestion(models.Model):
         ('error', 'Error'),
     ], default='pending', required=True, index=True, readonly=True)
     reply_sent = fields.Boolean(readonly=True, copy=False)
+    reply_sent_auto = fields.Boolean(string='Sent automatically', readonly=True, copy=False)
     sale_order_id = fields.Many2one('sale.order', string='Draft quotation', readonly=True, copy=False)
     line_ids = fields.One2many('kai.whatsapp.ai.suggestion.line', 'suggestion_id')
     quotation_ready = fields.Boolean(compute='_compute_quotation_ready')
@@ -155,6 +156,11 @@ class KaiWhatsappAiSuggestion(models.Model):
         if self.env['kai.whatsapp.ai.training']._route_whatsapp(account, number) == 'training':
             return self.env['kai.whatsapp.ai.training']._register_whatsapp(
                 account, config, channel, message, body, whatsapp_id)
+        setup = config.sudo()
+        if not engine.customer_reaches_provider(
+            number, setup.allow_ids.mapped('phone_e164'), setup.restrict_to_allowlist,
+        ):
+            return self.browse()
         inbound = engine.strip_markup(body or message.body)
         image_meta = self._image_meta(message)
         if not inbound and not image_meta:
@@ -382,7 +388,7 @@ class KaiWhatsappAiSuggestion(models.Model):
         )
 
     def _generate_bounded(self, from_queue=False):
-        """Call the provider with a short timeout. Never sends WhatsApp or creates a sale."""
+        """Call the provider with a short timeout. Auto-send only for an allowlisted customer."""
         for suggestion in self:
             if not suggestion._provider_may_run(from_queue):
                 if suggestion.generation_state == 'pending':
@@ -416,6 +422,7 @@ class KaiWhatsappAiSuggestion(models.Model):
                     'provider_error': False,
                     'suggested_reply': engine.HANDOFF_PHOTO,
                 })
+                suggestion._maybe_auto_reply()
                 continue
             catalog = engine.public_catalog(suggestion._catalog_rows(), suggestion.company_id.id)
             faqs = engine.public_faqs(suggestion._faq_rows(), suggestion.company_id.id)
@@ -455,6 +462,7 @@ class KaiWhatsappAiSuggestion(models.Model):
                 decision['reply'] = (engine.HANDOFF_PHOTO + '\n\n' + (decision.get('reply') or '')).strip()
             suggestion._apply_decision(decision)
             suggestion.sudo().write({'generation_state': 'done' if not decision.get('error') else 'error'})
+            suggestion._maybe_auto_reply()
 
     def _log_call(self, config, outcome, usage, latency_ms, error_text, image_count=0):
         self.ensure_one()
@@ -663,8 +671,41 @@ class KaiWhatsappAiSuggestion(models.Model):
         )
         self.invalidate_recordset()
 
+    def _deliver_reply(self, automatic=False):
+        """Post the reviewed text on the WhatsApp channel. The button and the allowlist share this."""
+        self.ensure_one()
+        if not self.channel_id:
+            raise UserError(_("This suggestion has no WhatsApp conversation to send from."))
+        text = (self.suggested_reply or '').strip()
+        if not text:
+            raise UserError(_("This reply cannot be sent."))
+        self.channel_id.message_post(body=plaintext2html(text), message_type='comment')
+        self.sudo().write({
+            'reply_sent': True,
+            'reply_sent_at': fields.Datetime.now(),
+            'reply_sent_auto': bool(automatic),
+        })
+
+    def _maybe_auto_reply(self):
+        """After a suggestion is ready, send it only when the allowlist and the switch say so."""
+        self.ensure_one()
+        if self.state == 'discarded' or self.reply_sent:
+            return
+        config = self.config_id.sudo()
+        number = self.channel_id.om_whatsapp_number if self.channel_id else ''
+        if not engine.should_auto_reply_customer(
+            auto_reply=config.auto_reply_customers,
+            number=number,
+            allowlist=config.allow_ids.mapped('phone_e164'),
+            generation_state=self.generation_state,
+            reply_text=self.suggested_reply,
+            already_sent=self.reply_sent,
+        ):
+            return
+        self._deliver_reply(automatic=True)
+
     def action_send(self):
-        """The only WhatsApp send in this module. A person presses the button."""
+        """A person presses the button. The allowlist auto-reply uses the same post."""
         self.ensure_one()
         self._lock()
         self._check_open()
@@ -675,10 +716,7 @@ class KaiWhatsappAiSuggestion(models.Model):
             allowed_user=self.env.user in self.account_id.user_ids,
         ):
             raise UserError(_("This reply cannot be sent."))
-        if not self.channel_id:
-            raise UserError(_("This suggestion has no WhatsApp conversation to send from."))
-        self.channel_id.message_post(body=plaintext2html(self.suggested_reply.strip()), message_type='comment')
-        self.sudo().write({'reply_sent': True, 'reply_sent_at': fields.Datetime.now()})
+        self._deliver_reply(automatic=False)
 
     def action_create_draft_quotation(self):
         """Create a draft sale order from reviewed lines. Never confirms it."""

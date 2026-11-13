@@ -15,7 +15,7 @@ class KaiWhatsappAiProviderRate(models.Model):
     account_id = fields.Many2one('om.whatsapp.account', check_company=True, ondelete='cascade')
     provider_preset = fields.Selection([
         ('manual', 'Manual'),
-        ('gemini_flash_lite', 'Gemini 2.5 Flash-Lite'),
+        ('gemini_flash_lite', 'Gemini 3.5 Flash-Lite'),
         ('grok', 'Grok'),
     ], required=True, default='manual')
     model_name = fields.Char(string='Model', required=True)
@@ -136,7 +136,7 @@ class KaiWhatsappAiCall(models.Model):
     latency_ms = fields.Integer()
     provider_preset = fields.Selection([
         ('manual', 'Manual'),
-        ('gemini_flash_lite', 'Gemini 2.5 Flash-Lite'),
+        ('gemini_flash_lite', 'Gemini 3.5 Flash-Lite'),
         ('grok', 'Grok'),
     ], required=True)
     provider_label = fields.Char(required=True, groups='kai_whatsapp_ai.group_manager')

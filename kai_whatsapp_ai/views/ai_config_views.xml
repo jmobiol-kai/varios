@@ -45,11 +45,14 @@
                         Use a paid plan that does not train on customer data. This screen is not the notice the customer should receive.
                     </div>
                     <div class="alert alert-warning" role="alert" groups="kai_whatsapp_ai.group_manager">
-                        Responder automáticamente al entrenador manda la respuesta por WhatsApp solo a un número de Entrenadores.
-                        Los clientes no se envían solos. El chat interno con Agente IA responde solo cuando el proveedor está encendido.
+                        Responder al entrenador manda la respuesta solo a un número de Entrenadores.
+                        Responder a clientes manda la sugerencia solo a los números de la lista, y solo si ese interruptor está encendido.
+                        El chat interno con Agente IA responde solo cuando el proveedor está encendido.
                     </div>
                     <group groups="kai_whatsapp_ai.group_manager">
                         <field name="auto_reply_trainer"/>
+                        <field name="auto_reply_customers"/>
+                        <field name="restrict_to_allowlist"/>
                     </group>
                     <group groups="kai_whatsapp_ai.group_manager">
                         <group>
@@ -62,6 +65,14 @@
                         </group>
                     </group>
                     <notebook>
+                        <page string="Customer numbers" name="allowlist" groups="kai_whatsapp_ai.group_manager">
+                            <field name="allow_ids" groups="kai_whatsapp_ai.group_manager">
+                                <list editable="bottom">
+                                    <field name="phone"/>
+                                    <field name="phone_e164"/>
+                                </list>
+                            </field>
+                        </page>
                         <page string="FAQ" name="faq">
                             <field name="faq_ids">
                                 <list editable="bottom">

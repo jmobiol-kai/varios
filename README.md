@@ -91,7 +91,7 @@ Los archivos de descripción (`static/description`) son imágenes y HTML del aut
 
 ## kai_whatsapp_ai
 
-Addon aparte, licencia LGPL-3, versión `19.0.1.7.0`. No cambia la lógica de `om_whatsapp_base` ni de `om_whatsapp_device`.
+Addon aparte, licencia LGPL-3, versión `19.0.1.8.0`. No cambia la lógica de `om_whatsapp_base` ni de `om_whatsapp_device`.
 
 Al recibir un mensaje de un cliente, si hay un proveedor de IA habilitado, el webhook solo encola una sugerencia. El texto lo pide después un cron o el botón **Generate suggestion**. No envía WhatsApp solo. El envío es el botón **Send reply**. El presupuesto es el botón **Create draft quotation** y queda en borrador: no confirma, no factura y no reserva stock. Cada mensaje entrante cuenta una consulta; cada intento del modelo queda en un registro que no se edita. El reporte mensual está en **WhatsApp → Usage summary** y, para el administrador, en **Configuration → Monthly usage**. No hay tarifa cargada ni factura automática.
 

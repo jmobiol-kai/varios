@@ -52,6 +52,13 @@
               parent="om_whatsapp_base.om_whatsapp_menu_config"
               action="kai_whatsapp_ai_billable_rate_action" sequence="24"
               groups="group_manager"/>
+    <record id="menu_kai_whatsapp_ai_usage" model="ir.ui.menu">
+        <field name="group_ids" eval="[Command.set([ref('group_manager')])]"/>
+    </record>
+    <record id="menu_kai_whatsapp_ai_usage_wizard" model="ir.ui.menu">
+        <field name="group_ids" eval="[Command.set([ref('group_manager')])]"/>
+    </record>
+
     <menuitem id="menu_kai_whatsapp_ai_faq" name="FAQ"
               parent="om_whatsapp_base.om_whatsapp_menu_root"
               action="kai_whatsapp_ai_faq_action" sequence="18"

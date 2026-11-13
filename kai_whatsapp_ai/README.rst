@@ -83,9 +83,9 @@ de WhatsApp AI (grupo **Administrator** del privilegio **WhatsApp AI**) abre
 * **Catalog**: productos con **Can be Sold**. Solo esos se pueden citar o
   pedir.
 
-Gemini 2.5 Flash-Lite, para la primera prueba, se elige en **Provider preset**.
+Gemini Flash-Lite, para la primera prueba, se elige en **Provider preset**.
 Eso completa la URL ``https://generativelanguage.googleapis.com/v1beta/openai`` y el
-modelo ``gemini-2.5-flash-lite``. Ese preset marca que el modelo puede leer
+modelo ``gemini-3.5-flash-lite``. Ese preset marca que el modelo puede leer
 fotos, pero deja **Interpret customer photos** y **Enabled** apagados.
 El preset Grok no completa URL, modelo ni lectura de fotos: hay que cargarlos
 a mano si el endpoint que se use acepta imágenes. No guarda una clave.
@@ -327,6 +327,29 @@ Actualizar una base que ya tiene ``19.0.1.3.0``
 3. Cargar **Entrenadores**.
 4. El dueño abre **Mensajes directos** y le escribe al agente. Las reglas
    quedan propuestas hasta que las confirma.
+
+Lista de clientes y respuesta automática (19.0.1.8.0)
+======================================================
+
+En el proveedor, solo el administrador ve tres cosas nuevas. **Auto-reply
+customers** nace apagado. **Customer numbers** es la lista de teléfonos en
+formato E.164. **Only allowlisted numbers reach the provider** nace encendido:
+si la lista tiene números, un WhatsApp que no está ahí no genera sugerencia
+ni sale hacia el proveedor; queda como conversación normal. Una lista vacía
+no bloquea a nadie, así que una base ya instalada sigue como hasta ahora.
+
+Si el interruptor de clientes está encendido, el cron que prepara la
+sugerencia la manda después, por el mismo envío que el botón **Send reply**,
+y la marca como enviada automáticamente. Si está apagado, la sugerencia queda
+para revisión. Los números de Entrenadores siguen yendo al entrenamiento y
+no se mezclan con esta lista.
+
+El preset de Gemini pasa a ``gemini-3.5-flash-lite``. El modelo se puede
+editar. Al actualizar, una configuración que todavía dice
+``gemini-2.5-flash-lite`` se reescribe a ese id. No se enciende el
+autoenvío ni se agregan números.
+
+Resumen de uso y Uso mensual siguen solo para el administrador.
 
 Entrenador sin ver el proveedor (19.0.1.7.0)
 =============================================

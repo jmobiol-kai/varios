@@ -229,7 +229,7 @@ class EngineTests(unittest.TestCase):
     def test_gemini_flash_lite_preset_and_usage(self):
         preset = engine.provider_preset(engine.GEMINI_FLASH_LITE_PRESET)
         self.assertEqual(preset["api_base_url"], "https://generativelanguage.googleapis.com/v1beta/openai")
-        self.assertEqual(preset["api_model"], "gemini-2.5-flash-lite")
+        self.assertEqual(preset["api_model"], "gemini-3.5-flash-lite")
         self.assertNotIn("api_key", preset)
         request = engine.chat_request(preset["api_base_url"], preset["api_model"], [{"role": "user", "content": "hola"}])
         self.assertEqual(request["url"], preset["api_base_url"] + "/chat/completions")
@@ -635,6 +635,7 @@ class EngineTests(unittest.TestCase):
         register = suggestion.split("def _register_inbound", 1)[1].split("def _channel_context", 1)[0]
         self.assertNotIn("post_chat", register)
         self.assertNotIn("_generate_bounded", register)
+        self.assertLess(register.index("customer_reaches_provider"), register.index("self.create("))
         cron = suggestion.split("def _cron_generate_suggestions", 1)[1].split("def _apply_decision", 1)[0]
         self.assertNotIn("message_post", cron)
         self.assertNotIn("sale.order", cron)

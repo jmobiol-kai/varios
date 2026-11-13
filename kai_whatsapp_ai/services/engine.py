@@ -723,7 +723,7 @@ class ProviderError(Exception):
 
 GEMINI_FLASH_LITE_PRESET = "gemini_flash_lite"
 GEMINI_OPENAI_BASE = "https://generativelanguage.googleapis.com/v1beta/openai"
-GEMINI_FLASH_LITE_MODEL = "gemini-2.5-flash-lite"
+GEMINI_FLASH_LITE_MODEL = "gemini-3.5-flash-lite"
 
 GROK_PRESET = "grok"
 ALLOWED_IMAGE_MIMES = frozenset({"image/jpeg", "image/png", "image/webp"})
@@ -1113,6 +1113,46 @@ def normalize_e164(number):
     """Keep a leading plus and the digits. The same idea as Odoo Mates."""
     digits = re.sub(r"\D", "", str(number or ""))
     return f"+{digits}" if digits else ""
+
+
+def allowlist_set(numbers):
+    return {normalize_e164(item) for item in numbers or [] if normalize_e164(item)}
+
+
+def customer_reaches_provider(number, allowlist, restrict):
+    """An empty list does not block. A filled list blocks only when restrict is on."""
+    allowed = allowlist_set(allowlist)
+    if not allowed or not restrict:
+        return True
+    wanted = normalize_e164(number)
+    return bool(wanted) and wanted in allowed
+
+
+def should_auto_reply_customer(*, auto_reply, number, allowlist, generation_state, reply_text, already_sent):
+    """Send only a ready reply, and only to a number that is on the list."""
+    text = str(reply_text or "").strip()
+    if not auto_reply or already_sent or generation_state != "done" or not text or text == PUBLIC_FAILURE:
+        return False
+    return normalize_e164(number) in allowlist_set(allowlist)
+
+
+def customer_message_plan(*, number, allowlist, restrict, auto_reply, trainer_numbers=(),
+                          generation_state="done", reply_text="Listo.", already_sent=False):
+    """Training wins. Otherwise skip the provider, keep a suggestion, or send it."""
+    if route_mode(number=number, authorized_numbers=trainer_numbers) == "training":
+        return "training"
+    if not customer_reaches_provider(number, allowlist, restrict):
+        return "no_provider"
+    if should_auto_reply_customer(
+        auto_reply=auto_reply,
+        number=number,
+        allowlist=allowlist,
+        generation_state=generation_state,
+        reply_text=reply_text,
+        already_sent=already_sent,
+    ):
+        return "sent"
+    return "suggestion"
 
 
 def route_mode(*, number, authorized_numbers, text=""):

@@ -8,7 +8,7 @@ class KaiWhatsappAiConfig(models.Model):
     """One provider setup per company, optionally narrowed to one WhatsApp account.
 
     ``enabled`` stays off until someone fills the endpoint and turns it on.
-    Turning it on only creates suggestions. Nothing here sends WhatsApp.
+    Customers are sent automatically only from the allowlist, and only when that switch is on.
     """
     _name = 'kai.whatsapp.ai.config'
     _description = 'WhatsApp AI Provider'
@@ -19,7 +19,8 @@ class KaiWhatsappAiConfig(models.Model):
     enabled = fields.Boolean(
         string='Enabled', default=False,
         help="Off: inbound WhatsApp messages do not call the provider and no suggestion is created. "
-             "On: a suggestion is prepared for a person to review. The module never sends by itself.")
+             "On: a suggestion is prepared. A customer is answered automatically only when "
+             "Auto-reply customers is on and the number is on the allowlist.")
     company_id = fields.Many2one(
         'res.company', required=True, default=lambda self: self.env.company, index=True)
     account_id = fields.Many2one(
@@ -30,7 +31,7 @@ class KaiWhatsappAiConfig(models.Model):
         help="Name used on the monthly usage report. It is copied onto each consultation and does not change past rows.")
     provider_preset = fields.Selection([
         ('manual', 'Manual'),
-        ('gemini_flash_lite', 'Gemini 2.5 Flash-Lite'),
+        ('gemini_flash_lite', 'Gemini 3.5 Flash-Lite'),
         ('grok', 'Grok'),
     ], string='Provider preset', default='manual', groups='kai_whatsapp_ai.group_manager',
         help="Choosing a preset fills the URL and the model. It does not enable the provider and it does not store a key.")
@@ -60,8 +61,20 @@ class KaiWhatsappAiConfig(models.Model):
         string='Responder automáticamente al entrenador', default=False,
         groups='kai_whatsapp_ai.group_manager',
         help="Off: a person sends the trainer's WhatsApp reply. On: an authorized trainer number "
-             "receives the reply on WhatsApp. Customer replies are never sent by this option. "
+             "receives the reply on WhatsApp. This option does not answer customers. "
              "The internal Discuss chat with Agente IA replies by itself when the provider is on.")
+    auto_reply_customers = fields.Boolean(
+        string='Auto-reply customers', default=False,
+        groups='kai_whatsapp_ai.group_manager',
+        help="Off: the suggestion waits for Send reply. On: after it is ready, it is sent only to numbers on the allowlist.")
+    restrict_to_allowlist = fields.Boolean(
+        string='Only allowlisted numbers reach the provider', default=True,
+        groups='kai_whatsapp_ai.group_manager',
+        help="On, and the list has numbers: any other inbound customer stays a normal WhatsApp chat "
+             "and is not sent to the provider. An empty list does not block anyone. Trainer numbers are unchanged.")
+    allow_ids = fields.One2many(
+        'kai.whatsapp.ai.allow', 'config_id', string='Customer allowlist',
+        groups='kai_whatsapp_ai.group_manager')
 
     @api.onchange('provider_preset')
     def _onchange_provider_preset(self):
@@ -117,6 +130,44 @@ class KaiWhatsappAiConfig(models.Model):
         ], limit=1) or self.sudo().search([
             ('enabled', '=', True), ('active', '=', True), ('company_id', '=', company.id),
         ], limit=1)
+
+
+class KaiWhatsappAiAllow(models.Model):
+    """Customer numbers that may reach the provider. Not the trainer list."""
+    _name = 'kai.whatsapp.ai.allow'
+    _description = 'WhatsApp AI Customer Allowlist'
+    _order = 'id'
+
+    config_id = fields.Many2one(
+        'kai.whatsapp.ai.config', required=True, ondelete='cascade', index=True,
+        groups='kai_whatsapp_ai.group_manager')
+    company_id = fields.Many2one(
+        related='config_id.company_id', store=True, index=True,
+        groups='kai_whatsapp_ai.group_manager')
+    phone = fields.Char(required=True, groups='kai_whatsapp_ai.group_manager')
+    phone_e164 = fields.Char(
+        string='E.164', readonly=True, index=True, groups='kai_whatsapp_ai.group_manager')
+
+    _allow_phone_unique = models.UniqueIndex("(config_id, phone_e164) WHERE phone_e164 IS NOT NULL")
+
+    @api.onchange('phone')
+    def _onchange_phone(self):
+        self.phone_e164 = engine.normalize_e164(self.phone)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            vals['phone_e164'] = engine.normalize_e164(vals.get('phone'))
+            if not vals['phone_e164']:
+                raise ValidationError(_("The allowlist needs a phone number."))
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if 'phone' in vals:
+            vals = dict(vals, phone_e164=engine.normalize_e164(vals.get('phone')))
+            if not vals['phone_e164']:
+                raise ValidationError(_("The allowlist needs a phone number."))
+        return super().write(vals)
 
 
 class KaiWhatsappAiFaq(models.Model):
