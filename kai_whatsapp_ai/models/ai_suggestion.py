@@ -426,9 +426,15 @@ class KaiWhatsappAiSuggestion(models.Model):
                 })
                 suggestion._maybe_auto_reply()
                 continue
-            catalog = engine.public_catalog(suggestion._catalog_rows(), suggestion.company_id.id)
             faqs = engine.public_faqs(suggestion._faq_rows(), suggestion.company_id.id)
             context = engine.trim_context(suggestion._channel_context())
+            limit = min(max(int(config.catalog_limit or engine.DEFAULT_RETRIEVAL), 1), 80)
+            catalog = engine.relevant_catalog(
+                suggestion._catalog_rows(),
+                suggestion.company_id.id,
+                "\n".join(item.get("body") or "" for item in context),
+                limit,
+            )
             preferences = engine.select_preference_rules(
                 suggestion._preference_rows(),
                 customer_text="\n".join(item.get("body") or "" for item in context),

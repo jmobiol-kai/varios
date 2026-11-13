@@ -959,6 +959,11 @@ msgid "Send as"
 msgstr "Enviar como"
 
 #. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__catalog_limit
+msgid "Products in the prompt"
+msgstr "Productos en la consulta"
+
+#. module: kai_whatsapp_ai
 #: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__verified
 #: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__verified
 #: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_spec_view_search

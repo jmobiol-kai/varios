@@ -55,6 +55,7 @@
                         <field name="restrict_to_allowlist"/>
                         <field name="block_numbers"/>
                         <field name="send_as_user_id"/>
+                        <field name="catalog_limit"/>
                     </group>
                     <group groups="kai_whatsapp_ai.group_manager">
                         <group>

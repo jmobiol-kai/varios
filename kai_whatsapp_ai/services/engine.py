@@ -26,6 +26,7 @@ MAX_MESSAGES = 10
 MAX_MESSAGE_CHARS = 400
 MAX_CONTEXT_CHARS = 3500
 MAX_PRODUCTS = 50
+DEFAULT_RETRIEVAL = 40
 MAX_FAQS = 40
 MAX_QTY = 10000
 MAX_REPLY_CHARS = 2000
@@ -170,38 +171,125 @@ def _public_product_view(row):
     return view
 
 
+def _catalog_item(row, company_id):
+    """One allowlisted sellable row. Private fields are not copied. None when it cannot be sold."""
+    if not _same_company(row, company_id):
+        return None
+    if row.get("sale_ok") is False:
+        return None
+    if not row.get("id") or not row.get("name") or not row.get("uom_id"):
+        return None
+    price = row.get("price")
+    if price is not None and (isinstance(price, bool) or not isinstance(price, (int, float)) or not math.isfinite(price) or price < 0):
+        price = None
+    free_qty = row.get("free_qty")
+    if free_qty is not None and (isinstance(free_qty, bool) or not isinstance(free_qty, (int, float)) or not math.isfinite(free_qty)):
+        free_qty = None
+    item = {
+        "id": int(row["id"]),
+        "name": str(row["name"]),
+        "code": str(row.get("code") or ""),
+        "uom_id": int(row["uom_id"]),
+        "uom_name": str(row.get("uom_name") or ""),
+        "price": None if price is None else float(price),
+        "currency": str(row.get("currency") or ""),
+        "free_qty": None if free_qty is None else float(free_qty),
+    }
+    extra = _public_product_view({**row, **item})
+    item.update({key: extra[key] for key in ("tiers", "pack_units", "spec", "fits") if key in extra})
+    return item
+
+
 def public_catalog(products, company_id, limit=MAX_PRODUCTS):
-    """Allowlisted sellable rows. Private fields are not copied."""
+    """Allowlisted sellable rows, in list order. Private fields are not copied."""
     public = []
     for row in products or []:
-        if not _same_company(row, company_id):
+        item = _catalog_item(row, company_id)
+        if not item:
             continue
-        if row.get("sale_ok") is False:
-            continue
-        if not row.get("id") or not row.get("name") or not row.get("uom_id"):
-            continue
-        price = row.get("price")
-        if price is not None and (isinstance(price, bool) or not isinstance(price, (int, float)) or not math.isfinite(price) or price < 0):
-            price = None
-        free_qty = row.get("free_qty")
-        if free_qty is not None and (isinstance(free_qty, bool) or not isinstance(free_qty, (int, float)) or not math.isfinite(free_qty)):
-            free_qty = None
-        item = {
-            "id": int(row["id"]),
-            "name": str(row["name"]),
-            "code": str(row.get("code") or ""),
-            "uom_id": int(row["uom_id"]),
-            "uom_name": str(row.get("uom_name") or ""),
-            "price": None if price is None else float(price),
-            "currency": str(row.get("currency") or ""),
-            "free_qty": None if free_qty is None else float(free_qty),
-        }
-        extra = _public_product_view({**row, **item})
-        item.update({key: extra[key] for key in ("tiers", "pack_units", "spec", "fits") if key in extra})
         public.append(item)
         if len(public) >= limit:
             break
     return public
+
+
+_FOLD = str.maketrans("áéíóúüñÁÉÍÓÚÜÑ", "aeiouunAEIOUUN")
+_QUERY_STOP = frozenset(
+    "a al el la los las un una de del que y o en con por para su sus lo le les "
+    "me te se es son como tienen tiene precio cual cuales cuanto cuánto hay "
+    "quiero queria quería tenes tenés".split()
+)
+_PACK_WORDS = frozenset({"pack", "packs", "bulto", "bultos", "caja", "cajas", "display"})
+
+
+def _fold(text):
+    return str(text or "").translate(_FOLD).casefold()
+
+
+def _query_tokens(text):
+    tokens = re.findall(r"[a-z0-9]+", _fold(text))
+    return [token for token in tokens if token not in _QUERY_STOP and (token.isdigit() or len(token) > 1)]
+
+
+def _is_pack(row):
+    name_tokens = set(_query_tokens(row.get("name") or ""))
+    return bool(row.get("pack_units")) or bool(name_tokens & _PACK_WORDS)
+
+
+def _product_tokens(row):
+    parts = [row.get("name") or "", row.get("code") or ""]
+    spec = row.get("spec") or {}
+    if isinstance(spec, dict):
+        for key in ("role", "capacity", "capacity_uom", "material", "finish", "uses", "colour", "thread_type", "mouth_mm"):
+            if spec.get(key) not in (None, "", False):
+                parts.append(str(spec.get(key)))
+    for fit in row.get("fits") or []:
+        if isinstance(fit, dict):
+            parts.append(str(fit.get("name") or ""))
+    return _query_tokens(" ".join(parts))
+
+
+def _score_product(row, query_tokens):
+    """How well a catalog row answers the customer's words. Zero means no overlap."""
+    if not query_tokens:
+        return 0
+    hay = set(_product_tokens(row))
+    code = _fold(row.get("code") or "")
+    score = 0
+    hits = 0
+    for token in query_tokens:
+        if code and token == code:
+            score += 20
+            hits += 1
+            continue
+        if token in hay:
+            score += 5 if token.isdigit() else 4
+            hits += 1
+            continue
+        if len(token) >= 4 and any(len(part) >= 4 and (token in part or part in token) for part in hay):
+            score += 2
+            hits += 1
+    if hits == len(set(query_tokens)) and hits:
+        score += 8
+    if _is_pack(row) and not (set(query_tokens) & _PACK_WORDS):
+        score -= 1
+    return score
+
+
+def relevant_catalog(products, company_id, query, limit=DEFAULT_RETRIEVAL):
+    """The allowlisted rows that share the customer's words, best first. Not the first rows of the list."""
+    items = []
+    for row in products or []:
+        item = _catalog_item(row, company_id)
+        if item:
+            items.append(item)
+    cap = max(int(limit or DEFAULT_RETRIEVAL), 1)
+    tokens = _query_tokens(query)
+    if not tokens:
+        return items[:cap]
+    ranked = sorted(enumerate(items), key=lambda pair: (-_score_product(pair[1], tokens), pair[0]))
+    chosen = [row for _index, row in ranked if _score_product(row, tokens) > 0]
+    return (chosen or items)[:cap]
 
 
 def public_faqs(faqs, company_id, limit=MAX_FAQS):
@@ -298,7 +386,13 @@ def render_price_reply(product, quantity, tiers, pack_note=""):
         return " ".join(text.split())
     if len({tier["price"] for tier in clean}) < 2:
         if not clean:
-            return f"Para {name} no hay precio ni descuento por volumen cargado en la tarifa de este cliente."
+            price = product.get("price")
+            if price is None:
+                return f"Para {name} no hay precio ni descuento por volumen cargado en la tarifa de este cliente."
+            text = f"{name}: {_fmt_num(price)} {product.get('currency') or ''} por {uom}."
+            if pack_note:
+                text = f"{pack_note} {text}"
+            return " ".join(text.split())
         only = clean[0]
         return (
             f"{name}: {_fmt_num(only['price'])} {only['currency']} por {uom} desde {_fmt_num(only['min_quantity'])} {uom}. "
@@ -472,6 +566,41 @@ def _render(intent, lines, faq_answer, clarification):
     return text[:MAX_REPLY_CHARS]
 
 
+def _lookup_product(raw_name, catalog):
+    """Match an id-less line by code or by the words of the name. A unit wins over its pack."""
+    key = _fold(raw_name).strip()
+    exact = [
+        row for row in catalog
+        if _fold(row["name"]) == key or (row.get("code") and _fold(row["code"]) == key)
+    ]
+    if len(exact) == 1:
+        return exact[0], ""
+    if len(exact) > 1:
+        return None, "ambiguous"
+    tokens = _query_tokens(raw_name)
+    if not tokens:
+        return None, ""
+    scored = [( _score_product(row, tokens), row) for row in catalog]
+    scored = [(score, row) for score, row in scored if score > 0]
+    if not scored:
+        return None, ""
+    scored.sort(key=lambda item: item[0], reverse=True)
+    best = scored[0][0]
+    band = [row for score, row in scored if score >= best - 1]
+    units = [row for row in band if not _is_pack(row)]
+    packs = [row for row in band if _is_pack(row)]
+    if len(units) == 1:
+        mention = f"También está {packs[0]['name']}." if packs else ""
+        return units[0], mention
+    if len(units) > 1:
+        return None, "ambiguous"
+    if len(packs) == 1:
+        return packs[0], ""
+    if len(band) == 1:
+        return band[0], ""
+    return None, "ambiguous"
+
+
 def _blank_line(name, quantity, status, raw_name):
     return {
         "product_id": None, "name": name, "quantity": quantity, "uom_id": None, "uom_name": "",
@@ -482,19 +611,17 @@ def _blank_line(name, quantity, status, raw_name):
 def _match_line(raw_line, catalog, *, require_qty):
     by_id = {row["id"]: row for row in catalog}
     product = None
-    raw_name = str((raw_line or {}).get("raw") or "").strip()
+    raw_name = str((raw_line or {}).get("raw") or (raw_line or {}).get("code") or "").strip()
     product_id = (raw_line or {}).get("product_id")
+    name_note = ""
     quantity = _quantity((raw_line or {}).get("quantity")) if require_qty or (raw_line or {}).get("quantity") not in (None, False) else None
     if not require_qty and (raw_line or {}).get("quantity") in (None, False):
         quantity = None
     if isinstance(product_id, int) and not isinstance(product_id, bool) and product_id in by_id:
         product = by_id[product_id]
     elif raw_name:
-        key = raw_name.casefold()
-        found = [row for row in catalog if row["name"].casefold() == key or (row["code"] and row["code"].casefold() == key)]
-        if len(found) == 1:
-            product = found[0]
-        elif len(found) > 1:
+        product, name_note = _lookup_product(raw_name, catalog)
+        if name_note == "ambiguous":
             return _blank_line(raw_name, quantity, "ambiguous", raw_name)
     if not product:
         return _blank_line(raw_name or str(product_id or ""), quantity, "unknown", raw_name)
@@ -510,6 +637,8 @@ def _match_line(raw_line, catalog, *, require_qty):
             }
         pack_note = f"{_fmt_num(quantity)} bultos de {_fmt_num(product.get('pack_units'))} {product.get('uom_name') or 'unidades'}."
         quantity = total
+    if name_note and name_note != "ambiguous":
+        pack_note = f"{pack_note} {name_note}".strip()
     asked_uom = (raw_line or {}).get("uom_id")
     tier = price_for_quantity(product.get("tiers"), quantity) if quantity is not None else None
     price = tier["price"] if tier else product.get("price")
@@ -711,9 +840,9 @@ def order_creation_allowed(*, discarded, intent, lines, partner_id, existing_ord
 
 
 def decision_from_provider_body(body, *, context, catalog, faqs, company_id):
-    catalog = public_catalog(catalog, company_id)
-    faqs = public_faqs(faqs, company_id)
     context = trim_context(context)
+    catalog = relevant_catalog(catalog, company_id, _customer_text(context))
+    faqs = public_faqs(faqs, company_id)
     return interpret(body, context=context, catalog=catalog, faqs=faqs)
 
 

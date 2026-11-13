@@ -83,6 +83,10 @@ class KaiWhatsappAiConfig(models.Model):
     block_ids = fields.One2many(
         'kai.whatsapp.ai.block', 'config_id', string='Blocked numbers',
         groups='kai_whatsapp_ai.group_manager')
+    catalog_limit = fields.Integer(
+        string='Products in the prompt', default=40,
+        groups='kai_whatsapp_ai.group_manager',
+        help="How many allowlisted products are sent, chosen by the customer's words. Not the first rows of the list.")
     send_as_user_id = fields.Many2one(
         'res.users', string='Send as',
         groups='kai_whatsapp_ai.group_manager',
@@ -115,6 +119,8 @@ class KaiWhatsappAiConfig(models.Model):
                 raise ValidationError(_("The provider timeout must be between 1 and 15 seconds."))
             if config.enabled and not (config.api_base_url and config.api_model and config.api_key):
                 raise ValidationError(_("Set the API base URL, the model and the secret before enabling suggestions."))
+            if config.catalog_limit and (config.catalog_limit < 1 or config.catalog_limit > 80):
+                raise ValidationError(_("The number of products sent must be between 1 and 80."))
 
     @api.constrains('account_id', 'company_id')
     def _check_account_company(self):

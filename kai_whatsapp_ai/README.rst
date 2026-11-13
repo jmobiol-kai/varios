@@ -328,6 +328,16 @@ Actualizar una base que ya tiene ``19.0.1.3.0``
 4. El dueño abre **Mensajes directos** y le escribe al agente. Las reglas
    quedan propuestas hasta que las confirma.
 
+El catálogo se elige por la pregunta (19.0.1.10.0)
+==================================================
+
+Antes se mandaban los primeros 50 productos de la lista. Con 260, «amanecer
+360» no llegaba al modelo. Ahora se mandan los que comparten las palabras y
+los números del mensaje (por defecto 40, en **Products in the prompt**). El
+precio sigue saliendo de la tarifa. Si hay un frasco y un pack, se responde
+el frasco y se nombra el pack. Dos productos iguales siguen pidiendo que una
+persona elija.
+
 Borrar en Odoo, recepción y números bloqueados (19.0.1.9.0)
 =============================================================
 
