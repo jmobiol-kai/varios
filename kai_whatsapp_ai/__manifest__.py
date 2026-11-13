@@ -1,6 +1,6 @@
 {
     'name': 'WhatsApp AI Suggestions',
-    'version': '19.0.1.8.0',
+    'version': '19.0.1.9.0',
     'category': 'Marketing',
     'summary': 'Supervised reply and draft-quotation suggestions for Odoo Mates WhatsApp',
     'description': """
@@ -24,7 +24,13 @@ invoice or reserve stock.
         'views/ai_usage_views.xml',
         'views/ai_advice_views.xml',
         'views/menu.xml',
+        'views/om_whatsapp_account_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'kai_whatsapp_ai/static/src/discuss/delete_actions.js',
+        ],
+    },
     'installable': True,
     'application': False,
 }

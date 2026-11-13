@@ -46,6 +46,9 @@ class SpanishCatalogTests(unittest.TestCase):
                 "Auto-reply customers": "Responder automáticamente a clientes",
                 "Sent automatically": "Enviado automáticamente",
                 "Gemini 3.5 Flash-Lite": "Gemini 3.5 Flash-Lite",
+                "Receive only these numbers": "Recibir solo de estos números",
+                "Blocked numbers": "Números bloqueados",
+                "Send as": "Enviar como",
             }),
             (base, {
                 "Messages": "Mensajes",
@@ -72,7 +75,7 @@ class SpanishCatalogTests(unittest.TestCase):
         self.assertIn('name="Reglas del agente"', menu)
         self.assertIn('name="Respuestas al entrenador"', menu)
         manifest = (ROOT / "kai_whatsapp_ai" / "__manifest__.py").read_text(encoding="utf-8")
-        self.assertIn("'version': '19.0.1.8.0'", manifest)
+        self.assertIn("'version': '19.0.1.9.0'", manifest)
         base_manifest = (ROOT / "om_whatsapp_base" / "__manifest__.py").read_text(encoding="utf-8")
         self.assertIn("'version': '19.0.1.1.1'", base_manifest)
 

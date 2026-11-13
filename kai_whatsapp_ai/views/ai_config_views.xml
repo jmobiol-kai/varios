@@ -53,6 +53,8 @@
                         <field name="auto_reply_trainer"/>
                         <field name="auto_reply_customers"/>
                         <field name="restrict_to_allowlist"/>
+                        <field name="block_numbers"/>
+                        <field name="send_as_user_id"/>
                     </group>
                     <group groups="kai_whatsapp_ai.group_manager">
                         <group>
@@ -65,6 +67,14 @@
                         </group>
                     </group>
                     <notebook>
+                        <page string="Blocked numbers" name="blocked" groups="kai_whatsapp_ai.group_manager">
+                            <field name="block_ids" groups="kai_whatsapp_ai.group_manager">
+                                <list editable="bottom">
+                                    <field name="phone"/>
+                                    <field name="phone_e164"/>
+                                </list>
+                            </field>
+                        </page>
                         <page string="Customer numbers" name="allowlist" groups="kai_whatsapp_ai.group_manager">
                             <field name="allow_ids" groups="kai_whatsapp_ai.group_manager">
                                 <list editable="bottom">

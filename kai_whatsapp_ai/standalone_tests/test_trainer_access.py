@@ -17,12 +17,12 @@ def _record(xml, record_id):
 
 
 class TrainerAccessTests(unittest.TestCase):
-    def test_trainer_group_does_not_inherit_whatsapp_or_module_user(self):
+    def test_trainer_group_opens_discuss_and_not_the_module_user(self):
         xml = (ROOT / "security" / "groups.xml").read_text(encoding="utf-8")
         trainer = _record(xml, "group_trainer")
         manager = _record(xml, "group_manager")
         self.assertIn("base.group_user", trainer)
-        self.assertNotIn("group_om_whatsapp_user", trainer)
+        self.assertIn("om_whatsapp_base.group_om_whatsapp_user", trainer)
         self.assertNotIn("ref('group_user')", trainer)
         self.assertIn("ref('group_trainer')", manager)
         self.assertIn("ref('group_user')", manager)

@@ -75,6 +75,20 @@ class KaiWhatsappAiConfig(models.Model):
     allow_ids = fields.One2many(
         'kai.whatsapp.ai.allow', 'config_id', string='Customer allowlist',
         groups='kai_whatsapp_ai.group_manager')
+    block_numbers = fields.Boolean(
+        string='Block these numbers', default=False,
+        groups='kai_whatsapp_ai.group_manager',
+        help="Off: the blocked list is ignored. On: those numbers are never sent to the provider and never answered, "
+             "even when the customer allowlist is not restricting anyone.")
+    block_ids = fields.One2many(
+        'kai.whatsapp.ai.block', 'config_id', string='Blocked numbers',
+        groups='kai_whatsapp_ai.group_manager')
+    send_as_user_id = fields.Many2one(
+        'res.users', string='Send as',
+        groups='kai_whatsapp_ai.group_manager',
+        domain="[('share', '=', False)]",
+        help="Automatic replies are posted as this user, who must be allowed on the WhatsApp account. "
+             "Empty: the first active user of the account. The scheduled action's user is not used.")
 
     @api.onchange('provider_preset')
     def _onchange_provider_preset(self):
@@ -167,6 +181,44 @@ class KaiWhatsappAiAllow(models.Model):
             vals = dict(vals, phone_e164=engine.normalize_e164(vals.get('phone')))
             if not vals['phone_e164']:
                 raise ValidationError(_("The allowlist needs a phone number."))
+        return super().write(vals)
+
+
+class KaiWhatsappAiBlock(models.Model):
+    """Work numbers the assistant must ignore. Not the trainer list."""
+    _name = 'kai.whatsapp.ai.block'
+    _description = 'WhatsApp AI blocked numbers'
+    _order = 'id'
+
+    config_id = fields.Many2one(
+        'kai.whatsapp.ai.config', required=True, ondelete='cascade', index=True,
+        groups='kai_whatsapp_ai.group_manager')
+    company_id = fields.Many2one(
+        related='config_id.company_id', store=True, index=True,
+        groups='kai_whatsapp_ai.group_manager')
+    phone = fields.Char(required=True, groups='kai_whatsapp_ai.group_manager')
+    phone_e164 = fields.Char(
+        string='E.164', readonly=True, index=True, groups='kai_whatsapp_ai.group_manager')
+
+    _block_phone_unique = models.UniqueIndex("(config_id, phone_e164) WHERE phone_e164 IS NOT NULL")
+
+    @api.onchange('phone')
+    def _onchange_phone(self):
+        self.phone_e164 = engine.normalize_e164(self.phone)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            vals['phone_e164'] = engine.normalize_e164(vals.get('phone'))
+            if not vals['phone_e164']:
+                raise ValidationError(_("The blocked list needs a phone number."))
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if 'phone' in vals:
+            vals = dict(vals, phone_e164=engine.normalize_e164(vals.get('phone')))
+            if not vals['phone_e164']:
+                raise ValidationError(_("The blocked list needs a phone number."))
         return super().write(vals)
 
 

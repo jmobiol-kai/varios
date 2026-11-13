@@ -157,6 +157,8 @@ class KaiWhatsappAiSuggestion(models.Model):
             return self.env['kai.whatsapp.ai.training']._register_whatsapp(
                 account, config, channel, message, body, whatsapp_id)
         setup = config.sudo()
+        if engine.customer_is_blocked(number, setup.block_ids.mapped('phone_e164'), setup.block_numbers):
+            return self.browse()
         if not engine.customer_reaches_provider(
             number, setup.allow_ids.mapped('phone_e164'), setup.restrict_to_allowlist,
         ):
@@ -679,12 +681,33 @@ class KaiWhatsappAiSuggestion(models.Model):
         text = (self.suggested_reply or '').strip()
         if not text:
             raise UserError(_("This reply cannot be sent."))
-        self.channel_id.message_post(body=plaintext2html(text), message_type='comment')
+        channel = self.channel_id
+        if automatic:
+            channel = channel.with_user(self._auto_send_user())
+        channel.message_post(body=plaintext2html(text), message_type='comment')
         self.sudo().write({
             'reply_sent': True,
             'reply_sent_at': fields.Datetime.now(),
             'reply_sent_auto': bool(automatic),
         })
+
+    def _auto_send_user(self):
+        """A person allowed on the account. The cron user is not allowed to post."""
+        self.ensure_one()
+        account = self.account_id.sudo()
+        config = self.config_id.sudo()
+        chosen = config.send_as_user_id
+        members = account.user_ids.filtered(lambda user: user.active and not user.share)
+        user_id = engine.choose_send_user(
+            configured_id=chosen.id,
+            configured_active=bool(chosen.active and not chosen.share),
+            configured_allowed=bool(chosen and chosen in members),
+            member_ids=members.ids,
+        )
+        user = self.env['res.users'].browse(user_id).exists()
+        if not user:
+            raise UserError(_("There is no active user allowed to send from this WhatsApp account."))
+        return user
 
     def _maybe_auto_reply(self):
         """After a suggestion is ready, send it only when the allowlist and the switch say so."""
@@ -700,6 +723,8 @@ class KaiWhatsappAiSuggestion(models.Model):
             generation_state=self.generation_state,
             reply_text=self.suggested_reply,
             already_sent=self.reply_sent,
+            blocked=config.block_ids.mapped('phone_e164'),
+            block_enabled=config.block_numbers,
         ):
             return
         self._deliver_reply(automatic=True)

@@ -1,6 +1,8 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_kai_whatsapp_ai_config_manager,kai.whatsapp.ai.config.manager,model_kai_whatsapp_ai_config,group_manager,1,1,1,1
 access_kai_whatsapp_ai_allow_manager,kai.whatsapp.ai.allow.manager,model_kai_whatsapp_ai_allow,group_manager,1,1,1,1
+access_kai_whatsapp_ai_block_manager,kai.whatsapp.ai.block.manager,model_kai_whatsapp_ai_block,group_manager,1,1,1,1
+access_kai_whatsapp_ai_inbound_manager,kai.whatsapp.ai.inbound.manager,model_kai_whatsapp_ai_inbound,om_whatsapp_base.group_om_whatsapp_manager,1,1,1,1
 access_kai_whatsapp_ai_faq_user,kai.whatsapp.ai.faq.user,model_kai_whatsapp_ai_faq,group_user,1,0,0,0
 access_kai_whatsapp_ai_faq_trainer,kai.whatsapp.ai.faq.trainer,model_kai_whatsapp_ai_faq,group_trainer,1,1,1,0
 access_kai_whatsapp_ai_faq_manager,kai.whatsapp.ai.faq.manager,model_kai_whatsapp_ai_faq,group_manager,1,1,1,1

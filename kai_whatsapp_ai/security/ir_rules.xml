@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="kai_whatsapp_ai_inbound_company" model="ir.rule">
+        <field name="name">WhatsApp inbound numbers: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_inbound"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="kai_whatsapp_ai_block_company" model="ir.rule">
+        <field name="name">WhatsApp AI blocked numbers: company</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_block"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
     <record id="kai_whatsapp_ai_allow_company" model="ir.rule">
         <field name="name">WhatsApp AI customer allowlist: company</field>
         <field name="model_id" ref="model_kai_whatsapp_ai_allow"/>

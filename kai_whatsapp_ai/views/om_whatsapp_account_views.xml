@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_account_view_form_inbound" model="ir.ui.view">
+        <field name="name">om.whatsapp.account.form.inbound</field>
+        <field name="model">om.whatsapp.account</field>
+        <field name="inherit_id" ref="om_whatsapp_base.om_whatsapp_account_view_form"/>
+        <field name="arch" type="xml">
+            <page name="users" position="before">
+                <page string="Receive only these numbers" name="inbound" groups="om_whatsapp_base.group_om_whatsapp_manager">
+                    <field name="inbound_ids" groups="om_whatsapp_base.group_om_whatsapp_manager">
+                        <list editable="bottom">
+                            <field name="phone"/>
+                            <field name="phone_e164"/>
+                        </list>
+                    </field>
+                </page>
+            </page>
+        </field>
+    </record>
+</odoo>

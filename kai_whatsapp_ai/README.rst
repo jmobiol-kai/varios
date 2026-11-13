@@ -328,6 +328,31 @@ Actualizar una base que ya tiene ``19.0.1.3.0``
 4. El dueño abre **Mensajes directos** y le escribe al agente. Las reglas
    quedan propuestas hasta que las confirma.
 
+Borrar en Odoo, recepción y números bloqueados (19.0.1.9.0)
+=============================================================
+
+En Discuss, un administrador de WhatsApp o un usuario de Ajustes ve
+**Eliminar** en un mensaje de WhatsApp y **Eliminar conversación** en el
+hilo. El aviso dice que se borra solo en Odoo, no en el teléfono. La
+conversación se va con sus sugerencias; el contacto y la cuenta quedan.
+
+El envío automático ya no usa el usuario del cron. Sale como **Enviar como**,
+o como el primer usuario activo de la cuenta, así no falla el control de
+``__system__``.
+
+**Recibir solo de estos números**, en la cuenta de WhatsApp, vacío no cambia
+nada. Con números, un entrante de otro teléfono se descarta antes de crear
+la conversación o el contacto. Al actualizar, si existe el parámetro
+``om_whatsapp.inbound_allowlist``, esos números se copian a cada cuenta que
+todavía no tiene lista. El parámetro no se borra.
+
+**Números bloqueados** nace apagado. Encendido, la IA no procesa ni responde
+esos teléfonos aunque la lista de clientes no esté restringiendo. El
+entrenador sigue yendo al entrenamiento.
+
+Entrenador de IA ahora implica Usuario de WhatsApp, para poder abrir Discuss
+en las cuentas de las que es miembro.
+
 Lista de clientes y respuesta automática (19.0.1.8.0)
 ======================================================
 

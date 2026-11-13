@@ -4,6 +4,7 @@ from . import ai_usage
 from . import ai_training
 from . import ai_suggestion
 from . import discuss_channel
+from . import mail_message
 from . import res_partner
 from . import res_users
 from . import om_whatsapp_account

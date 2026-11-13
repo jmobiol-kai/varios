@@ -70,7 +70,7 @@ class AllowlistGateTests(unittest.TestCase):
 
     def test_upgrade_rewrites_the_retired_model_and_does_not_enable_auto_reply(self):
         manifest = (ROOT / "__manifest__.py").read_text(encoding="utf-8")
-        self.assertIn("'version': '19.0.1.8.0'", manifest)
+        self.assertIn("'version': '19.0.1.9.0'", manifest)
         self.assertEqual(MIGRATION.parent.name, "19.0.1.8.0")
         migration = _load_migration()
         self.assertEqual(migration.OLD_MODEL, "gemini-2.5-flash-lite")

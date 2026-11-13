@@ -1128,8 +1128,36 @@ def customer_reaches_provider(number, allowlist, restrict):
     return bool(wanted) and wanted in allowed
 
 
-def should_auto_reply_customer(*, auto_reply, number, allowlist, generation_state, reply_text, already_sent):
-    """Send only a ready reply, and only to a number that is on the list."""
+def customer_is_blocked(number, blocked, block_enabled):
+    """The block list applies only when its switch is on. An empty list blocks nobody."""
+    if not block_enabled:
+        return False
+    return normalize_e164(number) in allowlist_set(blocked)
+
+
+def inbound_kept(number, allowlist):
+    """An empty receive list keeps every inbound chat. A filled list drops the rest."""
+    allowed = allowlist_set(allowlist)
+    if not allowed:
+        return True
+    return normalize_e164(number) in allowed
+
+
+def choose_send_user(*, configured_id, configured_active, configured_allowed, member_ids):
+    """Automatic sends use a person allowed on the account, never the cron user."""
+    if configured_id and configured_active and configured_allowed:
+        return configured_id
+    for member_id in member_ids or []:
+        if member_id:
+            return member_id
+    return None
+
+
+def should_auto_reply_customer(*, auto_reply, number, allowlist, generation_state, reply_text, already_sent,
+                               blocked=(), block_enabled=False):
+    """Send only a ready reply, and only to a number that is on the list and not blocked."""
+    if customer_is_blocked(number, blocked, block_enabled):
+        return False
     text = str(reply_text or "").strip()
     if not auto_reply or already_sent or generation_state != "done" or not text or text == PUBLIC_FAILURE:
         return False
@@ -1137,10 +1165,13 @@ def should_auto_reply_customer(*, auto_reply, number, allowlist, generation_stat
 
 
 def customer_message_plan(*, number, allowlist, restrict, auto_reply, trainer_numbers=(),
-                          generation_state="done", reply_text="Listo.", already_sent=False):
-    """Training wins. Otherwise skip the provider, keep a suggestion, or send it."""
+                          generation_state="done", reply_text="Listo.", already_sent=False,
+                          blocked=(), block_enabled=False):
+    """Training wins. A blocked number is ignored. Otherwise skip, keep, or send."""
     if route_mode(number=number, authorized_numbers=trainer_numbers) == "training":
         return "training"
+    if customer_is_blocked(number, blocked, block_enabled):
+        return "blocked"
     if not customer_reaches_provider(number, allowlist, restrict):
         return "no_provider"
     if should_auto_reply_customer(
@@ -1150,6 +1181,8 @@ def customer_message_plan(*, number, allowlist, restrict, auto_reply, trainer_nu
         generation_state=generation_state,
         reply_text=reply_text,
         already_sent=already_sent,
+        blocked=blocked,
+        block_enabled=block_enabled,
     ):
         return "sent"
     return "suggestion"
