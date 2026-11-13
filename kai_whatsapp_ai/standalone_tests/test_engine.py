@@ -159,6 +159,12 @@ class EngineTests(unittest.TestCase):
         self.assertNotIn("<b>", trimmed[0]["body"])
         self.assertLessEqual(sum(len(item["body"]) for item in trimmed), engine.MAX_CONTEXT_CHARS)
 
+    def test_visible_text_does_not_name_the_provider(self):
+        self.assertEqual(engine.customer_visible_text("Gemini no respondió"), engine.PUBLIC_FAILURE)
+        self.assertNotIn("gemini", engine.PUBLIC_FAILURE.casefold())
+        self.assertNotIn("grok", engine.PUBLIC_FAILURE.casefold())
+        self.assertEqual(engine.customer_visible_text("Para miel, la tapa TO."), "Para miel, la tapa TO.")
+
     def test_secret_is_removed_from_provider_errors(self):
         def boom(url, body, api_key):
             raise RuntimeError("endpoint failed " + api_key)

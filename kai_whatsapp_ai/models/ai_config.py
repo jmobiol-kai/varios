@@ -1,5 +1,5 @@
 from odoo import _, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 from odoo.addons.kai_whatsapp_ai.services import engine
 
@@ -101,20 +101,20 @@ class KaiWhatsappAiConfig(models.Model):
         if not account or not account.company_id:
             return self.browse()
         domain = [('enabled', '=', True), ('company_id', '=', account.company_id.id), ('active', '=', True)]
-        specific = self.search(domain + [('account_id', '=', account.id)], limit=1)
+        specific = self.sudo().search(domain + [('account_id', '=', account.id)], limit=1)
         if specific:
             return specific
-        return self.search(domain + [('account_id', '=', False)], limit=1)
+        return self.sudo().search(domain + [('account_id', '=', False)], limit=1)
 
     @api.model
     def _enabled_for_company(self, company):
         """Enabled company setup. Account-specific rows are not used for the internal chat."""
         if not company:
             return self.browse()
-        return self.search([
+        return self.sudo().search([
             ('enabled', '=', True), ('active', '=', True),
             ('company_id', '=', company.id), ('account_id', '=', False),
-        ], limit=1) or self.search([
+        ], limit=1) or self.sudo().search([
             ('enabled', '=', True), ('active', '=', True), ('company_id', '=', company.id),
         ], limit=1)
 
@@ -133,6 +133,22 @@ class KaiWhatsappAiFaq(models.Model):
         required=True, translate=True,
         help="The text a reviewer may send. Write only facts you want repeated. "
              "Hours, payment and delivery stay empty until you type them here.")
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('config_id'):
+                continue
+            company_id = vals.get('company_id') or self.env.company.id
+            config = self.env['kai.whatsapp.ai.config'].sudo().search([
+                ('company_id', '=', company_id), ('account_id', '=', False),
+            ], limit=1) or self.env['kai.whatsapp.ai.config'].sudo().search([
+                ('company_id', '=', company_id),
+            ], limit=1)
+            if not config:
+                raise UserError(_("An administrator has to set up the assistant before an FAQ answer can be saved."))
+            vals['config_id'] = config.id
+        return super().create(vals_list)
 
 
 class KaiWhatsappAiCatalog(models.Model):

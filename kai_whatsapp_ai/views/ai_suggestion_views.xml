@@ -50,7 +50,7 @@
                             <field name="clarification" readonly="1"/>
                             <field name="reply_sent" readonly="1"/>
                             <field name="generation_state" readonly="1"/>
-                            <field name="provider_error" readonly="1" invisible="not provider_error"/>
+                            <field name="provider_error" readonly="1" invisible="not provider_error" groups="kai_whatsapp_ai.group_manager"/>
                             <field name="quotation_ready" invisible="1"/>
                         </group>
                     </group>

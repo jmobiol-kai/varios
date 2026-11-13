@@ -328,6 +328,25 @@ Actualizar una base que ya tiene ``19.0.1.3.0``
 4. El dueño abre **Mensajes directos** y le escribe al agente. Las reglas
    quedan propuestas hasta que las confirma.
 
+Entrenador sin ver el proveedor (19.0.1.7.0)
+=============================================
+
+El grupo **AI trainer** (``kai_whatsapp_ai.group_trainer``, en español
+**Entrenador de IA**) implica solo el usuario interno de Odoo. No implica
+el usuario de WhatsApp ni el de este módulo, así que no abre Mensajes ni
+Plantillas. Esas dos pantallas no hacen falta para entrenar: el dueño
+escribe por el chat con **Agente IA**, ve las sugerencias y las respuestas
+al entrenador, y edita reglas, fichas, compatibilidad, guía y FAQ.
+
+El administrador sigue implicando ese grupo y el de usuario. Resumen de
+uso, uso mensual, proveedor y costos quedan solo en el administrador.
+Quien no lo es ve «No se pudo generar la respuesta» si el modelo falla,
+sin el nombre del proveedor.
+
+Al actualizar, hay que asignar **Entrenador de IA** a quien entrena y no
+dejarlo también como **User** de WhatsApp AI si no debe ver el buzón.
+El administrador no se reasigna: el grupo nuevo le entra solo.
+
 Fichas y compatibilidades por confirmar (19.0.1.6.0)
 ======================================================
 

@@ -207,7 +207,7 @@ class KaiWhatsappAiTraining(models.Model):
         ('done', 'Ready'),
         ('error', 'Error'),
     ], default='pending', required=True, index=True)
-    provider_error = fields.Char(readonly=True)
+    provider_error = fields.Char(readonly=True, groups='kai_whatsapp_ai.group_manager')
     consultation_id = fields.Many2one('kai.whatsapp.ai.consultation', readonly=True)
     reply_sent = fields.Boolean(readonly=True, copy=False)
     reply_sent_at = fields.Datetime(readonly=True, copy=False)
@@ -278,12 +278,12 @@ class KaiWhatsappAiTraining(models.Model):
         author = message.author_id
         members = channel.with_context(active_test=False).channel_member_ids.partner_id
         author_user = author.user_ids.filtered(lambda user: not user.share)[:1]
-        trainer = self.env['kai.whatsapp.ai.trainer']._for_user(author_user, author_user.company_id) if author_user else self.env['kai.whatsapp.ai.trainer']
+        trainer, company = self._discuss_trainer(author_user)
         route = engine.route_discuss(
             channel_type=channel.channel_type,
             author_is_bot=author == bot,
             bot_in_channel=bot in members,
-            author_is_trainer=bool(trainer),
+            author_is_trainer=bool(company),
             member_count=len(members),
         )
         if route == 'ignore':
@@ -296,15 +296,15 @@ class KaiWhatsappAiTraining(models.Model):
         body = engine.strip_markup((msg_vals or {}).get('body') or message.body)
         if not body:
             return
-        config = self.env['kai.whatsapp.ai.config'].sudo()._enabled_for_company(trainer.company_id)
+        config = self.env['kai.whatsapp.ai.config'].sudo()._enabled_for_company(company)
         command = engine.training_command(body)
         if not engine.discuss_should_meter(route, bool(config)):
-            reply = self._command_reply(trainer.company_id, trainer, command) if command else engine.PROVIDER_OFF_TRAINER
-            self._post_as_bot(channel, reply)
+            reply = self._command_reply(company, trainer, command) if command else engine.PUBLIC_FAILURE
+            self._post_as_bot(channel, engine.customer_visible_text(reply))
             return
-        account = self._account_for_company(trainer.company_id, config)
+        account = self._account_for_company(company, config)
         turn = self.sudo().create({
-            'company_id': trainer.company_id.id,
+            'company_id': company.id,
             'config_id': config.id,
             'account_id': account.id,
             'trainer_id': trainer.id,
@@ -389,12 +389,12 @@ class KaiWhatsappAiTraining(models.Model):
 
     def _generate_bounded(self):
         for turn in self:
-            config = turn.config_id
+            config = turn.config_id.sudo()
             if not turn._provider_may_run():
                 turn.sudo().write({
                     'generation_state': 'error',
                     'provider_error': engine.PROVIDER_MISSING,
-                    'suggested_reply': engine.PROVIDER_OFF_TRAINER,
+                    'suggested_reply': engine.PUBLIC_FAILURE,
                 })
                 turn._post_discuss_reply()
                 continue
@@ -408,7 +408,7 @@ class KaiWhatsappAiTraining(models.Model):
             usage = engine.parse_usage('')
             try:
                 raw = engine.post_chat(
-                    config.api_base_url, config.sudo().api_key, config.api_model, messages, timeout=timeout)
+                    config.api_base_url, config.api_key, config.api_model, messages, timeout=timeout)
                 usage = engine.parse_usage(raw)
                 parsed = engine.parse_training_reply(raw)
                 outcome = 'success'
@@ -416,12 +416,12 @@ class KaiWhatsappAiTraining(models.Model):
             except engine.ProviderError as error:
                 outcome = 'failed'
                 error_text = str(error)
-                parsed = {'reply': engine.PROVIDER_BAD, 'proposals': []}
+                parsed = {'reply': engine.PUBLIC_FAILURE, 'proposals': []}
             except Exception:
                 _logger.exception("WhatsApp AI: training provider failed for %s", turn.id)
                 outcome = 'failed'
                 error_text = engine.PROVIDER_BAD
-                parsed = {'reply': engine.PROVIDER_BAD, 'proposals': []}
+                parsed = {'reply': engine.PUBLIC_FAILURE, 'proposals': []}
             turn._log_call(config, outcome, usage, int((time.perf_counter() - started) * 1000), error_text)
             notes = []
             for proposal in parsed['proposals']:
@@ -430,9 +430,11 @@ class KaiWhatsappAiTraining(models.Model):
                     notes.append(_("Propuesta %s: %s. Respondé confirmar %s para activarla.", rule.id, rule.title, rule.id))
                 elif rule:
                     notes.append(_("No guardé «%s»: %s", rule.title, rule.flag_reason))
-            reply = parsed['reply']
-            if notes:
+            reply = engine.customer_visible_text(parsed['reply'])
+            if outcome == 'success' and notes:
                 reply = (reply + "\n\n" + "\n".join(notes)).strip()
+            if outcome != 'success':
+                reply = engine.PUBLIC_FAILURE
             turn.sudo().write({
                 'suggested_reply': reply[:engine.MAX_REPLY_CHARS],
                 'generation_state': 'done' if outcome == 'success' else 'error',
@@ -443,14 +445,14 @@ class KaiWhatsappAiTraining(models.Model):
 
     def _provider_may_run(self):
         self.ensure_one()
-        config = self.config_id
+        config = self.config_id.sudo()
         enabled = bool(
             config and config.enabled and config.active and config.company_id == self.company_id
         )
         return engine.should_call_provider(
             enabled=enabled,
             configured=engine.provider_is_configured(
-                config.api_base_url, config.api_model, config.sudo().api_key) if config else False,
+                config.api_base_url, config.api_model, config.api_key) if config else False,
             generation_state=self.generation_state,
             from_queue=True,
         )
@@ -562,7 +564,8 @@ class KaiWhatsappAiTraining(models.Model):
         self.ensure_one()
         if not self.consultation_id:
             return
-        secret = config.sudo().api_key
+        config = config.sudo()
+        secret = config.api_key
         preset = engine.provider_preset(config.provider_preset)
         moment = fields.Datetime.now()
         rates = self.env['kai.whatsapp.ai.provider.rate'].sudo().search([
@@ -675,6 +678,20 @@ class KaiWhatsappAiTraining(models.Model):
         ):
             raise UserError(_("This reply cannot be sent."))
         self._send_whatsapp()
+
+    @api.model
+    def _discuss_trainer(self, user):
+        """Listed trainer, or an Odoo user in the trainer group. A customer is neither."""
+        Trainer = self.env['kai.whatsapp.ai.trainer']
+        empty_company = self.env['res.company']
+        if not user:
+            return Trainer.browse(), empty_company
+        row = Trainer._for_user(user, user.company_id)
+        if row:
+            return row, row.company_id
+        if user.has_group('kai_whatsapp_ai.group_trainer'):
+            return Trainer.browse(), user.company_id
+        return Trainer.browse(), empty_company
 
     @api.model
     def _account_for_company(self, company, config):

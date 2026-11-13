@@ -93,10 +93,11 @@ class KaiWhatsappAiConsultation(models.Model):
     partner_id = fields.Many2one('res.partner', string='Customer')
     occurred_at = fields.Datetime(required=True, index=True)
     client_label = fields.Char(readonly=True)
-    billable_known = fields.Boolean(readonly=True)
-    billable_amount = fields.Float(digits=(16, 6), readonly=True)
-    billable_currency_id = fields.Many2one('res.currency', readonly=True)
-    billable_rate_id = fields.Many2one('kai.whatsapp.ai.billable.rate', readonly=True)
+    billable_known = fields.Boolean(readonly=True, groups='kai_whatsapp_ai.group_manager')
+    billable_amount = fields.Float(digits=(16, 6), readonly=True, groups='kai_whatsapp_ai.group_manager')
+    billable_currency_id = fields.Many2one('res.currency', readonly=True, groups='kai_whatsapp_ai.group_manager')
+    billable_rate_id = fields.Many2one(
+        'kai.whatsapp.ai.billable.rate', readonly=True, groups='kai_whatsapp_ai.group_manager')
     has_image = fields.Boolean(string='Photo', readonly=True)
 
     _consultation_whatsapp_unique = models.UniqueIndex(
@@ -138,9 +139,9 @@ class KaiWhatsappAiCall(models.Model):
         ('gemini_flash_lite', 'Gemini 2.5 Flash-Lite'),
         ('grok', 'Grok'),
     ], required=True)
-    provider_label = fields.Char(required=True)
-    model_name = fields.Char(string='Model', required=True)
-    endpoint_host = fields.Char(readonly=True)
+    provider_label = fields.Char(required=True, groups='kai_whatsapp_ai.group_manager')
+    model_name = fields.Char(string='Model', required=True, groups='kai_whatsapp_ai.group_manager')
+    endpoint_host = fields.Char(readonly=True, groups='kai_whatsapp_ai.group_manager')
     error_sanitized = fields.Char(readonly=True)
     client_label = fields.Char(readonly=True)
     input_known = fields.Boolean(readonly=True)
@@ -175,8 +176,9 @@ class KaiWhatsappAiCall(models.Model):
     output_per_million = fields.Float(digits=(16, 6), readonly=True)
     cached_per_million = fields.Float(digits=(16, 6), readonly=True)
     thinking_per_million = fields.Float(digits=(16, 6), readonly=True)
-    cost_known = fields.Boolean(readonly=True)
-    cost_usd = fields.Float(string='Estimated USD', digits=(16, 6), readonly=True)
+    cost_known = fields.Boolean(readonly=True, groups='kai_whatsapp_ai.group_manager')
+    cost_usd = fields.Float(
+        string='Estimated USD', digits=(16, 6), readonly=True, groups='kai_whatsapp_ai.group_manager')
     image_count = fields.Integer(readonly=True)
     image_tokens_known = fields.Boolean(readonly=True)
     image_tokens = fields.Integer(readonly=True)
@@ -389,9 +391,9 @@ class KaiWhatsappAiUsageTotal(models.TransientModel):
     image_consultations = fields.Integer()
     sends = fields.Integer()
     quotations = fields.Integer()
-    billable_amount = fields.Float(digits=(16, 6))
-    billable_unknown = fields.Integer()
-    billable_currency_id = fields.Many2one('res.currency')
+    billable_amount = fields.Float(digits=(16, 6), groups='kai_whatsapp_ai.group_manager')
+    billable_unknown = fields.Integer(groups='kai_whatsapp_ai.group_manager')
+    billable_currency_id = fields.Many2one('res.currency', groups='kai_whatsapp_ai.group_manager')
     provider_label = fields.Char(groups='kai_whatsapp_ai.group_manager')
     model_name = fields.Char(string='Model', groups='kai_whatsapp_ai.group_manager')
     attempted = fields.Integer(groups='kai_whatsapp_ai.group_manager')

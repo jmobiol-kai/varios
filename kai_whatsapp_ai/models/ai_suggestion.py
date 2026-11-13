@@ -48,7 +48,7 @@ class KaiWhatsappAiSuggestion(models.Model):
     needs_human = fields.Boolean(readonly=True)
     clarification = fields.Char(readonly=True)
     suggested_reply = fields.Text(string='Reply to review')
-    provider_error = fields.Char(readonly=True)
+    provider_error = fields.Char(readonly=True, groups='kai_whatsapp_ai.group_manager')
     state = fields.Selection([
         ('review', 'To review'),
         ('discarded', 'Discarded'),
@@ -56,7 +56,7 @@ class KaiWhatsappAiSuggestion(models.Model):
     generation_state = fields.Selection([
         ('pending', 'Queued'),
         ('done', 'Ready'),
-        ('error', 'Provider error'),
+        ('error', 'Error'),
     ], default='pending', required=True, index=True, readonly=True)
     reply_sent = fields.Boolean(readonly=True, copy=False)
     sale_order_id = fields.Many2one('sale.order', string='Draft quotation', readonly=True, copy=False)
@@ -106,7 +106,7 @@ class KaiWhatsappAiSuggestion(models.Model):
         partner = self.partner_id
         company = self.company_id
         pricelist = partner.with_company(company).property_product_pricelist if partner else False
-        catalog_ids = set(self.config_id.catalog_ids.product_id.ids)
+        catalog_ids = set(self.config_id.sudo().catalog_ids.product_id.ids)
         lines = []
         for line in self.line_ids:
             product = line.product_id
@@ -270,7 +270,7 @@ class KaiWhatsappAiSuggestion(models.Model):
         partner = self.partner_id
         pricelist = partner.with_company(company).property_product_pricelist if partner else False
         stock_known = 'free_qty' in self.env['product.product']._fields
-        for line in self.config_id.catalog_ids:
+        for line in self.config_id.sudo().catalog_ids:
             product = line.product_id
             if not product or not product.sale_ok:
                 continue
@@ -360,12 +360,12 @@ class KaiWhatsappAiSuggestion(models.Model):
             'answer': faq.answer,
             'active': faq.active,
             'company_id': faq.company_id.id,
-        } for faq in self.config_id.faq_ids if faq.active]
+        } for faq in self.config_id.sudo().faq_ids if faq.active]
 
     def _provider_may_run(self, from_queue):
         """Enabled, same company and account, and not already generated. Does not read the secret until allowed."""
         self.ensure_one()
-        config = self.config_id
+        config = self.config_id.sudo()
         enabled = bool(
             config.enabled and config.active
             and config.company_id == self.company_id
@@ -376,7 +376,7 @@ class KaiWhatsappAiSuggestion(models.Model):
             return False
         return engine.should_call_provider(
             enabled=True,
-            configured=engine.provider_is_configured(config.api_base_url, config.api_model, config.sudo().api_key),
+            configured=engine.provider_is_configured(config.api_base_url, config.api_model, config.api_key),
             generation_state=self.generation_state,
             from_queue=from_queue,
         )
@@ -391,10 +391,10 @@ class KaiWhatsappAiSuggestion(models.Model):
                         'intent': 'unknown',
                         'needs_human': True,
                         'provider_error': engine.PROVIDER_MISSING,
-                        'suggested_reply': engine.HANDOFF,
+                        'suggested_reply': engine.PUBLIC_FAILURE,
                     })
                 continue
-            config = suggestion.config_id
+            config = suggestion.config_id.sudo()
             metas = suggestion._image_meta(suggestion.message_id)
             image_decision = engine.classify_images(
                 metas,
@@ -432,7 +432,7 @@ class KaiWhatsappAiSuggestion(models.Model):
             usage = engine.parse_usage('')
             try:
                 raw = engine.post_chat(
-                    config.api_base_url, config.sudo().api_key, config.api_model, messages, timeout=timeout)
+                    config.api_base_url, config.api_key, config.api_model, messages, timeout=timeout)
                 usage = engine.parse_usage(raw)
                 decision = engine.interpret(
                     raw, context=context, catalog=catalog, faqs=faqs, advisory=suggestion._advisory_rows())
@@ -442,12 +442,12 @@ class KaiWhatsappAiSuggestion(models.Model):
             except engine.ProviderError as error:
                 outcome = 'failed'
                 error_text = str(error)
-                decision = engine._decision('unknown', [], None, engine.PROVIDER_BAD, needs_human=True, error=error_text)
+                decision = engine._decision('unknown', [], None, engine.PUBLIC_FAILURE, needs_human=True, error=error_text)
             except Exception:
                 _logger.exception("WhatsApp AI: provider call failed for suggestion %s", suggestion.id)
                 outcome = 'failed'
                 error_text = engine.PROVIDER_BAD
-                decision = engine._decision('unknown', [], None, engine.PROVIDER_BAD, needs_human=True, error=error_text)
+                decision = engine._decision('unknown', [], None, engine.PUBLIC_FAILURE, needs_human=True, error=error_text)
             latency_ms = int((time.perf_counter() - started) * 1000)
             suggestion._log_call(config, outcome, usage, latency_ms, error_text, image_count=len(images))
             if photo_handoff:
@@ -460,7 +460,8 @@ class KaiWhatsappAiSuggestion(models.Model):
         self.ensure_one()
         if not self.consultation_id:
             return
-        secret = config.sudo().api_key
+        config = config.sudo()
+        secret = config.api_key
         preset = engine.provider_preset(config.provider_preset)
         moment = fields.Datetime.now()
         rates = self.env['kai.whatsapp.ai.provider.rate'].sudo().search([
@@ -551,7 +552,7 @@ class KaiWhatsappAiSuggestion(models.Model):
 
     def _apply_decision(self, decision):
         self.ensure_one()
-        allowed = set(self.config_id.catalog_ids.product_id.ids)
+        allowed = set(self.config_id.sudo().catalog_ids.product_id.ids)
         commands = [(5, 0, 0)]
         for sequence, line in enumerate(decision['lines'], start=1):
             product_id = line.get('product_id') if line.get('product_id') in allowed else False
@@ -577,7 +578,7 @@ class KaiWhatsappAiSuggestion(models.Model):
             'intent': decision['intent'],
             'needs_human': decision['needs_human'] or any(line.get('status') != 'matched' for line in decision['lines'] if decision['intent'] == 'order'),
             'clarification': decision.get('clarification') or False,
-            'suggested_reply': decision.get('reply') or '',
+            'suggested_reply': engine.customer_visible_text(decision.get('reply') or ''),
             'provider_error': engine.redact(decision.get('error') or '', self.config_id.sudo().api_key),
             'line_ids': commands,
         })

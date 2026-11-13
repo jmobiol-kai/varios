@@ -183,6 +183,8 @@ msgstr "Conversación"
 #. module: kai_whatsapp_ai
 #: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion__intent__faq
 #: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_config_view_form
+#: model:ir.ui.menu,name:kai_whatsapp_ai.menu_kai_whatsapp_ai_faq
+#: model:ir.actions.act_window,name:kai_whatsapp_ai.kai_whatsapp_ai_faq_action
 msgid "FAQ"
 msgstr "Preguntas frecuentes"
 
@@ -902,6 +904,11 @@ msgstr "Correcta"
 #: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_billable_rate__amount_per_consultation
 msgid "Amount Per Consultation"
 msgstr "Importe por consulta"
+
+#. module: kai_whatsapp_ai
+#: model:res.groups,name:kai_whatsapp_ai.group_trainer
+msgid "AI trainer"
+msgstr "Entrenador de IA"
 
 #. module: kai_whatsapp_ai
 #: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__verified
