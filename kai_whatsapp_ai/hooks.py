@@ -15,6 +15,7 @@ def brand_app(env):
     menu = env.ref("om_whatsapp_base.om_whatsapp_menu_root", raise_if_not_found=False)
     if not menu:
         return
+    # Writing web_icon recomputes web_icon_data from the file, even when the path did not change.
     menu.sudo().write({"web_icon": APP_ICON})
     languages = env["res.lang"].sudo().search([]).mapped("code") or ["en_US"]
     for code in languages:

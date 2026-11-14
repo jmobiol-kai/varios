@@ -328,7 +328,7 @@ Actualizar una base que ya tiene ``19.0.1.3.0``
 4. El dueño abre **Mensajes directos** y le escribe al agente. Las reglas
    quedan propuestas hasta que las confirma.
 
-Ícono de IA Agent (19.0.1.12.0)
+Ícono de IA Agent (19.0.1.13.0)
 ===============================
 
 La barra y la ficha de la aplicación usan
