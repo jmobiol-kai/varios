@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_groups_privilege_kai_whatsapp_ai" model="res.groups.privilege">
+        <field name="name">WhatsApp AI</field>
+        <field name="category_id" ref="base.module_category_marketing"/>
+    </record>
+
+    <record id="group_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_kai_whatsapp_ai"/>
+        <field name="implied_ids" eval="[Command.link(ref('om_whatsapp_base.group_om_whatsapp_user'))]"/>
+        <field name="comment">Reviews WhatsApp suggestions of the accounts allowed to them. Does not see the provider secret.</field>
+    </record>
+
+    <record id="group_trainer" model="res.groups">
+        <field name="name">AI trainer</field>
+        <field name="sequence">15</field>
+        <field name="privilege_id" ref="res_groups_privilege_kai_whatsapp_ai"/>
+        <field name="implied_ids" eval="[Command.link(ref('base.group_user')), Command.link(ref('om_whatsapp_base.group_om_whatsapp_user'))]"/>
+        <field name="comment">Trains the assistant and can open Discuss for the accounts they belong to. Does not see the provider, its cost, or WhatsApp settings.</field>
+    </record>
+
+    <record id="group_manager" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_kai_whatsapp_ai"/>
+        <field name="implied_ids" eval="[Command.link(ref('group_user')), Command.link(ref('group_trainer')), Command.link(ref('om_whatsapp_base.group_om_whatsapp_manager'))]"/>
+        <field name="user_ids" eval="[Command.link(ref('base.user_admin'))]"/>
+        <field name="comment">Sets the provider, the secret, the FAQ and the product allowlist. Does not see provider cost.</field>
+    </record>
+
+    <record id="group_cost_viewer" model="res.groups">
+        <field name="name">Ver costos de IA</field>
+        <field name="comment">Sees provider cost, model names and token prices. Not granted by Administrator or Settings.</field>
+    </record>
+</odoo>

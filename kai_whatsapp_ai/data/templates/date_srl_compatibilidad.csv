@@ -1,0 +1,2 @@
+jar_product_id/default_code,closure_product_id/default_code,note
+Referencia interna del envase. El producto ya tiene que existir.,Referencia interna de la tapa. El producto ya tiene que existir.,Único texto que se puede repetir sobre este par. Vacío si no hay nota.

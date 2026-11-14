@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="kai_whatsapp_ai_suggestion_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.suggestion.list</field>
+        <field name="model">kai.whatsapp.ai.suggestion</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0" decoration-danger="delivery_status == 'failed'">
+                <field name="create_date" string="Fecha"/>
+                <field name="partner_id" string="Cliente"/>
+                <field name="inbound_body" string="Mensaje"/>
+                <field name="suggested_reply" string="Respuesta"/>
+                <field name="delivery_status" string="Estado" widget="badge"
+                       decoration-danger="delivery_status == 'failed'"
+                       decoration-success="delivery_status in ('delivered', 'read')"
+                       decoration-info="delivery_status in ('queued', 'sent')"/>
+                <field name="delivery_error" string="Error"/>
+                <field name="needs_human" string="Requiere una persona"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="kai_whatsapp_ai_suggestion_view_form" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.suggestion.form</field>
+        <field name="model">kai.whatsapp.ai.suggestion</field>
+        <field name="arch" type="xml">
+            <form create="0" delete="0">
+                <header>
+                    <button name="action_generate" type="object" string="Generar sugerencia"
+                            invisible="state == 'discarded' or generation_state == 'done'"/>
+                    <button name="action_send" type="object" string="Enviar respuesta" class="btn-primary"
+                            invisible="state == 'discarded' or reply_sent or not suggested_reply"/>
+                    <button name="action_refresh_prices" type="object" string="Actualizar precios"
+                            invisible="state == 'discarded' or sale_order_id"/>
+                    <button name="action_create_draft_quotation" type="object" string="Crear presupuesto borrador"
+                            invisible="not quotation_ready"/>
+                    <button name="action_discard" type="object" string="Descartar"
+                            invisible="state == 'discarded' or reply_sent or sale_order_id"/>
+                    <button name="action_retry_whatsapp" type="object" string="Enviar de nuevo"
+                            invisible="delivery_status not in ('failed', 'cancel')"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="account_id" string="Cuenta de WhatsApp" readonly="1"/>
+                            <field name="partner_id" string="Cliente" readonly="sale_order_id or state == 'discarded'"/>
+                            <field name="channel_id" string="Conversación" readonly="1"/>
+                            <field name="intent" string="Intención" readonly="1"/>
+                            <field name="sale_order_id" string="Presupuesto" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="needs_human" string="Requiere una persona" readonly="1"/>
+                            <field name="clarification" string="Aclaración" readonly="1"/>
+                            <field name="reply_sent" readonly="1"/>
+                            <field name="reply_sent_auto" readonly="1"/>
+                            <field name="generation_state" readonly="1"/>
+                            <field name="provider_error" readonly="1" invisible="not provider_error" groups="kai_whatsapp_ai.group_manager"/>
+                            <field name="quotation_ready" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="inbound_body" string="Mensaje entrante" readonly="1"/>
+                        <field name="suggested_reply" string="Respuesta a revisar" readonly="reply_sent or state == 'discarded'"/>
+                    </group>
+                    <group string="Envío por WhatsApp" invisible="not reply_sent">
+                        <field name="delivery_status" string="Estado"/>
+                        <field name="delivery_error" string="Error"/>
+                    </group>
+                    <field name="line_ids">
+                        <list create="0" delete="0" editable="bottom">
+                            <field name="raw_request" readonly="1"/>
+                            <field name="product_id" readonly="1"/>
+                            <field name="quantity" readonly="parent.sale_order_id or parent.state == 'discarded'"/>
+                            <field name="uom_id" readonly="1"/>
+                            <field name="price_unit" readonly="1"/>
+                            <field name="currency_id" readonly="1"/>
+                            <field name="free_qty" readonly="1"/>
+                            <field name="stock_checked" readonly="1"/>
+                            <field name="status" readonly="1"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="kai_whatsapp_ai_suggestion_view_search" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.suggestion.search</field>
+        <field name="model">kai.whatsapp.ai.suggestion</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="inbound_body"/>
+                <field name="partner_id"/>
+                <field name="account_id"/>
+                <filter name="review" string="A revisar" domain="[('state', '=', 'review'), ('reply_sent', '=', False)]"/>
+                <filter name="needs_human" string="Requiere una persona" domain="[('needs_human', '=', True)]"/>
+                <filter name="orders" string="Pedidos" domain="[('intent', '=', 'order')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="kai_whatsapp_ai_suggestion_action" model="ir.actions.act_window">
+        <field name="name">Mensajes</field>
+        <field name="res_model">kai.whatsapp.ai.suggestion</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_review': 1}</field>
+    </record>
+    <record id="action_kai_unlinked_whatsapp_messages" model="ir.actions.server">
+        <field name="name">Mensajes sin IA</field>
+        <field name="model_id" ref="model_kai_whatsapp_ai_suggestion"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_unlinked_messages()</field>
+    </record>
+</odoo>

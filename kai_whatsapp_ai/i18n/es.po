@@ -1,0 +1,1036 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* kai_whatsapp_ai
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-06 00:00+0000\n"
+"PO-Revision-Date: 2026-11-06 00:00+0000\n"
+"Last-Translator: jmobiol-kai\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: kai_whatsapp_ai
+#: model:ir.ui.menu,name:kai_whatsapp_ai.menu_kai_whatsapp_ai_suggestions
+#: model:ir.actions.act_window,name:kai_whatsapp_ai.kai_whatsapp_ai_suggestion_action
+msgid "AI Suggestions"
+msgstr "Sugerencias de IA"
+
+#. module: kai_whatsapp_ai
+#: model:ir.ui.menu,name:kai_whatsapp_ai.menu_kai_whatsapp_ai_specs
+#: model:ir.actions.act_window,name:kai_whatsapp_ai.kai_whatsapp_ai_spec_action
+msgid "Product sheets"
+msgstr "Fichas de producto"
+
+#. module: kai_whatsapp_ai
+#: model:ir.ui.menu,name:kai_whatsapp_ai.menu_kai_whatsapp_ai_advisory
+#: model:ir.actions.act_window,name:kai_whatsapp_ai.kai_whatsapp_ai_advisory_action
+msgid "Activity guide"
+msgstr "Guía de actividades"
+
+#. module: kai_whatsapp_ai
+#: model:ir.ui.menu,name:kai_whatsapp_ai.menu_kai_whatsapp_ai_fit
+#: model:ir.actions.act_window,name:kai_whatsapp_ai.kai_whatsapp_ai_fit_action
+msgid "Jar and closure fit"
+msgstr "Compatibilidad de envases y tapas"
+
+#. module: kai_whatsapp_ai
+#: model:ir.ui.menu,name:kai_whatsapp_ai.menu_kai_whatsapp_ai_usage
+#: model:ir.actions.act_window,name:kai_whatsapp_ai.kai_whatsapp_ai_consultation_action
+msgid "Usage summary"
+msgstr "Resumen de uso"
+
+#. module: kai_whatsapp_ai
+#: model:ir.ui.menu,name:kai_whatsapp_ai.menu_kai_whatsapp_ai_config
+#: model:ir.actions.act_window,name:kai_whatsapp_ai.kai_whatsapp_ai_config_action
+msgid "AI Provider"
+msgstr "Proveedor de IA"
+
+#. module: kai_whatsapp_ai
+#: model:ir.ui.menu,name:kai_whatsapp_ai.menu_kai_whatsapp_ai_usage_wizard
+#: model:ir.actions.act_window,name:kai_whatsapp_ai.kai_whatsapp_ai_usage_wizard_action
+msgid "Monthly usage"
+msgstr "Uso mensual"
+
+#. module: kai_whatsapp_ai
+#: model:ir.ui.menu,name:kai_whatsapp_ai.menu_kai_whatsapp_ai_calls
+#: model:ir.actions.act_window,name:kai_whatsapp_ai.kai_whatsapp_ai_call_action
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_usage_wizard_view_form
+msgid "Provider calls"
+msgstr "Llamadas al proveedor"
+
+#. module: kai_whatsapp_ai
+#: model:ir.ui.menu,name:kai_whatsapp_ai.menu_kai_whatsapp_ai_provider_rates
+#: model:ir.actions.act_window,name:kai_whatsapp_ai.kai_whatsapp_ai_provider_rate_action
+msgid "Provider rate cards"
+msgstr "Tarifas del proveedor"
+
+#. module: kai_whatsapp_ai
+#: model:ir.ui.menu,name:kai_whatsapp_ai.menu_kai_whatsapp_ai_billable_rates
+#: model:ir.actions.act_window,name:kai_whatsapp_ai.kai_whatsapp_ai_billable_rate_action
+msgid "Client rates"
+msgstr "Tarifas al cliente"
+
+#. module: kai_whatsapp_ai
+#: model:res.groups.privilege,name:kai_whatsapp_ai.res_groups_privilege_kai_whatsapp_ai
+msgid "WhatsApp AI"
+msgstr "IA de WhatsApp"
+
+#. module: kai_whatsapp_ai
+#: model:res.groups,name:kai_whatsapp_ai.group_user
+msgid "User"
+msgstr "Usuario"
+
+#. module: kai_whatsapp_ai
+#: model:res.groups,name:kai_whatsapp_ai.group_manager
+msgid "Administrator"
+msgstr "Administrador"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__partner_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_consultation__partner_id
+msgid "Customer"
+msgstr "Cliente"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__account_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_consultation__account_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_wizard__account_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_total__account_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_provider_rate__account_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_billable_rate__account_id
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_consultation_view_search
+msgid "Account"
+msgstr "Cuenta"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__company_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__company_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_advisory__company_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__company_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_consultation__company_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__company_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__company_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_provider_rate__company_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_billable_rate__company_id
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_consultation_view_search
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_call_view_search
+msgid "Company"
+msgstr "Compañía"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__intent
+msgid "Intent"
+msgstr "Intención"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__needs_human
+msgid "Needs Human"
+msgstr "Requiere una persona"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__state
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__state
+msgid "State"
+msgstr "Estado"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__generation_state
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_training__generation_state
+msgid "Generation State"
+msgstr "Estado de la sugerencia"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__reply_sent
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_training__reply_sent
+msgid "Reply Sent"
+msgstr "Respuesta enviada"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__sale_order_id
+msgid "Draft quotation"
+msgstr "Presupuesto borrador"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__suggested_reply
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_training__suggested_reply
+msgid "Reply to review"
+msgstr "Respuesta para revisar"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__inbound_body
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_training__inbound_body
+msgid "Inbound Body"
+msgstr "Mensaje entrante"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__provider_error
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_training__provider_error
+msgid "Provider Error"
+msgstr "Error del proveedor"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__channel_id
+msgid "Channel"
+msgstr "Conversación"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion__intent__faq
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_config_view_form
+#: model:ir.ui.menu,name:kai_whatsapp_ai.menu_kai_whatsapp_ai_faq
+#: model:ir.actions.act_window,name:kai_whatsapp_ai.kai_whatsapp_ai_faq_action
+msgid "FAQ"
+msgstr "Preguntas frecuentes"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion__intent__catalog
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_config_view_form
+msgid "Catalog"
+msgstr "Catálogo"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion__intent__order
+msgid "Order"
+msgstr "Pedido"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion__intent__unknown
+msgid "Unknown"
+msgstr "Desconocido"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion__state__review
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_suggestion_view_search
+msgid "To review"
+msgstr "Para revisar"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion__state__discarded
+msgid "Discarded"
+msgstr "Descartada"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion__generation_state__pending
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_training__generation_state__pending
+msgid "Queued"
+msgstr "En cola"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion__generation_state__done
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_training__generation_state__done
+msgid "Ready"
+msgstr "Lista"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion__generation_state__error
+msgid "Provider error"
+msgstr "Error del proveedor"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_suggestion_view_form
+msgid "Generate suggestion"
+msgstr "Generar sugerencia"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_suggestion_view_form
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_training_view_form
+msgid "Send reply"
+msgstr "Enviar respuesta"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_suggestion_view_form
+msgid "Refresh prices"
+msgstr "Actualizar precios"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_suggestion_view_form
+msgid "Create draft quotation"
+msgstr "Crear presupuesto borrador"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_suggestion_view_form
+msgid "Discard"
+msgstr "Descartar"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_suggestion_view_search
+msgid "Needs a person"
+msgstr "Requiere una persona"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_suggestion_view_search
+msgid "Order requests"
+msgstr "Pedidos"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion_line__raw_request
+msgid "Raw Request"
+msgstr "Pedido original"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion_line__product_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__product_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_advisory__product_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__product_id
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_catalog__product_id
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_rule__scope__product
+msgid "Product"
+msgstr "Producto"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion_line__quantity
+msgid "Quantity"
+msgstr "Cantidad"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion_line__uom_id
+msgid "Unit"
+msgstr "Unidad"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion_line__price_unit
+msgid "Price Unit"
+msgstr "Precio"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion_line__free_qty
+msgid "Free Qty"
+msgstr "Stock disponible"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion_line__stock_checked
+msgid "Stock Checked"
+msgstr "Stock consultado"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion_line__status
+msgid "Status"
+msgstr "Estado"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion_line__status__matched
+msgid "Matched"
+msgstr "Coincide"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion_line__status__ambiguous
+msgid "Ambiguous"
+msgstr "Ambiguo"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion_line__status__unknown
+msgid "Not in catalog"
+msgstr "No está en el catálogo"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion_line__status__bad_qty
+msgid "Missing quantity"
+msgstr "Falta la cantidad"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion_line__status__bad_uom
+msgid "Wrong unit"
+msgstr "Unidad incorrecta"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_suggestion_line__status__no_price
+msgid "No tariff"
+msgstr "Sin tarifa"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__role
+msgid "Role"
+msgstr "Rol"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__capacity
+msgid "Capacity"
+msgstr "Capacidad"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__capacity_uom
+msgid "Capacity unit"
+msgstr "Unidad de capacidad"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__mouth_mm
+msgid "Mouth diameter (mm)"
+msgstr "Diámetro de boca (mm)"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__thread_type
+msgid "Thread Type"
+msgstr "Tipo de rosca"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__height_mm
+msgid "Height (mm)"
+msgstr "Alto (mm)"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__diameter_mm
+msgid "Body diameter (mm)"
+msgstr "Diámetro del cuerpo (mm)"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__colour
+msgid "Colour"
+msgstr "Color"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__finish
+msgid "Mouth / finish"
+msgstr "Boca / cierre"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__food_grade
+msgid "Food grade"
+msgstr "Apto alimento"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__hot_fill
+msgid "Hot fill"
+msgstr "Llenado en caliente"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__pasteurization
+msgid "Pasteurization"
+msgstr "Pasteurización"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__uses
+msgid "Loaded uses"
+msgstr "Usos cargados"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__pack_name
+msgid "Pack name"
+msgstr "Nombre del bulto"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__pack_units
+msgid "Units per pack"
+msgstr "Unidades por bulto"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__min_order_qty
+msgid "Minimum order"
+msgstr "Pedido mínimo"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__role__jar
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__jar_product_id
+msgid "Jar / container"
+msgstr "Envase"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__role__closure
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__closure_product_id
+msgid "Closure"
+msgstr "Tapa"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__role__other
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__material__other
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__thread_type__other
+msgid "Other"
+msgstr "Otro"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__material__glass
+msgid "Glass"
+msgstr "Vidrio"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__material__unknown
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__thread_type__unknown
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__food_grade__unknown
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__hot_fill__unknown
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__pasteurization__unknown
+msgid "Not loaded"
+msgstr "No cargado"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__thread_type__rosca
+msgid "Screw / rosca"
+msgstr "Rosca"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__food_grade__yes
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__hot_fill__yes
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_spec__pasteurization__yes
+msgid "Yes"
+msgstr "Sí"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_spec_view_form
+msgid "Only uses you want repeated, for example miel or cosmética."
+msgstr "Solo usos que se pueden repetir, por ejemplo miel o cosmética."
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_advisory__activity
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_rule__scope__activity
+msgid "Activity"
+msgstr "Actividad"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_advisory__note
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__note
+msgid "Note"
+msgstr "Nota"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_advisory__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_trainer__active
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_advisory__active
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_consultation__occurred_at
+msgid "Occurred At"
+msgstr "Fecha"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_consultation__client_label
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_billable_rate__client_label
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_total__client_label
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_call__client_label
+msgid "Client Label"
+msgstr "Etiqueta de cliente"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_consultation__billable_known
+msgid "Billable Known"
+msgstr "Importe conocido"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_consultation__billable_amount
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_total__billable_amount
+msgid "Billable Amount"
+msgstr "Importe a facturar"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_consultation__billable_currency_id
+msgid "Billable Currency"
+msgstr "Moneda"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_consultation__has_image
+msgid "Photo"
+msgstr "Foto"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__client_label
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_consultation_view_search
+msgid "Client label"
+msgstr "Etiqueta de cliente"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_wizard__month
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_consultation_view_search
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_call_view_search
+msgid "Month"
+msgstr "Mes"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_wizard__year
+msgid "Year"
+msgstr "Año"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_wizard__month__1
+msgid "January"
+msgstr "Enero"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_wizard__month__2
+msgid "February"
+msgstr "Febrero"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_wizard__month__3
+msgid "March"
+msgstr "Marzo"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_wizard__month__4
+msgid "April"
+msgstr "Abril"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_wizard__month__5
+msgid "May"
+msgstr "Mayo"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_wizard__month__6
+msgid "June"
+msgstr "Junio"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_wizard__month__7
+msgid "July"
+msgstr "Julio"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_wizard__month__8
+msgid "August"
+msgstr "Agosto"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_wizard__month__9
+msgid "September"
+msgstr "Septiembre"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_wizard__month__10
+msgid "October"
+msgstr "Octubre"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_wizard__month__11
+msgid "November"
+msgstr "Noviembre"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_wizard__month__12
+msgid "December"
+msgstr "Diciembre"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_usage_wizard_view_form
+msgid "Monthly totals"
+msgstr "Totales del mes"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_usage_wizard_view_form
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_total__consultations
+msgid "Consultations"
+msgstr "Consultas"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_usage_wizard_view_form
+msgid "Close"
+msgstr "Cerrar"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_call_view_search
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_call__outcome__failed
+msgid "Failed"
+msgstr "Fallida"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_call_view_search
+msgid "Retries"
+msgstr "Reintentos"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_call_view_search
+msgid "Usage unknown"
+msgstr "Consumo desconocido"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_call_view_search
+msgid "Provider"
+msgstr "Proveedor"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_call_view_search
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_call__model_name
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_provider_rate__model_name
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_total__model_name
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__api_model
+msgid "Model"
+msgstr "Modelo"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_provider_rate_view_form
+msgid "USD per 1M tokens (estimate, not an invoice)"
+msgstr "USD por millón de tokens (estimación, no es la factura)"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_total__image_consultations
+msgid "Image Consultations"
+msgstr "Consultas con foto"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_total__sends
+msgid "Sends"
+msgstr "Envíos"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_total__quotations
+msgid "Quotations"
+msgstr "Presupuestos"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_total__billable_unknown
+msgid "Billable Unknown"
+msgstr "Importe desconocido"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_usage_total__line_kind
+msgid "Line Kind"
+msgstr "Tipo de línea"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_total__line_kind__customer
+msgid "Customer summary"
+msgstr "Resumen del cliente"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_usage_total__line_kind__provider
+msgid "Provider detail"
+msgstr "Detalle del proveedor"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_trainer__name
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__name
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_provider_rate__name
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_billable_rate__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_trainer__user_id
+msgid "Odoo user"
+msgstr "Usuario de Odoo"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_trainer__phone
+msgid "WhatsApp number"
+msgstr "Número de WhatsApp"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__body
+msgid "Rule"
+msgstr "Regla"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__category_id
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_rule__scope__category
+msgid "Category"
+msgstr "Categoría"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__scope
+msgid "Scope"
+msgstr "Alcance"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__priority
+msgid "Priority"
+msgstr "Prioridad"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__title
+msgid "Title"
+msgstr "Título"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__flagged
+msgid "Flagged"
+msgstr "Observada"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__flag_reason
+msgid "Flag Reason"
+msgstr "Motivo"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__origin
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_training__origin
+msgid "Origin"
+msgstr "Origen"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_rule__origin__discuss
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_training__origin__discuss
+msgid "Discuss"
+msgstr "Conversaciones"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__trainer_id
+msgid "Proposed by"
+msgstr "Propuesta por"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_rule__author_user_id
+msgid "Proposed by user"
+msgstr "Usuario que la propuso"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_training__trainer_id
+msgid "Trainer"
+msgstr "Entrenador"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_training__user_id
+msgid "Trainer user"
+msgstr "Usuario entrenador"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__enabled
+msgid "Enabled"
+msgstr "Habilitado"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__account_id
+msgid "WhatsApp Account"
+msgstr "Cuenta de WhatsApp"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__provider_preset
+msgid "Provider preset"
+msgstr "Proveedor predeterminado"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_provider_rate__provider_preset
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_call__provider_preset
+msgid "Provider Preset"
+msgstr "Proveedor predeterminado"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__api_base_url
+msgid "API base URL"
+msgstr "URL base de la API"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__api_key
+msgid "API secret"
+msgstr "Secreto de la API"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__api_timeout
+msgid "Timeout (seconds)"
+msgstr "Tiempo de espera (segundos)"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__vision_supported
+msgid "Provider can read photos"
+msgstr "El proveedor puede leer fotos"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__allow_images
+msgid "Interpret customer photos"
+msgstr "Interpretar fotos del cliente"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__max_image_bytes
+msgid "Max photo size (bytes)"
+msgstr "Tamaño máximo de la foto (bytes)"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__allowed_image_mimes
+msgid "Allowed photo types"
+msgstr "Tipos de foto permitidos"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_config__provider_preset__manual
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_provider_rate__provider_preset__manual
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_call__provider_preset__manual
+msgid "Manual"
+msgstr "Manual"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_config__provider_preset__gemini_flash_lite
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_provider_rate__provider_preset__gemini_flash_lite
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_call__provider_preset__gemini_flash_lite
+msgid "Gemini 3.5 Flash-Lite"
+msgstr "Gemini 3.5 Flash-Lite"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_config__provider_preset__grok
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_provider_rate__provider_preset__grok
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_call__provider_preset__grok
+msgid "Grok"
+msgstr "Grok"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_provider_rate__date_start
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_billable_rate__date_start
+msgid "Date Start"
+msgstr "Desde"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_provider_rate__date_end
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_billable_rate__date_end
+msgid "Date End"
+msgstr "Hasta"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_provider_rate__input_rate_set
+msgid "Price input tokens"
+msgstr "Cotizar tokens de entrada"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_provider_rate__input_per_million
+msgid "USD per 1M input tokens"
+msgstr "USD por millón de tokens de entrada"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_provider_rate__output_rate_set
+msgid "Price output tokens"
+msgstr "Cotizar tokens de salida"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_provider_rate__output_per_million
+msgid "USD per 1M output tokens"
+msgstr "USD por millón de tokens de salida"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_config_view_form
+msgid "e.g. Shop assistant"
+msgstr "p. ej. Asistente del local"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields.selection,name:kai_whatsapp_ai.selection__kai_whatsapp_ai_call__outcome__success
+msgid "Succeeded"
+msgstr "Correcta"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_billable_rate__amount_per_consultation
+msgid "Amount Per Consultation"
+msgstr "Importe por consulta"
+
+#. module: kai_whatsapp_ai
+#: model:res.groups,name:kai_whatsapp_ai.group_trainer
+msgid "AI trainer"
+msgstr "Entrenador de IA"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__auto_reply_customers
+msgid "Auto-reply customers"
+msgstr "Responder automáticamente a clientes"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__restrict_to_allowlist
+msgid "Only allowlisted numbers reach the provider"
+msgstr "Solo los números de la lista llegan al proveedor"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__allow_ids
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_config_view_form
+msgid "Customer allowlist"
+msgstr "Lista de clientes"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_config_view_form
+msgid "Customer numbers"
+msgstr "Números de clientes"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__reply_sent_auto
+msgid "Sent automatically"
+msgstr "Enviado automáticamente"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_om_whatsapp_account__inbound_ids
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.om_whatsapp_account_view_form_inbound
+msgid "Receive only these numbers"
+msgstr "Recibir solo de estos números"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__block_numbers
+msgid "Block these numbers"
+msgstr "Bloquear estos números"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__block_ids
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_config_view_form
+msgid "Blocked numbers"
+msgstr "Números bloqueados"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__send_as_user_id
+msgid "Send as"
+msgstr "Enviar como"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_config__catalog_limit
+msgid "Products in the prompt"
+msgstr "Productos en la consulta"
+
+#. module: kai_whatsapp_ai
+#: model:ir.ui.menu,name:om_whatsapp_base.om_whatsapp_menu_root
+#: model:ir.module.module,shortdesc:base.module_kai_whatsapp_ai
+msgid "IA Agent"
+msgstr "IA Agent"
+
+#. module: kai_whatsapp_ai
+#: model:res.groups,name:kai_whatsapp_ai.group_cost_viewer
+msgid "Ver costos de IA"
+msgstr "Ver costos de IA"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__clarification
+msgid "Clarification"
+msgstr "Aclaración"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion_line__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_mail_notification__om_whatsapp_number
+msgid "WhatsApp Number"
+msgstr "Número de WhatsApp"
+
+#. module: kai_whatsapp_ai
+msgid "WhatsApp is not linked: scan the QR code in Odoo."
+msgstr "WhatsApp no está vinculado: escaneá el código QR en Odoo."
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__verified
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__verified
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_spec_view_search
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_fit_view_search
+msgid "Verified"
+msgstr "Verificado"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__verification_note
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__verification_note
+msgid "Verification note"
+msgstr "Nota de verificación"
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_spec_view_search
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_fit_view_search
+msgid "To confirm"
+msgstr "A confirmar"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_help:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__verified
+msgid "Off: this sheet is orientative. The assistant must not state it as a fact."
+msgstr "Apagado: la ficha es orientativa. El asistente no debe decirla como un hecho."
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_help:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__verified
+msgid "Off: this fit is orientative. The assistant must not state it as a fact."
+msgstr "Apagado: la compatibilidad es orientativa. El asistente no debe decirla como un hecho."
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_help:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__verification_note
+#: model:ir.model.fields,field_help:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__verification_note
+msgid "Internal only. It is not sent to the customer or to the AI provider."
+msgstr "Solo interno. No se envía al cliente ni al proveedor de IA."
+
+#. module: kai_whatsapp_ai
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_spec_view_form
+#: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_fit_view_form
+msgid "Internal note. It is not sent to the customer or to the AI."
+msgstr "Nota interna. No se envía al cliente ni a la IA."
