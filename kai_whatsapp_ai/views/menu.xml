@@ -82,6 +82,7 @@
          Messages and templates stay with the WhatsApp user group. -->
     <record id="om_whatsapp_base.om_whatsapp_menu_root" model="ir.ui.menu">
         <field name="name">IA Agent</field>
+        <field name="web_icon">kai_whatsapp_ai,static/description/icon.png</field>
         <field name="group_ids" eval="[Command.link(ref('group_trainer'))]"/>
     </record>
     <record id="om_whatsapp_base.om_whatsapp_menu_messages" model="ir.ui.menu">

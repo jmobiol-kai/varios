@@ -2,6 +2,7 @@ from odoo import Command
 
 COST_VIEWER_LOGIN = "admin@kaizendo.com.ar"
 APP_NAME = "IA Agent"
+APP_ICON = "kai_whatsapp_ai,static/description/icon.png"
 
 
 def post_init_hook(env):
@@ -14,6 +15,7 @@ def brand_app(env):
     menu = env.ref("om_whatsapp_base.om_whatsapp_menu_root", raise_if_not_found=False)
     if not menu:
         return
+    menu.sudo().write({"web_icon": APP_ICON})
     languages = env["res.lang"].sudo().search([]).mapped("code") or ["en_US"]
     for code in languages:
         menu.with_context(lang=code).sudo().write({"name": APP_NAME})

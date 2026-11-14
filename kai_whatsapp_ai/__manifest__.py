@@ -1,6 +1,6 @@
 {
     'name': 'IA Agent',
-    'version': '19.0.1.11.0',
+    'version': '19.0.1.12.0',
     'category': 'Marketing',
     'summary': 'Supervised reply and draft-quotation suggestions for Odoo Mates WhatsApp',
     'description': """
@@ -32,6 +32,7 @@ invoice or reserve stock.
             'kai_whatsapp_ai/static/src/discuss/delete_actions.js',
         ],
     },
+    'images': ['static/description/icon.png'],
     'installable': True,
     'application': False,
     'post_init_hook': 'post_init_hook',

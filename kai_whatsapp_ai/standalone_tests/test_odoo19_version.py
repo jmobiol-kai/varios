@@ -81,7 +81,7 @@ class Odoo19VersionTests(unittest.TestCase):
 
     def test_kai_version_stays_on_the_series(self):
         version = manifest_version("kai_whatsapp_ai")
-        self.assertEqual(version, "19.0.1.11.0")
+        self.assertEqual(version, "19.0.1.12.0")
         self.assertTrue(version_is_accepted(version))
 
 

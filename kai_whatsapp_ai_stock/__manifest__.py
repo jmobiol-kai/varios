@@ -1,6 +1,6 @@
 {
     'name': 'IA Agent en Inventario',
-    'version': '19.0.1.11.0',
+    'version': '19.0.1.12.0',
     'category': 'Inventory',
     'summary': 'Mueve las fichas técnicas al menú de productos de Inventario',
     'author': 'jmobiol-kai',
@@ -9,6 +9,7 @@
     'data': [
         'views/menu.xml',
     ],
+    'images': ['static/description/icon.png'],
     'installable': True,
     'auto_install': True,
     'application': False,

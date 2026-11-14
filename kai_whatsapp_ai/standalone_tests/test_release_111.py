@@ -1,4 +1,5 @@
-"""IA Agent 19.0.1.11.0: branding, cost group, day totals, messages, product sheet."""
+"""IA Agent branding, cost group, day totals, messages, product sheet."""
+import struct
 import unittest
 from pathlib import Path
 
@@ -11,7 +12,16 @@ class Release111Tests(unittest.TestCase):
         manifest = (ROOT / "__manifest__.py").read_text(encoding="utf-8")
         menu = (ROOT / "views" / "menu.xml").read_text(encoding="utf-8")
         self.assertIn("'name': 'IA Agent'", manifest)
-        self.assertIn("'version': '19.0.1.11.0'", manifest)
+        self.assertIn("'version': '19.0.1.12.0'", manifest)
+        self.assertIn("kai_whatsapp_ai,static/description/icon.png", (ROOT / "views" / "menu.xml").read_text(encoding="utf-8"))
+        self.assertIn("APP_ICON", (ROOT / "hooks.py").read_text(encoding="utf-8"))
+        icon = (ROOT / "static" / "description" / "icon.png").read_bytes()
+        self.assertTrue(icon.startswith(b"\x89PNG\r\n\x1a\n"))
+        self.assertEqual(struct.unpack(">II", icon[16:24]), (512, 512))
+        self.assertEqual(icon[25], 6)
+        self.assertFalse((ROOT / "static" / "description" / "icon.svg").exists())
+        stock_icon = REPO / "kai_whatsapp_ai_stock" / "static" / "description" / "icon.png"
+        self.assertEqual(stock_icon.read_bytes(), icon)
         self.assertIn('<field name="name">IA Agent</field>', menu)
         hooks = (ROOT / "hooks.py").read_text(encoding="utf-8")
         self.assertIn("admin@kaizendo.com.ar", hooks)
