@@ -1,4 +1,5 @@
 """IA Agent branding, cost group, day totals, messages, product sheet."""
+import hashlib
 import struct
 import unittest
 from pathlib import Path
@@ -12,8 +13,8 @@ class Release111Tests(unittest.TestCase):
         manifest = (ROOT / "__manifest__.py").read_text(encoding="utf-8")
         menu = (ROOT / "views" / "menu.xml").read_text(encoding="utf-8")
         self.assertIn("'name': 'IA Agent'", manifest)
-        self.assertIn("'version': '19.0.1.13.0'", manifest)
-        refresh = (ROOT / "migrations" / "19.0.1.13.0" / "post-migrate.py").read_text(encoding="utf-8")
+        self.assertIn("'version': '19.0.1.14.0'", manifest)
+        refresh = (ROOT / "migrations" / "19.0.1.14.0" / "post-migrate.py").read_text(encoding="utf-8")
         self.assertIn("post_init_hook", refresh)
         self.assertIn("web_icon_data", (ROOT / "hooks.py").read_text(encoding="utf-8"))
         self.assertIn("kai_whatsapp_ai,static/description/icon.png", (ROOT / "views" / "menu.xml").read_text(encoding="utf-8"))
@@ -21,6 +22,10 @@ class Release111Tests(unittest.TestCase):
         icon = (ROOT / "static" / "description" / "icon.png").read_bytes()
         self.assertTrue(icon.startswith(b"\x89PNG\r\n\x1a\n"))
         self.assertEqual(struct.unpack(">II", icon[16:24]), (512, 512))
+        self.assertEqual(
+            hashlib.sha256(icon).hexdigest(),
+            "f8e4d0c5fc8e3cce2a80bee81859140e916f7936621c4b016e50f2c8cf7cbdbb",
+        )
         self.assertEqual(icon[25], 6)
         self.assertFalse((ROOT / "static" / "description" / "icon.svg").exists())
         stock_icon = REPO / "kai_whatsapp_ai_stock" / "static" / "description" / "icon.png"
