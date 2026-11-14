@@ -10,9 +10,11 @@
                 <field name="account_id"/>
                 <field name="client_label"/>
                 <field name="partner_id"/>
-                <field name="billable_known" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="billable_amount" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="billable_currency_id" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="consultation_count" string="Consultas" sum="Consultas"/>
+                <field name="billable_currency_id" column_invisible="1"/>
+                <field name="billable_amount" widget="monetary" sum="Total del día"
+                       groups="kai_whatsapp_ai.group_trainer,kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="provider_cost_usd" sum="Costo USD" groups="kai_whatsapp_ai.group_cost_viewer"/>
             </list>
         </field>
     </record>
@@ -37,6 +39,7 @@
                 <field name="account_id"/>
                 <field name="partner_id"/>
                 <filter name="occurred" string="Month" date="occurred_at"/>
+                <filter name="group_day" string="Día" context="{'group_by': 'occurred_at:day'}"/>
                 <filter name="group_month" string="Month" context="{'group_by': 'occurred_at:month'}"/>
                 <filter name="group_company" string="Company" context="{'group_by': 'company_id'}"/>
                 <filter name="group_account" string="Account" context="{'group_by': 'account_id'}"/>
@@ -48,6 +51,7 @@
         <field name="name">Usage summary</field>
         <field name="res_model">kai.whatsapp.ai.consultation</field>
         <field name="view_mode">list,pivot</field>
+        <field name="context">{'search_default_group_day': 1}</field>
     </record>
 
     <record id="kai_whatsapp_ai_call_view_list" model="ir.ui.view">
@@ -61,14 +65,14 @@
                 <field name="client_label"/>
                 <field name="attempt"/>
                 <field name="outcome"/>
-                <field name="provider_label" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="model_name" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="provider_label" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="model_name" groups="kai_whatsapp_ai.group_cost_viewer"/>
                 <field name="latency_ms"/>
                 <field name="input_tokens_display"/>
                 <field name="output_tokens_display"/>
                 <field name="cached_tokens_display"/>
                 <field name="thinking_tokens_display"/>
-                <field name="cost_display" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="cost_display" groups="kai_whatsapp_ai.group_cost_viewer"/>
                 <field name="rate_name"/>
                 <field name="error_sanitized"/>
             </list>
@@ -80,8 +84,8 @@
         <field name="arch" type="xml">
             <pivot>
                 <field name="occurred_at" type="row" interval="month"/>
-                <field name="provider_label" type="row" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="model_name" type="row"/>
+                <field name="provider_label" type="row" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="model_name" type="row" groups="kai_whatsapp_ai.group_cost_viewer"/>
                 <field name="outcome" type="col"/>
             </pivot>
         </field>
@@ -93,7 +97,7 @@
             <search>
                 <field name="client_label"/>
                 <field name="model_name"/>
-                <field name="provider_label" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="provider_label" groups="kai_whatsapp_ai.group_cost_viewer"/>
                 <filter name="occurred" string="Month" date="occurred_at"/>
                 <filter name="failed" string="Failed" domain="[('outcome', '=', 'failed')]"/>
                 <filter name="retries" string="Retries" domain="[('attempt', '&gt;', 1)]"/>
@@ -216,7 +220,7 @@
                 <footer>
                     <button name="action_fill_totals" type="object" string="Monthly totals" class="btn-primary"/>
                     <button name="action_open_consultations" type="object" string="Consultations"/>
-                    <button name="action_open_calls" type="object" string="Provider calls" groups="kai_whatsapp_ai.group_manager"/>
+                    <button name="action_open_calls" type="object" string="Provider calls" groups="kai_whatsapp_ai.group_cost_viewer"/>
                     <button string="Close" special="cancel"/>
                 </footer>
             </form>
@@ -241,9 +245,9 @@
                 <field name="image_consultations"/>
                 <field name="sends"/>
                 <field name="quotations"/>
-                <field name="billable_amount" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="billable_unknown" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="billable_currency_id" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="billable_currency_id" column_invisible="1"/>
+                <field name="billable_amount" widget="monetary" sum="Total"
+                       groups="kai_whatsapp_ai.group_trainer,kai_whatsapp_ai.group_cost_viewer"/>
             </list>
         </field>
     </record>
@@ -260,28 +264,28 @@
                 <field name="image_consultations"/>
                 <field name="sends"/>
                 <field name="quotations"/>
-                <field name="billable_amount" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="billable_unknown" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="billable_currency_id" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="provider_label" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="model_name" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="attempted" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="succeeded" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="failed" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="retries" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="input_tokens" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="input_unknown" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="output_tokens" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="output_unknown" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="cached_tokens" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="cached_unknown" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="thinking_tokens" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="thinking_unknown" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="estimated_cost_usd" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="cost_unknown" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="image_count" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="image_tokens" groups="kai_whatsapp_ai.group_manager"/>
-                <field name="image_unknown" groups="kai_whatsapp_ai.group_manager"/>
+                <field name="billable_currency_id" column_invisible="1"/>
+                <field name="billable_amount" widget="monetary" sum="Total"
+                       groups="kai_whatsapp_ai.group_trainer,kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="provider_label" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="model_name" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="attempted" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="succeeded" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="failed" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="retries" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="input_tokens" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="input_unknown" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="output_tokens" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="output_unknown" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="cached_tokens" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="cached_unknown" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="thinking_tokens" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="thinking_unknown" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="estimated_cost_usd" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="cost_unknown" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="image_count" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="image_tokens" groups="kai_whatsapp_ai.group_cost_viewer"/>
+                <field name="image_unknown" groups="kai_whatsapp_ai.group_cost_viewer"/>
             </list>
         </field>
     </record>

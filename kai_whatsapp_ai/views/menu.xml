@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <menuitem id="menu_kai_whatsapp_ai_messages" name="Mensajes"
+              parent="om_whatsapp_base.om_whatsapp_menu_root"
+              action="kai_whatsapp_ai_suggestion_action" sequence="10"
+              groups="group_user,group_trainer"/>
     <menuitem id="menu_kai_whatsapp_ai_suggestions" name="AI Suggestions"
               parent="om_whatsapp_base.om_whatsapp_menu_root"
               action="kai_whatsapp_ai_suggestion_action" sequence="15"
-              groups="group_user,group_trainer"/>
-    <menuitem id="menu_kai_whatsapp_ai_specs" name="Product sheets"
-              parent="om_whatsapp_base.om_whatsapp_menu_root"
-              action="kai_whatsapp_ai_spec_action" sequence="17"
+              groups="base.group_no_one"/>
+    <menuitem id="menu_kai_whatsapp_ai_specs" name="Fichas técnicas"
+              parent="sale.product_menu_catalog"
+              action="kai_whatsapp_ai_spec_action" sequence="30"
               groups="group_user,group_trainer"/>
     <menuitem id="menu_kai_whatsapp_ai_advisory" name="Activity guide"
               parent="om_whatsapp_base.om_whatsapp_menu_root"
               action="kai_whatsapp_ai_advisory_action" sequence="18"
               groups="group_user,group_trainer"/>
-    <menuitem id="menu_kai_whatsapp_ai_fit" name="Jar and closure fit"
-              parent="om_whatsapp_base.om_whatsapp_menu_root"
-              action="kai_whatsapp_ai_fit_action" sequence="19"
+    <menuitem id="menu_kai_whatsapp_ai_fit" name="Compatibilidad de envases y tapas"
+              parent="sale.product_menu_catalog"
+              action="kai_whatsapp_ai_fit_action" sequence="31"
               groups="group_user,group_trainer"/>
     <menuitem id="menu_kai_whatsapp_ai_rules" name="Reglas del agente"
               parent="om_whatsapp_base.om_whatsapp_menu_root"
@@ -27,7 +31,7 @@
     <menuitem id="menu_kai_whatsapp_ai_usage" name="Usage summary"
               parent="om_whatsapp_base.om_whatsapp_menu_root"
               action="kai_whatsapp_ai_consultation_action" sequence="16"
-              groups="group_manager"/>
+              groups="group_manager,group_trainer"/>
     <menuitem id="menu_kai_whatsapp_ai_trainers" name="Entrenadores"
               parent="om_whatsapp_base.om_whatsapp_menu_config"
               action="kai_whatsapp_ai_trainer_action" sequence="19"
@@ -43,17 +47,27 @@
     <menuitem id="menu_kai_whatsapp_ai_calls" name="Provider calls"
               parent="om_whatsapp_base.om_whatsapp_menu_config"
               action="kai_whatsapp_ai_call_action" sequence="22"
-              groups="group_manager"/>
+              groups="group_cost_viewer"/>
     <menuitem id="menu_kai_whatsapp_ai_provider_rates" name="Provider rate cards"
               parent="om_whatsapp_base.om_whatsapp_menu_config"
               action="kai_whatsapp_ai_provider_rate_action" sequence="23"
+              groups="group_cost_viewer"/>
+    <menuitem id="menu_kai_whatsapp_ai_unlinked" name="Mensajes sin IA"
+              parent="om_whatsapp_base.om_whatsapp_menu_config"
+              action="action_kai_unlinked_whatsapp_messages" sequence="18"
               groups="group_manager"/>
     <menuitem id="menu_kai_whatsapp_ai_billable_rates" name="Client rates"
               parent="om_whatsapp_base.om_whatsapp_menu_config"
               action="kai_whatsapp_ai_billable_rate_action" sequence="24"
               groups="group_manager"/>
     <record id="menu_kai_whatsapp_ai_usage" model="ir.ui.menu">
-        <field name="group_ids" eval="[Command.set([ref('group_manager')])]"/>
+        <field name="group_ids" eval="[Command.set([ref('group_manager'), ref('group_trainer')])]"/>
+    </record>
+    <record id="menu_kai_whatsapp_ai_calls" model="ir.ui.menu">
+        <field name="group_ids" eval="[Command.set([ref('group_cost_viewer')])]"/>
+    </record>
+    <record id="menu_kai_whatsapp_ai_provider_rates" model="ir.ui.menu">
+        <field name="group_ids" eval="[Command.set([ref('group_cost_viewer')])]"/>
     </record>
     <record id="menu_kai_whatsapp_ai_usage_wizard" model="ir.ui.menu">
         <field name="group_ids" eval="[Command.set([ref('group_manager')])]"/>
@@ -67,10 +81,14 @@
     <!-- Trainers open the WhatsApp app for the assistant screens only.
          Messages and templates stay with the WhatsApp user group. -->
     <record id="om_whatsapp_base.om_whatsapp_menu_root" model="ir.ui.menu">
+        <field name="name">IA Agent</field>
         <field name="group_ids" eval="[Command.link(ref('group_trainer'))]"/>
     </record>
     <record id="om_whatsapp_base.om_whatsapp_menu_messages" model="ir.ui.menu">
-        <field name="group_ids" eval="[Command.set([ref('om_whatsapp_base.group_om_whatsapp_user')])]"/>
+        <field name="group_ids" eval="[Command.set([ref('base.group_no_one')])]"/>
+    </record>
+    <record id="menu_kai_whatsapp_ai_suggestions" model="ir.ui.menu">
+        <field name="active" eval="False"/>
     </record>
     <record id="om_whatsapp_base.om_whatsapp_menu_templates" model="ir.ui.menu">
         <field name="group_ids" eval="[Command.set([ref('om_whatsapp_base.group_om_whatsapp_user')])]"/>

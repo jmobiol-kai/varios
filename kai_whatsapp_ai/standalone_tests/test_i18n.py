@@ -50,6 +50,10 @@ class SpanishCatalogTests(unittest.TestCase):
                 "Blocked numbers": "Números bloqueados",
                 "Send as": "Enviar como",
                 "Products in the prompt": "Productos en la consulta",
+                "IA Agent": "IA Agent",
+                "Ver costos de IA": "Ver costos de IA",
+                "Clarification": "Aclaración",
+                "WhatsApp Number": "Número de WhatsApp",
             }),
             (base, {
                 "Messages": "Mensajes",
@@ -76,7 +80,7 @@ class SpanishCatalogTests(unittest.TestCase):
         self.assertIn('name="Reglas del agente"', menu)
         self.assertIn('name="Respuestas al entrenador"', menu)
         manifest = (ROOT / "kai_whatsapp_ai" / "__manifest__.py").read_text(encoding="utf-8")
-        self.assertIn("'version': '19.0.1.10.0'", manifest)
+        self.assertIn("'version': '19.0.1.11.0'", manifest)
         base_manifest = (ROOT / "om_whatsapp_base" / "__manifest__.py").read_text(encoding="utf-8")
         self.assertIn("'version': '19.0.1.1.1'", base_manifest)
 

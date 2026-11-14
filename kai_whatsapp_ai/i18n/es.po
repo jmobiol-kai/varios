@@ -964,6 +964,36 @@ msgid "Products in the prompt"
 msgstr "Productos en la consulta"
 
 #. module: kai_whatsapp_ai
+#: model:ir.ui.menu,name:om_whatsapp_base.om_whatsapp_menu_root
+#: model:ir.module.module,shortdesc:base.module_kai_whatsapp_ai
+msgid "IA Agent"
+msgstr "IA Agent"
+
+#. module: kai_whatsapp_ai
+#: model:res.groups,name:kai_whatsapp_ai.group_cost_viewer
+msgid "Ver costos de IA"
+msgstr "Ver costos de IA"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion__clarification
+msgid "Clarification"
+msgstr "Aclaración"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_suggestion_line__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: kai_whatsapp_ai
+#: model:ir.model.fields,field_description:kai_whatsapp_ai.field_mail_notification__om_whatsapp_number
+msgid "WhatsApp Number"
+msgstr "Número de WhatsApp"
+
+#. module: kai_whatsapp_ai
+msgid "WhatsApp is not linked: scan the QR code in Odoo."
+msgstr "WhatsApp no está vinculado: escaneá el código QR en Odoo."
+
+#. module: kai_whatsapp_ai
 #: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_spec__verified
 #: model:ir.model.fields,field_description:kai_whatsapp_ai.field_kai_whatsapp_ai_fit__verified
 #: model_terms:ir.ui.view,arch_db:kai_whatsapp_ai.kai_whatsapp_ai_spec_view_search

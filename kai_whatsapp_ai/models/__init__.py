@@ -8,3 +8,4 @@ from . import mail_message
 from . import res_partner
 from . import res_users
 from . import om_whatsapp_account
+from . import product_template

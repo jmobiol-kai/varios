@@ -17,18 +17,22 @@ class KaiWhatsappAiProviderRate(models.Model):
         ('manual', 'Manual'),
         ('gemini_flash_lite', 'Gemini 3.5 Flash-Lite'),
         ('grok', 'Grok'),
-    ], required=True, default='manual')
-    model_name = fields.Char(string='Model', required=True)
+    ], required=True, default='manual', groups='kai_whatsapp_ai.group_cost_viewer')
+    model_name = fields.Char(string='Model', required=True, groups='kai_whatsapp_ai.group_cost_viewer')
     date_start = fields.Datetime(required=True)
     date_end = fields.Datetime()
-    input_rate_set = fields.Boolean(string='Price input tokens')
-    input_per_million = fields.Float(string='USD per 1M input tokens', digits=(16, 6))
-    output_rate_set = fields.Boolean(string='Price output tokens')
-    output_per_million = fields.Float(string='USD per 1M output tokens', digits=(16, 6))
-    cached_rate_set = fields.Boolean(string='Price cached tokens')
-    cached_per_million = fields.Float(string='USD per 1M cached tokens', digits=(16, 6))
-    thinking_rate_set = fields.Boolean(string='Price thinking tokens')
-    thinking_per_million = fields.Float(string='USD per 1M thinking tokens', digits=(16, 6))
+    input_rate_set = fields.Boolean(string='Price input tokens', groups='kai_whatsapp_ai.group_cost_viewer')
+    input_per_million = fields.Float(
+        string='USD per 1M input tokens', digits=(16, 6), groups='kai_whatsapp_ai.group_cost_viewer')
+    output_rate_set = fields.Boolean(string='Price output tokens', groups='kai_whatsapp_ai.group_cost_viewer')
+    output_per_million = fields.Float(
+        string='USD per 1M output tokens', digits=(16, 6), groups='kai_whatsapp_ai.group_cost_viewer')
+    cached_rate_set = fields.Boolean(string='Price cached tokens', groups='kai_whatsapp_ai.group_cost_viewer')
+    cached_per_million = fields.Float(
+        string='USD per 1M cached tokens', digits=(16, 6), groups='kai_whatsapp_ai.group_cost_viewer')
+    thinking_rate_set = fields.Boolean(string='Price thinking tokens', groups='kai_whatsapp_ai.group_cost_viewer')
+    thinking_per_million = fields.Float(
+        string='USD per 1M thinking tokens', digits=(16, 6), groups='kai_whatsapp_ai.group_cost_viewer')
 
     def _as_engine_row(self):
         self.ensure_one()
@@ -93,25 +97,51 @@ class KaiWhatsappAiConsultation(models.Model):
     partner_id = fields.Many2one('res.partner', string='Customer')
     occurred_at = fields.Datetime(required=True, index=True)
     client_label = fields.Char(readonly=True)
+    consultation_count = fields.Integer(string='Consultations', default=1, readonly=True)
     billable_known = fields.Boolean(readonly=True, groups='kai_whatsapp_ai.group_manager')
-    billable_amount = fields.Float(digits=(16, 6), readonly=True, groups='kai_whatsapp_ai.group_manager')
-    billable_currency_id = fields.Many2one('res.currency', readonly=True, groups='kai_whatsapp_ai.group_manager')
+    billable_currency_id = fields.Many2one(
+        'res.currency', readonly=True,
+        default=lambda self: self.env.ref('base.ARS', raise_if_not_found=False),
+        groups='kai_whatsapp_ai.group_trainer,kai_whatsapp_ai.group_cost_viewer')
+    billable_amount = fields.Monetary(
+        currency_field='billable_currency_id', readonly=True,
+        groups='kai_whatsapp_ai.group_trainer,kai_whatsapp_ai.group_cost_viewer')
     billable_rate_id = fields.Many2one(
         'kai.whatsapp.ai.billable.rate', readonly=True, groups='kai_whatsapp_ai.group_manager')
     has_image = fields.Boolean(string='Photo', readonly=True)
+    call_ids = fields.One2many('kai.whatsapp.ai.call', 'consultation_id')
+    provider_cost_usd = fields.Float(
+        string='Provider cost (USD)', digits=(16, 6),
+        compute='_compute_provider_cost_usd', store=True,
+        groups='kai_whatsapp_ai.group_cost_viewer')
+
+    _PROVIDER_COST_FIELDS = frozenset({'provider_cost_usd'})
 
     _consultation_whatsapp_unique = models.UniqueIndex(
         "(account_id, whatsapp_message_id) WHERE whatsapp_message_id IS NOT NULL")
     _consultation_message_unique = models.UniqueIndex(
         "(message_id) WHERE message_id IS NOT NULL")
 
+    @api.depends('call_ids.cost_usd', 'call_ids.cost_known')
+    def _compute_provider_cost_usd(self):
+        for consultation in self:
+            calls = consultation.sudo().call_ids.filtered('cost_known')
+            consultation.provider_cost_usd = sum(calls.mapped('cost_usd'))
+
     @api.model_create_multi
     def create(self, vals_list):
         if not self.env.su:
             raise UserError(_("Consultations are recorded from inbound WhatsApp messages."))
+        ars = self.env.ref('base.ARS', raise_if_not_found=False)
+        for vals in vals_list:
+            vals.setdefault('consultation_count', 1)
+            if ars:
+                vals['billable_currency_id'] = ars.id
         return super().create(vals_list)
 
     def write(self, vals):
+        if self.env.su and set(vals).issubset(self._PROVIDER_COST_FIELDS):
+            return super().write(vals)
         raise UserError(_("A consultation cannot be changed."))
 
     def unlink(self):
@@ -138,25 +168,30 @@ class KaiWhatsappAiCall(models.Model):
         ('manual', 'Manual'),
         ('gemini_flash_lite', 'Gemini 3.5 Flash-Lite'),
         ('grok', 'Grok'),
-    ], required=True)
-    provider_label = fields.Char(required=True, groups='kai_whatsapp_ai.group_manager')
-    model_name = fields.Char(string='Model', required=True, groups='kai_whatsapp_ai.group_manager')
-    endpoint_host = fields.Char(readonly=True, groups='kai_whatsapp_ai.group_manager')
+    ], required=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    provider_label = fields.Char(required=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    model_name = fields.Char(string='Model', required=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    endpoint_host = fields.Char(readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
     error_sanitized = fields.Char(readonly=True)
     client_label = fields.Char(readonly=True)
-    input_known = fields.Boolean(readonly=True)
-    input_tokens = fields.Integer(readonly=True)
-    input_tokens_display = fields.Char(string='Input tokens', compute='_compute_token_display')
-    output_known = fields.Boolean(readonly=True)
-    output_tokens = fields.Integer(readonly=True)
-    output_tokens_display = fields.Char(string='Output tokens', compute='_compute_token_display')
-    cached_known = fields.Boolean(readonly=True)
-    cached_tokens = fields.Integer(readonly=True)
-    cached_tokens_display = fields.Char(string='Cached tokens', compute='_compute_token_display')
-    thinking_known = fields.Boolean(readonly=True)
-    thinking_tokens = fields.Integer(readonly=True)
-    thinking_tokens_display = fields.Char(string='Thinking tokens', compute='_compute_token_display')
-    cost_display = fields.Char(string='Estimated USD', compute='_compute_token_display')
+    input_known = fields.Boolean(readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    input_tokens = fields.Integer(readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    input_tokens_display = fields.Char(
+        string='Input tokens', compute='_compute_token_display', groups='kai_whatsapp_ai.group_cost_viewer')
+    output_known = fields.Boolean(readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    output_tokens = fields.Integer(readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    output_tokens_display = fields.Char(
+        string='Output tokens', compute='_compute_token_display', groups='kai_whatsapp_ai.group_cost_viewer')
+    cached_known = fields.Boolean(readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    cached_tokens = fields.Integer(readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    cached_tokens_display = fields.Char(
+        string='Cached tokens', compute='_compute_token_display', groups='kai_whatsapp_ai.group_cost_viewer')
+    thinking_known = fields.Boolean(readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    thinking_tokens = fields.Integer(readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    thinking_tokens_display = fields.Char(
+        string='Thinking tokens', compute='_compute_token_display', groups='kai_whatsapp_ai.group_cost_viewer')
+    cost_display = fields.Char(
+        string='Estimated USD', compute='_compute_token_display', groups='kai_whatsapp_ai.group_cost_viewer')
 
     @api.depends(
         'input_known', 'input_tokens', 'output_known', 'output_tokens',
@@ -170,15 +205,16 @@ class KaiWhatsappAiCall(models.Model):
             call.thinking_tokens_display = str(call.thinking_tokens) if call.thinking_known else ''
             call.cost_display = f'{call.cost_usd:.6f}' if call.cost_known else ''
 
-    rate_id = fields.Many2one('kai.whatsapp.ai.provider.rate', readonly=True)
-    rate_name = fields.Char(readonly=True)
-    input_per_million = fields.Float(digits=(16, 6), readonly=True)
-    output_per_million = fields.Float(digits=(16, 6), readonly=True)
-    cached_per_million = fields.Float(digits=(16, 6), readonly=True)
-    thinking_per_million = fields.Float(digits=(16, 6), readonly=True)
-    cost_known = fields.Boolean(readonly=True, groups='kai_whatsapp_ai.group_manager')
+    rate_id = fields.Many2one(
+        'kai.whatsapp.ai.provider.rate', readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    rate_name = fields.Char(readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    input_per_million = fields.Float(digits=(16, 6), readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    output_per_million = fields.Float(digits=(16, 6), readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    cached_per_million = fields.Float(digits=(16, 6), readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    thinking_per_million = fields.Float(digits=(16, 6), readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
+    cost_known = fields.Boolean(readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
     cost_usd = fields.Float(
-        string='Estimated USD', digits=(16, 6), readonly=True, groups='kai_whatsapp_ai.group_manager')
+        string='Estimated USD', digits=(16, 6), readonly=True, groups='kai_whatsapp_ai.group_cost_viewer')
     image_count = fields.Integer(readonly=True)
     image_tokens_known = fields.Boolean(readonly=True)
     image_tokens = fields.Integer(readonly=True)
@@ -246,7 +282,7 @@ class KaiWhatsappAiUsageWizard(models.TransientModel):
 
     def action_open_calls(self):
         self.ensure_one()
-        self._check_manager()
+        self._check_cost_viewer()
         return self._open('kai.whatsapp.ai.call', self._domain('occurred_at'), 'Provider calls')
 
     def action_fill_totals(self):
@@ -264,27 +300,27 @@ class KaiWhatsappAiUsageWizard(models.TransientModel):
         )
         Total = self.env['kai.whatsapp.ai.usage.total']
         Total.search([('create_uid', '=', self.env.uid)]).unlink()
-        is_manager = self.env.user.has_group('kai_whatsapp_ai.group_manager')
+        sees_cost = self.env.user.has_group('kai_whatsapp_ai.group_cost_viewer')
         calls = self.env['kai.whatsapp.ai.call']
         provider_rows = []
-        if is_manager:
+        if sees_cost:
             calls = calls.search(self._domain('occurred_at'))
             provider_rows = engine.aggregate_provider([self._call_row(row) for row in calls])
         created = Total
         for row in customer:
             created |= Total.create(self._customer_vals(row))
-        if is_manager:
+        if sees_cost:
             for row in provider_rows:
                 created |= Total.sudo().create(self._provider_vals(row))
         action = self._open('kai.whatsapp.ai.usage.total', [('id', 'in', created.ids)], 'Monthly totals')
-        if not is_manager:
+        if not sees_cost:
             action['view_id'] = self.env.ref('kai_whatsapp_ai.kai_whatsapp_ai_usage_total_view_list_customer').id
             action['views'] = [(action['view_id'], 'list')]
         return action
 
-    def _check_manager(self):
-        if not self.env.user.has_group('kai_whatsapp_ai.group_manager'):
-            raise UserError(_("Only an administrator can open provider usage."))
+    def _check_cost_viewer(self):
+        if not self.env.user.has_group('kai_whatsapp_ai.group_cost_viewer'):
+            raise UserError(_("Only the cost viewer can open provider usage."))
 
     def _open(self, model, domain, name):
         return {
@@ -391,25 +427,28 @@ class KaiWhatsappAiUsageTotal(models.TransientModel):
     image_consultations = fields.Integer()
     sends = fields.Integer()
     quotations = fields.Integer()
-    billable_amount = fields.Float(digits=(16, 6), groups='kai_whatsapp_ai.group_manager')
+    billable_amount = fields.Monetary(
+        currency_field='billable_currency_id',
+        groups='kai_whatsapp_ai.group_trainer,kai_whatsapp_ai.group_cost_viewer')
     billable_unknown = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    billable_currency_id = fields.Many2one('res.currency', groups='kai_whatsapp_ai.group_manager')
-    provider_label = fields.Char(groups='kai_whatsapp_ai.group_manager')
-    model_name = fields.Char(string='Model', groups='kai_whatsapp_ai.group_manager')
-    attempted = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    succeeded = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    failed = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    retries = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    input_tokens = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    input_unknown = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    output_tokens = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    output_unknown = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    cached_tokens = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    cached_unknown = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    thinking_tokens = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    thinking_unknown = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    estimated_cost_usd = fields.Float(digits=(16, 6), groups='kai_whatsapp_ai.group_manager')
-    cost_unknown = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    image_count = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    image_tokens = fields.Integer(groups='kai_whatsapp_ai.group_manager')
-    image_unknown = fields.Integer(groups='kai_whatsapp_ai.group_manager')
+    billable_currency_id = fields.Many2one(
+        'res.currency', groups='kai_whatsapp_ai.group_trainer,kai_whatsapp_ai.group_cost_viewer')
+    provider_label = fields.Char(groups='kai_whatsapp_ai.group_cost_viewer')
+    model_name = fields.Char(string='Model', groups='kai_whatsapp_ai.group_cost_viewer')
+    attempted = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    succeeded = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    failed = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    retries = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    input_tokens = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    input_unknown = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    output_tokens = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    output_unknown = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    cached_tokens = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    cached_unknown = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    thinking_tokens = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    thinking_unknown = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    estimated_cost_usd = fields.Float(digits=(16, 6), groups='kai_whatsapp_ai.group_cost_viewer')
+    cost_unknown = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    image_count = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    image_tokens = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')
+    image_unknown = fields.Integer(groups='kai_whatsapp_ai.group_cost_viewer')

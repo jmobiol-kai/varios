@@ -25,8 +25,9 @@ access_kai_whatsapp_ai_suggestion_line_manager,kai.whatsapp.ai.suggestion.line.m
 access_kai_whatsapp_ai_suggestion_line_trainer,kai.whatsapp.ai.suggestion.line.trainer,model_kai_whatsapp_ai_suggestion_line,group_trainer,1,0,0,0
 access_kai_whatsapp_ai_consultation_user,kai.whatsapp.ai.consultation.user,model_kai_whatsapp_ai_consultation,group_user,1,0,0,0
 access_kai_whatsapp_ai_consultation_manager,kai.whatsapp.ai.consultation.manager,model_kai_whatsapp_ai_consultation,group_manager,1,0,0,0
-access_kai_whatsapp_ai_call_manager,kai.whatsapp.ai.call.manager,model_kai_whatsapp_ai_call,group_manager,1,0,0,0
-access_kai_whatsapp_ai_provider_rate_manager,kai.whatsapp.ai.provider.rate.manager,model_kai_whatsapp_ai_provider_rate,group_manager,1,1,1,1
+access_kai_whatsapp_ai_consultation_trainer,kai.whatsapp.ai.consultation.trainer,model_kai_whatsapp_ai_consultation,group_trainer,1,0,0,0
+access_kai_whatsapp_ai_call_cost,kai.whatsapp.ai.call.cost,model_kai_whatsapp_ai_call,group_cost_viewer,1,0,0,0
+access_kai_whatsapp_ai_provider_rate_cost,kai.whatsapp.ai.provider.rate.cost,model_kai_whatsapp_ai_provider_rate,group_cost_viewer,1,1,1,1
 access_kai_whatsapp_ai_billable_rate_manager,kai.whatsapp.ai.billable.rate.manager,model_kai_whatsapp_ai_billable_rate,group_manager,1,1,1,1
 access_kai_whatsapp_ai_usage_wizard_manager,kai.whatsapp.ai.usage.wizard.manager,model_kai_whatsapp_ai_usage_wizard,group_manager,1,1,1,1
 access_kai_whatsapp_ai_usage_total_manager,kai.whatsapp.ai.usage.total.manager,model_kai_whatsapp_ai_usage_total,group_manager,1,1,1,1

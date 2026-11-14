@@ -27,12 +27,12 @@ class TrainerAccessTests(unittest.TestCase):
         self.assertIn("ref('group_trainer')", manager)
         self.assertIn("ref('group_user')", manager)
 
-    def test_usage_menus_are_manager_only(self):
+    def test_usage_summary_is_open_to_the_trainer(self):
         xml = (ROOT / "views" / "menu.xml").read_text(encoding="utf-8")
-        for menu_id in ("menu_kai_whatsapp_ai_usage", "menu_kai_whatsapp_ai_usage_wizard"):
-            menu = re.search(rf'id="{menu_id}"[\s\S]*?groups="([^"]+)"', xml)
-            self.assertIsNotNone(menu, menu_id)
-            self.assertEqual(menu.group(1), "group_manager")
+        usage = re.search(r'id="menu_kai_whatsapp_ai_usage"[\s\S]*?groups="([^"]+)"', xml)
+        self.assertIn("group_trainer", usage.group(1))
+        wizard = re.search(r'id="menu_kai_whatsapp_ai_usage_wizard"[\s\S]*?groups="([^"]+)"', xml)
+        self.assertEqual(wizard.group(1), "group_manager")
         self.assertIn("om_whatsapp_base.om_whatsapp_menu_messages", xml)
         self.assertIn("group_om_whatsapp_user", xml)
 
@@ -47,9 +47,11 @@ class TrainerAccessTests(unittest.TestCase):
 
     def test_sensitive_fields_are_manager_only(self):
         usage = (ROOT / "models" / "ai_usage.py").read_text(encoding="utf-8")
-        for name in ("billable_amount", "billable_known", "billable_currency_id", "billable_rate_id"):
-            start = usage.index(f"{name} = fields.")
-            self.assertIn("groups='kai_whatsapp_ai.group_manager'", usage[start:start + 280], name)
+        amount = usage[usage.index("billable_amount = fields."):]
+        self.assertIn("group_trainer", amount[:320])
+        known_line = next(line for line in usage.splitlines() if "billable_known = fields." in line)
+        self.assertIn("group_manager", known_line)
+        self.assertNotIn("group_cost_viewer", known_line)
         suggestion = (ROOT / "models" / "ai_suggestion.py").read_text(encoding="utf-8")
         training = (ROOT / "models" / "ai_training.py").read_text(encoding="utf-8")
         for source in (suggestion, training):

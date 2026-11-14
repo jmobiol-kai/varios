@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="kai_whatsapp_ai.menu_kai_whatsapp_ai_specs" model="ir.ui.menu">
+        <field name="parent_id" ref="stock.menu_stock_inventory_control"/>
+    </record>
+    <record id="kai_whatsapp_ai.menu_kai_whatsapp_ai_fit" model="ir.ui.menu">
+        <field name="parent_id" ref="stock.menu_stock_inventory_control"/>
+    </record>
+</odoo>

@@ -60,6 +60,17 @@ class KaiWhatsappAiSuggestion(models.Model):
     ], default='pending', required=True, index=True, readonly=True)
     reply_sent = fields.Boolean(readonly=True, copy=False)
     reply_sent_auto = fields.Boolean(string='Sent automatically', readonly=True, copy=False)
+    outgoing_message_id = fields.Many2one('mail.message', string='WhatsApp reply', copy=False, readonly=True)
+    delivery_status = fields.Selection([
+        ('received', 'Recibido'),
+        ('queued', 'En cola'),
+        ('sent', 'Enviado'),
+        ('delivered', 'Entregado'),
+        ('read', 'Leído'),
+        ('failed', 'Fallido'),
+        ('cancel', 'Cancelado'),
+    ], string='Estado', compute='_compute_delivery')
+    delivery_error = fields.Char(string='Error', compute='_compute_delivery')
     sale_order_id = fields.Many2one('sale.order', string='Draft quotation', readonly=True, copy=False)
     line_ids = fields.One2many('kai.whatsapp.ai.suggestion.line', 'suggestion_id')
     quotation_ready = fields.Boolean(compute='_compute_quotation_ready')
@@ -690,11 +701,12 @@ class KaiWhatsappAiSuggestion(models.Model):
         channel = self.channel_id
         if automatic:
             channel = channel.with_user(self._auto_send_user())
-        channel.message_post(body=plaintext2html(text), message_type='comment')
+        posted = channel.message_post(body=plaintext2html(text), message_type='comment')
         self.sudo().write({
             'reply_sent': True,
             'reply_sent_at': fields.Datetime.now(),
             'reply_sent_auto': bool(automatic),
+            'outgoing_message_id': posted.id if posted else False,
         })
 
     def _auto_send_user(self):
@@ -734,6 +746,67 @@ class KaiWhatsappAiSuggestion(models.Model):
         ):
             return
         self._deliver_reply(automatic=True)
+
+    _DELIVERY_REASON_ES = {
+        'WhatsApp is not linked: scan the QR code in Odoo.':
+            'WhatsApp no está vinculado: escaneá el código QR en Odoo.',
+    }
+
+    def _linked_outgoing(self):
+        """The WhatsApp message this suggestion sent, including older rows that did not store the link."""
+        self.ensure_one()
+        if self.outgoing_message_id:
+            return self.outgoing_message_id
+        if not self.reply_sent or not self.channel_id:
+            return self.env['mail.message']
+        domain = [
+            ('model', '=', 'discuss.channel'),
+            ('res_id', '=', self.channel_id.id),
+            ('message_type', '=', 'om_whatsapp'),
+        ]
+        if self.reply_sent_at:
+            domain.append(('date', '>=', self.reply_sent_at))
+        return self.env['mail.message'].sudo().search(domain, order='id asc', limit=1)
+
+    def _compute_delivery(self):
+        for suggestion in self:
+            message = suggestion._linked_outgoing()
+            suggestion.delivery_status = message.om_whatsapp_status if message else False
+            reasons = []
+            if message:
+                for reason in message.sudo()._om_whatsapp_notifications().mapped('failure_reason'):
+                    if reason:
+                        reasons.append(suggestion._DELIVERY_REASON_ES.get(reason, reason))
+            suggestion.delivery_error = '; '.join(reasons)
+
+    def action_retry_whatsapp(self):
+        """Send the failed WhatsApp message again, using the connector's own action."""
+        self.ensure_one()
+        message = self._linked_outgoing()
+        if not message:
+            raise UserError(_("No hay un mensaje de WhatsApp enviado para reintentar."))
+        if not self.outgoing_message_id:
+            self.sudo().write({'outgoing_message_id': message.id})
+        return message.action_om_whatsapp_retry()
+
+    @api.model
+    def action_open_unlinked_messages(self):
+        """WhatsApp messages that are not an AI suggestion: manual sends and other chats."""
+        suggestions = self.sudo().search([])
+        linked = set(suggestions.mapped('outgoing_message_id').ids)
+        linked.update(suggestions.mapped('message_id').ids)
+        linked.discard(False)
+        list_view = self.env.ref('om_whatsapp_base.om_whatsapp_message_view_list')
+        form_view = self.env.ref('om_whatsapp_base.om_whatsapp_message_view_form')
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Mensajes sin IA'),
+            'res_model': 'mail.message',
+            'view_mode': 'list,form',
+            'domain': [('message_type', '=', 'om_whatsapp'), ('id', 'not in', list(linked) or [0])],
+            'views': [(list_view.id, 'list'), (form_view.id, 'form')],
+            'search_view_id': self.env.ref('om_whatsapp_base.om_whatsapp_message_view_search').id,
+        }
 
     def action_send(self):
         """A person presses the button. The allowlist auto-reply uses the same post."""

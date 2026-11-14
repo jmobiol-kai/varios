@@ -62,7 +62,7 @@
         </field>
     </record>
     <record id="kai_whatsapp_ai_spec_action" model="ir.actions.act_window">
-        <field name="name">Product sheets</field>
+        <field name="name">Fichas técnicas</field>
         <field name="res_model">kai.whatsapp.ai.spec</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="kai_whatsapp_ai_spec_view_search"/>
@@ -114,7 +114,7 @@
         </field>
     </record>
     <record id="kai_whatsapp_ai_fit_action" model="ir.actions.act_window">
-        <field name="name">Jar and closure fit</field>
+        <field name="name">Compatibilidad de envases y tapas</field>
         <field name="res_model">kai.whatsapp.ai.fit</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="kai_whatsapp_ai_fit_view_search"/>

@@ -328,6 +328,26 @@ Actualizar una base que ya tiene ``19.0.1.3.0``
 4. El dueño abre **Mensajes directos** y le escribe al agente. Las reglas
    quedan propuestas hasta que las confirma.
 
+IA Agent 19.0.1.11.0
+=====================
+
+La aplicación de la barra se llama **IA Agent**. Los costos del proveedor
+(llamadas, tarifas en USD, nombre del modelo) los ve solo el grupo
+**Ver costos de IA**, que no lo hereda el administrador. Al actualizar se
+agrega, si existe, al usuario ``admin@kaizendo.com.ar``.
+
+**Resumen de uso** abre agrupado por día. Cada día muestra la cantidad de
+consultas y la suma cobrada al cliente en pesos. La columna de costo USD
+aparece solo para quien ve costos. No se muestran Moneda ni Importe conocido.
+
+**Mensajes** junta la cola de la IA y el estado de entrega de WhatsApp.
+El listado de mensajes del conector queda oculto. Los envíos manuales están
+en Configuración → Mensajes sin IA.
+
+Las fichas y la compatibilidad salen de esa barra y quedan en el producto
+(pestaña **Ficha técnica**) y en Productos. Si Inventario está instalado,
+el puente ``kai_whatsapp_ai_stock`` las mueve a Inventario → Productos.
+
 El catálogo se elige por la pregunta (19.0.1.10.0)
 ==================================================
 
