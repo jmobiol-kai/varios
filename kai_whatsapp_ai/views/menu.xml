@@ -91,6 +91,9 @@
     <record id="menu_kai_whatsapp_ai_suggestions" model="ir.ui.menu">
         <field name="active" eval="False"/>
     </record>
+    <record id="menu_kai_whatsapp_ai_advisory" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
     <record id="om_whatsapp_base.om_whatsapp_menu_templates" model="ir.ui.menu">
         <field name="group_ids" eval="[Command.set([ref('om_whatsapp_base.group_om_whatsapp_user')])]"/>
     </record>
