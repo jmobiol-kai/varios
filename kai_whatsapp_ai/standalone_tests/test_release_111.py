@@ -13,7 +13,7 @@ class Release111Tests(unittest.TestCase):
         manifest = (ROOT / "__manifest__.py").read_text(encoding="utf-8")
         menu = (ROOT / "views" / "menu.xml").read_text(encoding="utf-8")
         self.assertIn("'name': 'IA Agent'", manifest)
-        self.assertIn("'version': '19.0.1.15.0'", manifest)
+        self.assertIn("'version': '19.0.1.16.0'", manifest)
         refresh = (ROOT / "migrations" / "19.0.1.14.0" / "post-migrate.py").read_text(encoding="utf-8")
         self.assertIn("post_init_hook", refresh)
         self.assertIn("web_icon_data", (ROOT / "hooks.py").read_text(encoding="utf-8"))
@@ -52,6 +52,20 @@ class Release111Tests(unittest.TestCase):
         )
         self.assertIn("kai_whatsapp_ai_faq_action", (ROOT / "views" / "ai_config_views.xml").read_text(encoding="utf-8"))
         self.assertIn("def public_faqs", (ROOT / "services" / "engine.py").read_text(encoding="utf-8"))
+        monthly = (ROOT / "migrations" / "19.0.1.16.0" / "post-migrate.py").read_text(encoding="utf-8")
+        self.assertIn("menu_kai_whatsapp_ai_usage_wizard", monthly)
+        self.assertIn("active = FALSE", monthly)
+        self.assertIn(
+            'id="menu_kai_whatsapp_ai_usage_wizard" model="ir.ui.menu">\n'
+            '        <field name="group_ids" eval="[Command.set([ref(\'group_manager\')])]"/>\n'
+            '        <field name="active" eval="False"/>',
+            menu_xml,
+        )
+        usage_views = (ROOT / "views" / "ai_usage_views.xml").read_text(encoding="utf-8")
+        self.assertIn("kai_whatsapp_ai_usage_wizard_action", usage_views)
+        self.assertIn("_name = 'kai.whatsapp.ai.usage.wizard'", (ROOT / "models" / "ai_usage.py").read_text(encoding="utf-8"))
+        stock = (REPO / "kai_whatsapp_ai_stock" / "__manifest__.py").read_text(encoding="utf-8")
+        self.assertIn("'version': '19.0.1.16.0'", stock)
 
     def test_cost_viewer_is_not_implied_and_owns_provider_cost(self):
         groups = (ROOT / "security" / "groups.xml").read_text(encoding="utf-8")

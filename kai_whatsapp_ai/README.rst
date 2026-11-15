@@ -119,15 +119,14 @@ costo estimado queda desconocido. La tarifa que se le cobra al cliente, por
 consulta, también la carga el administrador: hoy no hay un importe. Si no hay
 tarifa vigente, el importe a facturar queda desconocido, no cero.
 
-**WhatsApp → Usage summary** lo ve un usuario de la cuenta: mes, compañía,
-cuenta, etiqueta de cliente, cantidad de consultas, consultas de imagen e
-importe a facturar si existe. No muestra proveedor, modelo, tokens ni costo
-interno.
-**WhatsApp → Configuration → Monthly usage** arma el mes en la zona horaria
-del usuario de Odoo. **Provider calls**, **Provider rate cards** y **Client
-rates** son solo del administrador. La lista y la tabla dinámica se exportan
-con la exportación normal de Odoo. No se programa el envío del reporte y no
-se crea una factura.
+**IA Agent → Resumen de uso** lo ve el entrenador y el administrador: mes,
+compañía, cuenta, etiqueta de cliente, cantidad de consultas, consultas de
+imagen e importe a facturar si existe. No muestra proveedor, modelo, tokens
+ni costo interno. El menú **Uso mensual** de Configuración no se muestra; el
+asistente y sus datos siguen. **Provider calls**, **Provider rate cards** y
+**Client rates** siguen con los mismos grupos. La lista se exporta con la
+exportación normal de Odoo. No se programa el envío del reporte y no se crea
+una factura.
 
 El usuario de la empresa cliente no ve el proveedor, la clave, los tokens ni
 el costo interno: eso está en los grupos y en las reglas de registro, no solo

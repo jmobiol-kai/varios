@@ -71,6 +71,7 @@
     </record>
     <record id="menu_kai_whatsapp_ai_usage_wizard" model="ir.ui.menu">
         <field name="group_ids" eval="[Command.set([ref('group_manager')])]"/>
+        <field name="active" eval="False"/>
     </record>
 
     <menuitem id="menu_kai_whatsapp_ai_faq" name="FAQ"

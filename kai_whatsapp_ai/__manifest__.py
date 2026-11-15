@@ -1,6 +1,6 @@
 {
     'name': 'IA Agent',
-    'version': '19.0.1.15.0',
+    'version': '19.0.1.16.0',
     'category': 'Marketing',
     'summary': 'Supervised reply and draft-quotation suggestions for Odoo Mates WhatsApp',
     'description': """
