@@ -124,6 +124,12 @@ class KaiWhatsappAiRule(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
+            company = self.env['res.company'].browse(vals.get('company_id')) if vals.get('company_id') else self.env.company
+            restrictions = self.env['kai.whatsapp.ai.restriction']._for_prompt(company, 'trainer')
+            blocked = engine.restriction_for_text(
+                f"{vals.get('title') or ''} {vals.get('body') or ''}", restrictions)
+            if blocked:
+                raise UserError(engine.restriction_reply(blocked))
             verdict = engine.screen_rule(vals.get('body') or '')
             if not verdict['ok']:
                 vals['flagged'] = True
@@ -142,6 +148,14 @@ class KaiWhatsappAiRule(models.Model):
 
     def write(self, vals):
         vals = dict(vals)
+        if 'body' in vals or vals.get('state') == 'activa':
+            for rule in self:
+                company = rule.company_id
+                restrictions = self.env['kai.whatsapp.ai.restriction']._for_prompt(company, 'trainer')
+                preview = f"{vals.get('title') or rule.title or ''} {vals.get('body') or rule.body or ''}"
+                blocked = engine.restriction_for_text(preview, restrictions)
+                if blocked:
+                    raise UserError(engine.restriction_reply(blocked))
         if 'body' in vals:
             verdict = engine.screen_rule(vals.get('body') or '')
             vals['flagged'] = not verdict['ok']
@@ -163,6 +177,10 @@ class KaiWhatsappAiRule(models.Model):
 
     def action_confirm(self):
         for rule in self:
+            restrictions = self.env['kai.whatsapp.ai.restriction']._for_prompt(rule.company_id, 'trainer')
+            blocked = engine.restriction_for_text(f"{rule.title or ''} {rule.body or ''}", restrictions)
+            if blocked:
+                raise UserError(engine.restriction_reply(blocked))
             if not engine.can_activate(rule._as_engine_row()):
                 raise UserError(rule.flag_reason or _("This proposal cannot be activated."))
             trainer = self.env['kai.whatsapp.ai.trainer']._for_user(self.env.user, rule.company_id) or rule.trainer_id
@@ -347,9 +365,14 @@ class KaiWhatsappAiTraining(models.Model):
             rule.with_user(self.env.user).action_deactivate()
             return _("La regla %s quedó inactiva.", rule.id)
         if action == 'confirm':
+            restrictions = self.env['kai.whatsapp.ai.restriction']._for_prompt(company, 'trainer')
             if not rule:
                 proposals = rules.filtered(lambda item: engine.can_activate(item._as_engine_row()))
                 rule = proposals.sorted('id')[-1:] if proposals else rule
+            if rule:
+                blocked = engine.restriction_for_text(f"{rule.title or ''} {rule.body or ''}", restrictions)
+                if blocked:
+                    return engine.restriction_reply(blocked)
             if not rule or not engine.can_activate(rule._as_engine_row()):
                 return _("No hay una propuesta para confirmar.")
             rule.action_confirm()
@@ -357,6 +380,10 @@ class KaiWhatsappAiTraining(models.Model):
         if action == 'edit':
             if not rule:
                 return _("No encuentro esa regla.")
+            restrictions = self.env['kai.whatsapp.ai.restriction']._for_prompt(company, 'trainer')
+            blocked = engine.restriction_for_text(command.get('body') or '', restrictions)
+            if blocked:
+                return engine.restriction_reply(blocked)
             verdict = engine.screen_rule(command.get('body') or '')
             if not verdict['ok']:
                 rule.sudo().write({'body': command.get('body') or '', 'state': 'propuesta'})
@@ -401,8 +428,19 @@ class KaiWhatsappAiTraining(models.Model):
             history = turn._history()
             names = turn._catalog_names()
             rules = self.env['kai.whatsapp.ai.rule'].sudo().search([('company_id', '=', turn.company_id.id)])
+            restrictions = self.env['kai.whatsapp.ai.restriction']._for_prompt(turn.company_id, 'trainer')
+            blocked = engine.restriction_for_text(turn.inbound_body or '', restrictions)
+            if blocked:
+                turn.sudo().write({
+                    'suggested_reply': engine.restriction_reply(blocked)[:engine.MAX_REPLY_CHARS],
+                    'generation_state': 'done',
+                    'provider_error': False,
+                })
+                turn._post_discuss_reply()
+                turn._maybe_whatsapp_reply()
+                continue
             messages = engine.build_training_messages(
-                history, names, [rule._as_engine_row() for rule in rules])
+                history, names, [rule._as_engine_row() for rule in rules], restrictions)
             timeout = min(max(int(config.api_timeout or 15), 1), 15)
             started = time.perf_counter()
             usage = engine.parse_usage('')
@@ -410,7 +448,7 @@ class KaiWhatsappAiTraining(models.Model):
                 raw = engine.post_chat(
                     config.api_base_url, config.api_key, config.api_model, messages, timeout=timeout)
                 usage = engine.parse_usage(raw)
-                parsed = engine.parse_training_reply(raw)
+                parsed = engine.parse_training_reply(raw, restrictions)
                 outcome = 'success'
                 error_text = ''
             except engine.ProviderError as error:
@@ -424,12 +462,13 @@ class KaiWhatsappAiTraining(models.Model):
                 parsed = {'reply': engine.PUBLIC_FAILURE, 'proposals': []}
             turn._log_call(config, outcome, usage, int((time.perf_counter() - started) * 1000), error_text)
             notes = []
-            for proposal in parsed['proposals']:
-                rule = turn._store_proposal(proposal)
-                if rule and not rule.flagged:
-                    notes.append(_("Propuesta %s: %s. Respondé confirmar %s para activarla.", rule.id, rule.title, rule.id))
-                elif rule:
-                    notes.append(_("No guardé «%s»: %s", rule.title, rule.flag_reason))
+            if not parsed.get('refused'):
+                for proposal in parsed['proposals']:
+                    rule = turn._store_proposal(proposal)
+                    if rule and not rule.flagged:
+                        notes.append(_("Propuesta %s: %s. Respondé confirmar %s para activarla.", rule.id, rule.title, rule.id))
+                    elif rule:
+                        notes.append(_("No guardé «%s»: %s", rule.title, rule.flag_reason))
             reply = engine.customer_visible_text(parsed['reply'])
             if outcome == 'success' and notes:
                 reply = (reply + "\n\n" + "\n".join(notes)).strip()
@@ -488,6 +527,11 @@ class KaiWhatsappAiTraining(models.Model):
 
     def _store_proposal(self, proposal):
         self.ensure_one()
+        restrictions = self.env['kai.whatsapp.ai.restriction']._for_prompt(self.company_id, 'trainer')
+        if engine.restriction_for_text(
+            f"{proposal.get('title') or ''} {proposal.get('body') or ''}", restrictions,
+        ):
+            return self.env['kai.whatsapp.ai.rule']
         vals = {
             'company_id': self.company_id.id,
             'title': proposal['title'],

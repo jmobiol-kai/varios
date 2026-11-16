@@ -446,13 +446,27 @@ class KaiWhatsappAiSuggestion(models.Model):
                 "\n".join(item.get("body") or "" for item in context),
                 limit,
             )
+            customer_text = "\n".join(item.get("body") or "" for item in context)
+            restrictions = suggestion.env['kai.whatsapp.ai.restriction']._for_prompt(
+                suggestion.company_id, 'customer')
+            blocked = engine.restriction_for_text(customer_text, restrictions)
+            if blocked:
+                suggestion.sudo().write({
+                    'generation_state': 'done',
+                    'intent': 'unknown',
+                    'needs_human': False,
+                    'provider_error': False,
+                    'suggested_reply': engine.restriction_reply(blocked),
+                })
+                suggestion._maybe_auto_reply()
+                continue
             preferences = engine.select_preference_rules(
                 suggestion._preference_rows(),
-                customer_text="\n".join(item.get("body") or "" for item in context),
+                customer_text=customer_text,
                 catalog=suggestion._catalog_rows(),
             )
             messages = engine.build_messages(
-                context, catalog, faqs, suggestion._advisory_rows(), images or None, preferences)
+                context, catalog, faqs, suggestion._advisory_rows(), images or None, preferences, restrictions)
             timeout = min(max(int(config.api_timeout or 15), 1), 15)
             started = time.perf_counter()
             usage = engine.parse_usage('')

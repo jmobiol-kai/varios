@@ -39,3 +39,4 @@ access_kai_whatsapp_ai_rule_trainer,kai.whatsapp.ai.rule.trainer,model_kai_whats
 access_kai_whatsapp_ai_training_user,kai.whatsapp.ai.training.user,model_kai_whatsapp_ai_training,group_user,1,0,0,0
 access_kai_whatsapp_ai_training_trainer,kai.whatsapp.ai.training.trainer,model_kai_whatsapp_ai_training,group_trainer,1,0,0,0
 access_kai_whatsapp_ai_training_manager,kai.whatsapp.ai.training.manager,model_kai_whatsapp_ai_training,group_manager,1,1,1,0
+access_kai_whatsapp_ai_restriction_system,kai.whatsapp.ai.restriction.system,model_kai_whatsapp_ai_restriction,base.group_system,1,1,1,1

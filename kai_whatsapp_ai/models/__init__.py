@@ -1,4 +1,5 @@
 from . import ai_config
+from . import ai_restriction
 from . import ai_advice
 from . import ai_usage
 from . import ai_training

@@ -1,6 +1,6 @@
 {
     'name': 'IA Agent',
-    'version': '19.0.1.16.0',
+    'version': '19.0.1.17.0',
     'category': 'Marketing',
     'summary': 'Supervised reply and draft-quotation suggestions for Odoo Mates WhatsApp',
     'description': """
@@ -23,6 +23,7 @@ invoice or reserve stock.
         'views/ai_suggestion_views.xml',
         'views/ai_usage_views.xml',
         'views/ai_advice_views.xml',
+        'views/ai_restriction_views.xml',
         'views/menu.xml',
         'views/product_template_views.xml',
         'views/om_whatsapp_account_views.xml',

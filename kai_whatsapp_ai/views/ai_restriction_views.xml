@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="kai_whatsapp_ai_restriction_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.restriction.list</field>
+        <field name="model">kai.whatsapp.ai.restriction</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="audience"/>
+                <field name="active"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_restriction_view_form" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.restriction.form</field>
+        <field name="model">kai.whatsapp.ai.restriction</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="audience"/>
+                        <field name="sequence"/>
+                        <field name="active"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                    </group>
+                    <field name="description" placeholder="Qué está prohibido"/>
+                    <field name="reply_text"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_restriction_action" model="ir.actions.act_window">
+        <field name="name">Restricciones</field>
+        <field name="res_model">kai.whatsapp.ai.restriction</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

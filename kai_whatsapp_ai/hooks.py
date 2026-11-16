@@ -9,6 +9,12 @@ def post_init_hook(env):
     """Name the app and grant provider-cost access to one login, if that user exists."""
     brand_app(env)
     grant_cost_viewer(env)
+    seed_restrictions(env)
+
+
+def seed_restrictions(env):
+    """00IA seeds, once. Other companies are left alone."""
+    env["kai.whatsapp.ai.restriction"].sudo()._seed_company_named()
 
 
 def brand_app(env):

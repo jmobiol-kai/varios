@@ -56,6 +56,10 @@
               parent="om_whatsapp_base.om_whatsapp_menu_config"
               action="action_kai_unlinked_whatsapp_messages" sequence="18"
               groups="group_manager"/>
+    <menuitem id="menu_kai_whatsapp_ai_restrictions" name="Restricciones"
+              parent="om_whatsapp_base.om_whatsapp_menu_config"
+              action="kai_whatsapp_ai_restriction_action" sequence="25"
+              groups="base.group_system"/>
     <menuitem id="menu_kai_whatsapp_ai_billable_rates" name="Client rates"
               parent="om_whatsapp_base.om_whatsapp_menu_config"
               action="kai_whatsapp_ai_billable_rate_action" sequence="24"
