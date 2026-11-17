@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="order_window_settings_form" model="ir.ui.view">
+        <field name="name">lafija.order.window.settings.form</field>
+        <field name="model">lafija.order.window.settings</field>
+        <field name="arch" type="xml">
+            <form string="Horarios de pedido">
+                <sheet>
+                    <div class="oe_title"><h1>Horarios de pedido</h1></div>
+                    <p>Las horas son de La Fija (zona del usuario administrador de Odoo). Por defecto, la carga anticipada de la semana siguiente cierra el sábado a las 14:00, y el día del menú se puede pedir, cambiar o agregar hasta las 10:30, aunque la lista ya esté tomada.</p>
+                    <group>
+                        <group string="Corte del día del menú">
+                            <field name="lf_daily_cutoff" placeholder="10:30"/>
+                        </group>
+                        <group string="Carga anticipada de la semana siguiente">
+                            <field name="lf_weekly_close_weekday"/>
+                            <field name="lf_weekly_close_time" placeholder="14:00"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Guardar" name="action_save" type="object" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_order_window_settings" model="ir.actions.act_window">
+        <field name="name">Horarios de pedido</field>
+        <field name="res_model">lafija.order.window.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="order_window_settings_form"/>
+    </record>
+    <menuitem id="menu_order_window_settings" name="Horarios de pedido"
+              parent="kai_viandas.menu_root" action="action_order_window_settings"
+              sequence="95" groups="kai_viandas.group_operator"/>
+</odoo>

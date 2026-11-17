@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="reservation_own_global" model="ir.rule">
+        <field name="name">La Fija: el empleado solo consulta su reserva</field>
+        <field name="model_id" ref="model_lafija_reservation"/>
+        <field name="domain_force">[('employee_partner_id', '=', user.partner_id.id)] if user._lf_is_corporate_subject() else [(1, '=', 1)]</field>
+    </record>
+</odoo>

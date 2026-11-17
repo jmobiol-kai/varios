@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_order_protection" model="ir.ui.view">
+        <field name="name">sale.order.lafija.protection</field><field name="model">sale.order</field><field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside"><page name="lf_protection" string="La Fija" groups="kai_viandas.group_operator">
+            <group><field name="lf_reservation_ids" widget="many2many_tags" options="{'no_create': True, 'no_create_edit': True}" context="{'lf_origin_display': True}"/><field name="lf_protected" readonly="lf_protected"/><field name="lf_origin_label"/></group>
+            <p>Vincular reservas protege este documento y conserva su procedencia. Preparar cotización permite cargar las viandas por empresa y período; esa función no está en el menú por ahora. La revisión y continuación comercial usan el circuito habitual de Odoo.</p>
+        </page></xpath></field>
+    </record>
+    <record id="account_move_protection" model="ir.ui.view">
+        <field name="name">account.move.lafija.protection</field><field name="model">account.move</field><field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside"><page string="La Fija" groups="kai_viandas.group_operator">
+            <group><field name="lf_reservation_ids" widget="many2many_tags"/><field name="lf_protected" readonly="lf_protected"/><field name="lf_origin"/></group>
+            <p>La protección se conserva al copiar o corregir este documento. El empleado nunca accede a la factura.</p>
+        </page></xpath></field>
+    </record>
+</odoo>

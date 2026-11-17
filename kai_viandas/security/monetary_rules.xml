@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="deny_protected_attachments" model="ir.rule">
+        <field name="name">La Fija: archivos corporativos internos</field>
+        <field name="model_id" ref="base.model_ir_attachment"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else ([('lf_protected', '=', False)] if user.share else [])</field>
+    </record>
+    <record id="deny_product_template_corporate" model="ir.rule">
+        <field name="name">La Fija: sin acceso corporativo a product_template</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else [(1, '=', 1)]</field>
+    </record>
+    <record id="deny_product_attribute_value_corporate" model="ir.rule">
+        <field name="name">La Fija: sin suplementos de atributos corporativos</field>
+        <field name="model_id" ref="product.model_product_attribute_value"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else []</field>
+    </record>
+    <record id="deny_product_product_corporate" model="ir.rule">
+        <field name="name">La Fija: sin acceso corporativo a product_product</field>
+        <field name="model_id" ref="product.model_product_product"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else [(1, '=', 1)]</field>
+    </record>
+    <record id="deny_product_pricelist_corporate" model="ir.rule">
+        <field name="name">La Fija: sin acceso corporativo a product_pricelist</field>
+        <field name="model_id" ref="product.model_product_pricelist"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else [(1, '=', 1)]</field>
+    </record>
+    <record id="deny_product_pricelist_item_corporate" model="ir.rule">
+        <field name="name">La Fija: sin acceso corporativo a product_pricelist_item</field>
+        <field name="model_id" ref="product.model_product_pricelist_item"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else [(1, '=', 1)]</field>
+    </record>
+    <record id="deny_product_template_attribute_value_corporate" model="ir.rule">
+        <field name="name">La Fija: sin acceso corporativo a product_template_attribute_value</field>
+        <field name="model_id" ref="product.model_product_template_attribute_value"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else [(1, '=', 1)]</field>
+    </record>
+    <record id="deny_product_combo_item_corporate" model="ir.rule">
+        <field name="name">La Fija: sin acceso corporativo a product_combo_item</field>
+        <field name="model_id" ref="product.model_product_combo_item"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else [(1, '=', 1)]</field>
+    </record>
+    <record id="deny_sale_order_corporate" model="ir.rule">
+        <field name="name">La Fija: sin acceso corporativo a sale_order</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else ([('lf_protected', '=', False)] if user.share else [])</field>
+    </record>
+    <record id="deny_sale_order_line_corporate" model="ir.rule">
+        <field name="name">La Fija: sin acceso corporativo a sale_order_line</field>
+        <field name="model_id" ref="sale.model_sale_order_line"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else ([('order_id.lf_protected', '=', False)] if user.share else [])</field>
+    </record>
+    <record id="deny_account_move_corporate" model="ir.rule">
+        <field name="name">La Fija: sin acceso corporativo a account_move</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else ([('lf_protected', '=', False)] if user.share else [])</field>
+    </record>
+    <record id="deny_account_move_line_corporate" model="ir.rule">
+        <field name="name">La Fija: sin acceso corporativo a account_move_line</field>
+        <field name="model_id" ref="account.model_account_move_line"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else ([('move_id.lf_protected', '=', False)] if user.share else [])</field>
+    </record>
+    <record id="deny_payment_transaction_corporate" model="ir.rule">
+        <field name="name">La Fija: sin acceso corporativo a payment_transaction</field>
+        <field name="model_id" ref="payment.model_payment_transaction"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else [(1, '=', 1)]</field>
+    </record>
+    <record id="deny_payment_token_corporate" model="ir.rule">
+        <field name="name">La Fija: sin acceso corporativo a payment_token</field>
+        <field name="model_id" ref="payment.model_payment_token"/>
+        <field name="domain_force">[('id', '=', False)] if user._lf_is_corporate_subject() else [(1, '=', 1)]</field>
+    </record>
+</odoo>

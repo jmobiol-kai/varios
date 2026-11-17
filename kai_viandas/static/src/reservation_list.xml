@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="kai_viandas.LfReservationListView" t-inherit="web.ListView" t-inherit-mode="primary">
+        <xpath expr="//t[@t-set-slot='control-panel-always-buttons']" position="inside">
+            <button type="button"
+                    class="btn btn-primary o_lf_add_client_order_btn d-print-none"
+                    t-on-click="onClickAddClientOrder">
+                Agregar pedido cliente
+            </button>
+        </xpath>
+    </t>
+</templates>

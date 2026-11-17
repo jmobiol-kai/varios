@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="menu_day_cut_button" model="ir.ui.view">
+        <field name="name">lafija.menu.day.preparation</field><field name="model">lafija.menu.day</field><field name="inherit_id" ref="menu_day_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+            <field name="list_taken" invisible="True"/>
+            <field name="take_list_future" invisible="True"/>
+            <button name="action_take_list" type="object" string="Tomar lista para preparación" class="btn-primary" invisible="list_taken or not date or not website_id or take_list_future"/>
+            <button name="action_take_list" type="object" string="Tomar lista para preparación" invisible="list_taken or not date or not website_id or not take_list_future"/>
+            <button name="action_take_list" type="object" string="Ver lista tomada" class="btn-primary" invisible="not list_taken"/>
+        </xpath></field>
+    </record>
+    <record id="reservation_correction_button" model="ir.ui.view">
+        <field name="name">lafija.reservation.correct</field><field name="model">lafija.reservation</field><field name="inherit_id" ref="reservation_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before"><header><button name="action_correct" type="object" string="Editar" class="btn-primary"/></header></xpath></field>
+    </record>
+    <record id="correction_form" model="ir.ui.view">
+        <field name="name">lafija.reservation.correction.form</field><field name="model">lafija.reservation.correction</field>
+        <field name="arch" type="xml">
+            <form string="Editar pedido">
+            <field name="observed_state" invisible="True" force_save="1"/>
+            <div class="alert alert-warning" role="alert" invisible="not conflict_notice"><field name="conflict_notice" nolabel="1"/></div>
+            <group><group><field name="employee_name"/><field name="meal_date"/><field name="reservation_id" options="{'no_open': True}"/></group>
+                <group><field name="current_choice"/><field name="pending_choice" invisible="not pending_choice"/><field name="request_text"/></group></group>
+            <field name="attention_open" invisible="True"/>
+            <div class="alert alert-info" role="status" invisible="not attention_open or operation in ['note', 'close_request']">Esta reserva también tiene una consulta escrita abierta. Aplicar la opción y enviar una respuesta no cierra esa consulta. Usá Cerrar solicitud cuando esté resuelta.</div>
+            <group><field name="operation"/>
+                <field name="product_id" invisible="operation != 'replace'" required="operation == 'replace'"/>
+                <field name="dessert_id" invisible="operation != 'replace'"/>
+                <field name="drink_id" invisible="operation != 'replace'"/>
+                <field name="previous_line_id" domain="[('reservation_id', '=', reservation_id)]" invisible="operation != 'restore'" required="operation == 'restore'"/>
+                <field name="customer_company_id" invisible="operation != 'reassign'"/>
+                <field name="target_menu_id" invisible="operation != 'reassign'"/>
+                <field name="reason" class="o_field_highlight" placeholder="Motivo de esta actuación; no se muestra al empleado"/>
+                <field name="employee_message" class="o_field_highlight" placeholder="Escribí la respuesta que verá el empleado"/>
+            </group>
+            <div class="alert alert-info" role="status" invisible="operation != 'note' or not attention_open">La respuesta se envía al detalle de la reserva. La solicitud sigue pendiente.</div>
+            <div class="alert alert-info" role="status" invisible="operation != 'note' or attention_open">La respuesta se envía al detalle de la reserva. No hay una consulta escrita pendiente; enviar una respuesta no la abre.</div>
+            <div class="alert alert-info" role="status" invisible="operation != 'close_request'">Cierra la solicitud escrita. No modifica la vianda ni resuelve por sí sola otro cambio de opción pendiente.</div>
+            <p invisible="operation in ['note', 'close_request']">Si hay etiquetas generadas o una factura, coordiná la sustitución física o corrección comercial. La historia se conserva.</p>
+            <footer><button name="action_apply" type="object" string="Responder sin cerrar" class="btn-primary" invisible="operation != 'note' or not attention_open"/>
+                <button name="action_apply" type="object" string="Enviar respuesta" class="btn-primary" invisible="operation != 'note' or attention_open"/>
+                <button name="action_apply" type="object" string="Cerrar solicitud" class="btn-primary" invisible="operation != 'close_request'"/>
+                <button name="action_apply" type="object" string="Aplicar esta corrección" class="btn-primary" invisible="operation in ['note', 'close_request']"/>
+                <button string="Cancelar" special="cancel"/></footer>
+        </form></field>
+    </record>
+    <record id="cut_list" model="ir.ui.view">
+        <field name="name">lafija.preparation.cut.list</field><field name="model">lafija.preparation.cut</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0"><field name="date"/><field name="website_id" string="Sitio corporativo"/><field name="meal_count" string="Viandas"/><field name="attention_count" string="Por atender"/><field name="taken_local"/><field name="current_revision_id"/><button name="action_print_current_labels" type="object" string="Generar etiquetas"/></list></field>
+    </record>
+    <record id="cut_form" model="ir.ui.view">
+        <field name="name">lafija.preparation.cut.form</field><field name="model">lafija.preparation.cut</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+            <header><button name="action_print_current_labels" type="object" string="Generar etiquetas vigentes" class="btn-primary"/><button name="action_download_current_labels" type="object" string="Descargar último PDF vigente" invisible="not current_print_id"/></header>
+            <sheet><h1><field name="name"/></h1>
+                <div class="alert alert-warning" role="status" invisible="not outdated_print_count">Hay archivos de etiquetas de revisiones anteriores. Si se usaron, coordiná la sustitución; los archivos históricos se conservan.</div>
+                <div class="lf-preparation-summary"><div><span class="lf-total"><field name="meal_count" nolabel="1"/></span><div>Viandas para preparar</div></div><div><span class="lf-total"><field name="attention_count" nolabel="1"/></span><div>Reservas por atender</div></div><div><strong>Cantidades por producto</strong><field name="option_summary" nolabel="1"/></div></div>
+                <group><group><field name="date"/><field name="website_id" string="Sitio corporativo"/></group>
+                    <group><field name="taken_local"/><field name="taken_by"/><field name="current_revision_id"/><field name="current_print_id" invisible="True"/><field name="outdated_print_count" invisible="True"/></group></group>
+                <notebook><page string="Reservas y solicitudes de este día"><field name="pending_ids" class="lf-reservations"><list class="lf-reservations" decoration-warning="pending">
+                    <field name="employee_partner_id"/><field name="customer_company_id"/><field name="current_description"/><field name="current_dessert_description" optional="hide" string="Postre"/><field name="current_drink_description" optional="hide" string="Bebida"/><field name="pending_description"/><field name="attention_label"/><field name="timing_label"/><field name="pending" column_invisible="True"/>
+                    <button name="action_correct" type="object" string="Editar" invisible="not pending"/>
+                </list></field></page><page string="Listas conservadas"><field name="revision_ids"><list decoration-muted="not is_current">
+                    <field name="number" string="Revisión"/><field name="is_current"/><field name="occurred_local"/><field name="actor_id" string="Quién"/><field name="reason" string="Motivo"/>
+                </list></field></page></notebook>
+            </sheet>
+        </form></field>
+    </record>
+    <record id="preparation_revision_form" model="ir.ui.view">
+        <field name="name">lafija.preparation.revision.form</field><field name="model">lafija.preparation.revision</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0"><sheet>
+            <h1><field name="name"/></h1>
+            <field name="is_current" invisible="True"/>
+            <div class="alert alert-warning" role="status" invisible="is_current">Lista histórica: hay una revisión más reciente. <button name="action_open_current" type="object" string="Ver lista vigente" class="btn-link"/></div>
+            <group><field name="cut_id" string="Lista de preparación"/><field name="number" string="Revisión"/><field name="previous_id" string="Lista anterior"/><field name="actor_id" string="Quién"/><field name="occurred_local"/><field name="reason" string="Motivo"/></group>
+            <field name="line_ids"><list><field name="company_name" string="Empresa cliente"/><field name="employee_name" string="Empleado"/><field name="product_id" string="Plato"/><field name="description" string="Opción elegida"/><field name="dessert_id" string="Postre"/><field name="dessert_description" optional="hide"/><field name="drink_id" string="Bebida"/><field name="drink_description" optional="hide"/><field name="reservation_id" string="Reserva"/><field name="after_reference_time" optional="hide"/><field name="after_preparation_cut" optional="hide"/></list></field>
+            <p>Cada fila corresponde a una vianda, cantidad 1. El producto y la empresa cliente permiten preparar el pedido en Ventas con las reglas habituales de Odoo.</p>
+        </sheet></form></field>
+    </record>
+    <record id="cut_search" model="ir.ui.view"><field name="name">lafija.preparation.cut.search</field><field name="model">lafija.preparation.cut</field><field name="arch" type="xml">
+        <search><field name="name" string="Lista de preparación"/><field name="date"/><field name="website_id"/><group><filter name="site" string="Sitio corporativo" context="{'group_by': 'website_id'}"/><filter name="day" string="Fecha" context="{'group_by': 'date:day'}"/></group></search>
+    </field></record>
+    <record id="cut_action" model="ir.actions.act_window"><field name="name">Listas de preparación</field><field name="res_model">lafija.preparation.cut</field><field name="search_view_id" ref="cut_search"/><field name="view_mode">list,form</field><field name="help" type="html"><p>No hay listas de preparación para estos filtros.</p><p>Las listas aparecen al usar «Tomar lista para preparación» desde Menús del día. Consultá allí la fecha que necesitás preparar.</p></field></record>
+</odoo>

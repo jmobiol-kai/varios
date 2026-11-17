@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="employee_batch_owner_rule" model="ir.rule">
+        <field name="name">La Fija: cada operador conserva sus lotes</field>
+        <field name="model_id" ref="model_lafija_employee_batch"/>
+        <field name="domain_force">[('create_uid', '=', user.id)]</field>
+    </record>
+    <record id="employee_batch_line_owner_rule" model="ir.rule">
+        <field name="name">La Fija: filas de lotes propios</field>
+        <field name="model_id" ref="model_lafija_employee_batch_line"/>
+        <field name="domain_force">[('batch_id.create_uid', '=', user.id)]</field>
+    </record>
+</odoo>

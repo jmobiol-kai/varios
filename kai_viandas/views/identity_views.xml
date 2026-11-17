@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="partner_form" model="ir.ui.view">
+        <field name="name">res.partner.form.lafija</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="La Fija" groups="kai_viandas.group_operator">
+                    <group>
+                        <field name="lf_corporate_account" readonly="1"/>
+                        <field name="lf_customer_company_id" readonly="1"/>
+                        <field name="lf_enabled" readonly="1"/>
+                        <field name="lf_account_status"/>
+                    </group>
+                    <button name="action_lf_manage_access" type="object" string="Gestionar acceso" invisible="not lf_corporate_account"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <record id="employee_list" model="ir.ui.view">
+        <field name="name">res.partner.list.lafija.employee</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <list delete="0">
+                <field name="name"/>
+                <field name="lf_customer_company_id"/>
+                <field name="lf_enabled"/>
+                <field name="lf_account_status"/>
+                <field name="website_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="employee_form" model="ir.ui.view">
+        <field name="name">res.partner.form.lafija.employee</field>
+        <field name="model">res.partner</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <form string="Empleado corporativo" delete="0">
+                <sheet>
+                    <h1><field name="name" placeholder="Nombre del empleado"/></h1>
+                    <group><group>
+                        <field name="lf_customer_company_id" options="{'no_open': True, 'no_create': True}" required="1"/>
+                        <field name="website_id" string="Sitio corporativo" options="{'no_open': True, 'no_create': True, 'no_create_edit': True}" required="1"/>
+                        <field name="lf_new_login" invisible="id" required="not id"/>
+                        <field name="lf_new_password" invisible="id" required="not id"/>
+                        <field name="lf_login" invisible="not id" readonly="1"/>
+                    </group><group>
+                        <field name="lf_enabled" invisible="not id"/>
+                        <field name="lf_account_status" invisible="not id" readonly="1"/>
+                    </group></group>
+                    <p invisible="id">Completá empresa, nombre, usuario y contraseña del portal. El formulario propone una contraseña de seis números; podés cambiarla. Copiá el acceso antes de guardar: después no se puede consultar. Si no la copiaste, usá Cambiar contraseña en el menú de acciones (el engranaje). No hace falta un correo electrónico.</p>
+                    <p invisible="not id">Esta cuenta individual no necesita correo electrónico. Podés cambiar la empresa cliente, el sitio corporativo y si está habilitado para viandas en esta ficha. Para una contraseña nueva, usá Cambiar contraseña en el menú de acciones (el engranaje).</p>
+                </sheet>
+                    <div class="text-muted small" invisible="not id">Historia del acceso · hora de La Fija</div>
+                    <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="employee_action" model="ir.actions.act_window">
+        <field name="name">Empleados corporativos</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="employee_list"/>
+        <field name="domain" eval="['|', '|', '|',
+            ('lf_corporate_account', '=', True), ('lf_customer_company_id', '!=', False),
+            ('user_ids.group_ids', 'in', [ref('group_corporate_employee')]),
+            ('user_ids.website_id.lf_corporate_site', '=', True)]"/>
+        <field name="context">{'active_test': False, 'lf_employee_form': 1}</field>
+    </record>
+    <record id="employee_action_list" model="ir.actions.act_window.view">
+        <field name="sequence">1</field><field name="view_mode">list</field><field name="view_id" ref="employee_list"/><field name="act_window_id" ref="employee_action"/>
+    </record>
+    <record id="employee_action_form" model="ir.actions.act_window.view">
+        <field name="sequence">2</field><field name="view_mode">form</field><field name="view_id" ref="employee_form"/><field name="act_window_id" ref="employee_action"/>
+    </record>
+    <record id="website_form" model="ir.ui.view">
+        <field name="name">website.form.lafija</field>
+        <field name="model">website</field>
+        <field name="inherit_id" ref="website.view_website_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="lf_corporate_site"/>
+            </xpath>
+        </field>
+    </record>
+    <menuitem id="menu_root" name="Viandas" web_icon="kai_viandas,static/description/icon.png" groups="kai_viandas.group_operator" sequence="20"/>
+    <menuitem id="menu_employees_group" name="Empleados" parent="menu_root" sequence="30" groups="kai_viandas.group_operator"/>
+    <menuitem id="menu_employees" name="Empleados corporativos" parent="menu_employees_group" action="employee_action" sequence="30"/>
+    <record id="employee_change_password_action" model="ir.actions.server">
+        <field name="name">Cambiar contraseña</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_type">action</field>
+        <field name="binding_view_types">form,list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_lf_change_password()</field>
+        <field name="group_ids" eval="[(4, ref('kai_viandas.group_operator'))]"/>
+    </record>
+</odoo>

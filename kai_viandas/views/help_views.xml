@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="help_employee" name="Ayuda del empleado">
+        <t t-call="kai_viandas.layout"><article class="help-page card"><a class="back-link" t-att-href="lf_help_back or '/my/viandas'">Volver a mis viandas</a><t t-call="kai_viandas.help_employee_content"/></article></t>
+    </template>
+    <template id="help_access" name="Ayuda de acceso">
+        <t t-call="kai_viandas.layout"><article class="help-page card"><t t-call="kai_viandas.help_access_content"/><a class="button" href="/web/login">Volver al acceso</a></article></t>
+    </template>
+    <record id="operator_help" model="lafija.help"><field name="name">Ayuda · La Fija</field></record>
+    <record id="operator_help_form" model="ir.ui.view">
+        <field name="name">lafija.help.form</field><field name="model">lafija.help</field>
+        <field name="arch" type="xml">
+            <form string="Ayuda · La Fija" js_class="lf_help_form" create="0" edit="0" delete="0" duplicate="0"><sheet><field name="content" widget="html" nolabel="1" readonly="1"/></sheet></form>
+        </field>
+    </record>
+    <record id="operator_help_action" model="ir.actions.act_window">
+        <field name="name">Ayuda · La Fija</field><field name="res_model">lafija.help</field><field name="view_mode">form</field><field name="res_id" ref="operator_help"/><field name="view_id" ref="operator_help_form"/>
+    </record>
+    <menuitem id="menu_help" name="Ayuda" parent="menu_root" action="operator_help_action" sequence="90" groups="kai_viandas.group_operator"/>
+</odoo>

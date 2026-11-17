@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Fuente editorial: newvps19/docs/lafija/manuales/MANUAL-OPERADOR.md (versión 11). Generado desde el Markdown; editar la fuente y regenerar. -->
+    <template id="help_operator_content" name="Texto del manual del operador">
+        <article class="lf-operator-help">
+            <h1>Ayuda · Operación de La Fija</h1>
+            <p>Este manual es para quien cumple el rol <strong>Admin La Fija operativo</strong>: publica menús, atiende a los empleados, prepara la lista de cocina, imprime y arma el pedido de cada empresa. Por ahora es un operador de La Fija.</p>
+            <p>Podés volver a este manual desde <strong>Viandas → Ayuda</strong>. Para trabajar, abrí <strong>Viandas → Pedidos</strong>.</p>
+            <p>El menú <strong>Viandas</strong> tiene cuatro entradas: <strong>Pedidos</strong>, <strong>Menús</strong>, <strong>Empleados</strong> y <strong>Ayuda</strong>. <strong>Pedidos</strong> es la pantalla principal: el listado de viandas de los empleados, agrupado por empresa cliente y por fecha. <strong>Menús</strong> abre los <strong>Menús del día</strong>; <strong>Empleados</strong>, la lista y el alta.</p>
+            <h2>Entrar</h2>
+            <p>Entrá por el acceso del sitio público de La Fija, terminado en <code>/web/login</code>, con tu usuario. El campo dice <strong>Usuario o correo electrónico</strong>: ese acceso sirve para clientes y para el personal de La Fija. Entrando así se abre <strong>Viandas → Pedidos</strong>. Si abriste otra dirección o caíste en Conversaciones, abrí <strong>Viandas → Pedidos</strong> desde el menú de aplicaciones.</p>
+            <p>En <strong>Pedidos</strong> las viandas se agrupan por empresa y después por fecha; cada grupo muestra la cantidad. El filtro <strong>Próximos y pendientes</strong> deja lo de hoy en adelante y lo que todavía requiere atención, sin las canceladas. Podés quitarlo para ver todo. También podés filtrar por empresa, empleado, fecha y estado. Arriba, junto al título, está el botón <strong>Agregar pedido cliente</strong> (abre <strong>Crear pedidos de empleados</strong>). En la lista, el enlace <strong>Nuevo pedido</strong> aparece al final (asistente vacío), debajo de cada empresa expandida (con esa empresa ya elegida) y debajo de cada día expandido (con la empresa y la semana de ese día). En <strong>Pedidos → Producción del día</strong> están las órdenes de fabricación de las viandas, agrupadas por fecha. <strong>Menús</strong> abre los <strong>Menús del día</strong>. El <strong>Alta desde padrón</strong> no está en el menú por ahora; el alta individual se hace con <strong>Nuevo</strong> en <strong>Empleados corporativos</strong>.</p>
+            <h2>La rutina del día</h2>
+            <table class="table table-sm">
+            <thead>
+            <tr>
+            <th>Cuándo</th>
+            <th>Qué hacer</th>
+            <th>Dónde</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td>Con anticipación</td>
+            <td>Cargar platos nuevos y publicar los menús de la semana</td>
+            <td>Ventas → Productos · Viandas → Menús</td>
+            </tr>
+            <tr>
+            <td>A la mañana</td>
+            <td>Revisar lo que entró y las consultas</td>
+            <td>Viandas → Pedidos</td>
+            </tr>
+            <tr>
+            <td>Cuando cocina empieza</td>
+            <td>Tomar la lista del día</td>
+            <td>Viandas → Menús → el día → <strong>Tomar lista para preparación</strong></td>
+            </tr>
+            <tr>
+            <td>Enseguida</td>
+            <td>Imprimir planilla y etiquetas</td>
+            <td>Desde la lista tomada</td>
+            </tr>
+            <tr>
+            <td>Durante el día</td>
+            <td>Editar lo que llegue después de la lista</td>
+            <td>En <strong>Pedidos</strong>, <strong>Editar</strong> en la fila solo aparece si requiere atención; si no, usá <strong>Editar</strong> en la ficha</td>
+            </tr>
+            <tr>
+            <td>Al cerrar el mes</td>
+            <td>Preparar la cotización de cada empresa y seguir en Ventas</td>
+            <td>Esta función no está en el menú por ahora (ver «Pedido para la empresa»)</td>
+            </tr>
+            </tbody>
+            </table>
+            <p>Horarios de La Fija (configurables en <strong>Horarios de pedido</strong>): la carga anticipada de la semana siguiente cierra el <strong>sábado a las 14:00</strong>. Durante esa semana, el empleado puede agregar, cambiar o pedir cancelaciones hasta las <strong>10:30</strong> del día del menú; eso se aplica como vigente aunque la lista ya esté tomada (se ajusta la OF en borrador o, si ya estaba confirmada, se desvincula y queda el remanente para Manufactura). Después de las 10:30 el empleado ya no puede modificar ese día en el portal: pide una corrección y vos la resolvés con <strong>Editar</strong>.</p>
+            <h2>Platos y menús</h2>
+            <p><strong>Cargar un plato nuevo.</strong> Ventas → Productos → Nuevo.</p>
+            <ol>
+            <li>Cargá el nombre y la foto.</li>
+            <li>En la pestaña <strong>Ventas</strong>, escribí la descripción en <strong>Descripción de la cotización</strong>: es el texto que ven los empleados y las etiquetas. Si queda vacía, se usa el nombre. No uses <strong>Descripción para comercio electrónico</strong>: esa no la ven los empleados.</li>
+            <li>Cargá el precio en <strong>Precio de venta</strong>.</li>
+            <li>Dejá marcada la casilla <strong>Ventas</strong>. No hace falta activar <strong>Está publicado</strong> en la tienda.</li>
+            </ol>
+            <p><strong>No pongas importes en el nombre, la descripción ni la imagen</strong>: el precio va solo en <strong>Precio de venta</strong>.</p>
+            <p><strong>Publicar el menú de un día.</strong></p>
+            <ol>
+            <li>Viandas → Menús → Nuevo.</li>
+            <li>Elegí la fecha y el sitio corporativo, <strong>empresas</strong>, que suele venir cargado. Hay un menú por fecha y sitio.</li>
+            <li>Agregá los platos del día (categoría <strong>Viandas</strong>) y, si corresponde, los postres (<strong>Postre Vianda</strong>) y las bebidas (<strong>Bebida Vianda</strong>). El empleado elige el plato y puede sumar un postre y una bebida, o dejarlos sin elegir.</li>
+            <li>Verificá fecha, sitio y opciones, y tocá <strong>Publicar menú</strong>. Aparece un aviso y la ficha queda publicada.</li>
+            </ol>
+            <p>Ejemplo: para el lunes 5 publicás los platos Pollo con arroz, Tarta de verduras y Guiso de lentejas, y si hay, los postres y bebidas de ese día. Desde ese momento los empleados los ven en su semana y eligen cada uno por separado.</p>
+            <p><strong>Corregir un menú ya publicado.</strong> Cambiá las opciones y guardá, o usá <strong>Volver a copiar descripciones</strong> si cambiaste la descripción de un producto. Aparece <strong>Descripciones copiadas. Las elecciones anteriores se conservan.</strong> y <strong>Revisión del menú</strong> sube un número. Eso actualiza las opciones para las elecciones nuevas, pero no modifica ni cancela por sí solo las viandas ya reservadas: revisalas y usá <strong>Editar</strong> si cocina debe preparar algo distinto.</p>
+            <p>Si el menú ya tiene reservas o una lista tomada, no podés cambiarle la fecha ni el sitio. Creá el menú correcto y corregí las reservas afectadas con <strong>Editar</strong>.</p>
+            <h2>Tomar la lista del día</h2>
+            <p>La lista se toma cuando vos tocás <strong>Tomar lista para preparación</strong>; no se toma sola a las 10:30. Junta las viandas vigentes de ese día y es lo que cocina prepara.</p>
+            <p>Al tocarlo aparece <strong>Tomar lista del</strong> y la fecha, con el aviso de que hasta las 10:30 los cambios del empleado se siguen aplicando en la lista. Revisá la fecha y tocá <strong>Tomar lista</strong> para confirmar, o <strong>Volver</strong> para no hacerlo. En un menú de un día futuro el botón se ve secundario, pero sigue disponible: no lo confirmes antes de tiempo.</p>
+            <ul>
+            <li>Al tomarla se crea o actualiza <strong>un pedido de venta confirmado por cada empresa cliente de ese día</strong>, con una línea por plato (precio de lista) y, si hay postre o bebida, una línea a precio 0. No factura: la factura se hace después sobre esos pedidos.</li>
+            <li>Si más tarde revisás la lista (una corrección que cambia la vianda), el pedido se ajusta mientras esa vianda no esté entregada. No se baja la cantidad por debajo de lo ya entregado.</li>
+            <li>Después de tomarla, lo que envían los empleados queda <strong>pendiente de revisión</strong>: no cambia la lista solo.</li>
+            <li>Para volver a verla, usá <strong>Ver lista tomada</strong>. Abrirla de nuevo no incorpora pendientes ni reinicia el día. Si la tomaste antes de tiempo, atendé a mano lo que llegue después.</li>
+            <li>Si cambiás la vianda que se prepara —aplicar una opción, corregirla, restaurarla, cancelarla o cambiar su empresa o día—, la lista genera otra revisión (R2, R3…). La que manda es la marcada como vigente; las anteriores se conservan.</li>
+            <li>Responder, cerrar una consulta, rechazar un cambio pendiente o que el empleado anule su cambio no generan una lista nueva.</li>
+            <li>Las revisiones del menú y las de la lista de preparación son historias distintas.</li>
+            </ul>
+            <h2>Elaborar y entregar</h2>
+            <p>Cuando una vianda queda vigente (portal, <strong>Agregar pedido cliente</strong> / <strong>Nuevo pedido</strong>, o <strong>Editar</strong> al aplicar una pendiente), el sistema crea o actualiza una orden de fabricación <strong>en borrador</strong> por cada plato y día, y le suma esa vianda. El chef no necesita saber empresa ni empleado: mira <strong>Pedidos → Producción del día</strong> (o Manufactura), agrupado por fecha, con el plato, la cantidad y la disponibilidad, y ahí confirma o marca hecha la orden. En Pedidos, la columna <strong>Órdenes de fabricación</strong> muestra el número y <strong>Ver orden</strong> abre la orden. El botón <strong>Elaborar</strong> de la fila ya no está: no hace falta para disparar la OF. Si la lista del día ya está tomada, en <strong>Menús del día</strong> aparece <strong>Elaborar y entregar</strong>, que abre esa lista en la pestaña Elaboración y entrega (no es una entrada del menú). Cada vianda se ve con su número (V-…), el presupuesto, la OF y su estado: <strong>Por elaborar</strong>, <strong>En elaboración</strong>, <strong>Elaborado</strong> o <strong>Entregado</strong>.</p>
+            <ul>
+            <li>Solo se marca una vianda que esté en la lista tomada vigente. En una revisión nueva se conservan las marcas de las viandas que no cambiaron; si cambió el plato, el postre o la bebida, vuelve a «Por elaborar».</li>
+            <li>Hay <strong>una sola OF en borrador por plato y día</strong> (todas las empresas juntas). La cantidad es el total de viandas vigentes de ese plato ese día. El origen es la fecha y el plato, por ejemplo <em>2026-11-20 · Pastel De Papa</em>; en la pestaña Viandas de la orden se ven los números V-…, las empresas y los presupuestos. Si se suma, cambia o se cancela una vianda mientras la orden sigue en borrador, se ajusta la cantidad. Si ya está confirmada, no se cambia esa cantidad: las viandas nuevas de ese plato quedan en otra orden en borrador, y las que salen se desvinculan con un asiento en la orden.</li>
+            <li>El chef confirma la orden en <strong>Producción del día</strong> o en Manufactura: las viandas pasan a «En elaboración». Cuando la marca hecha, pasan solas a «Elaborado», no a «Entregado». Si se cancela una orden ya confirmada, sus viandas vuelven a «Por elaborar» y se vuelve a dejar una orden en borrador. Si había una elección pendiente, <strong>Editar</strong> → Aplicar elección pendiente la deja vigente y la suma a la OF del plato nuevo.</li>
+            <li>Si el plato no tiene lista de materiales, no se crea una orden vacía y se avisa el producto. El postre y la bebida solo generan orden si tienen receta; si se compran sin receta, no bloquean la elaboración (se descuentan al entregar, si son almacenables y van en el remito).</li>
+            <li><strong>Entregado</strong> solo se habilita en una vianda ya elaborada. Valida en el remito de salida del pedido diario la cantidad de esa vianda (entrega parcial y backorder si falta el resto). Cuando están todas, el remito queda hecho. Se puede deshacer la marca; el remito no se revierte solo, haría falta una devolución en Inventario.</li>
+            </ul>
+            <h2>Imprimir</h2>
+            <p><strong>Planilla del día.</strong> En la lista tomada, tocá <strong>Imprimir planilla del día</strong>. Trae la fecha, la revisión, cuántas viandas hay de cada plato y cada vianda por empresa y empleado.</p>
+            <ul>
+            <li>Los pendientes se muestran aparte. Un cambio solicitado todavía no aplicado no se suma: se sigue preparando la vianda vigente.</li>
+            <li>Una reserva nueva pendiente, sin vianda vigente, todavía no cuenta para cocina.</li>
+            <li>Una consulta escrita no quita la vianda vigente de la lista.</li>
+            <li>La planilla muestra los pendientes que hay <strong>al imprimir</strong>: dos planillas de la misma revisión pueden mostrar pendientes distintos. Conservá el PDF que le diste a cocina si necesitás comparar.</li>
+            </ul>
+            <p><strong>Etiquetas.</strong> En la lista tomada, tocá <strong>Generar etiquetas vigentes</strong> y después <strong>Descargar PDF</strong>. Hay <strong>una página por vianda</strong>, en papel de <strong>29 mm de ancho por 90 mm de alto</strong>, vertical y con el contenido girado. Cada etiqueta lleva tres líneas: <strong>día/mes · empresa</strong>, <strong>nombre del empleado</strong> y <strong>plato elegido</strong>. El nombre y el plato van grandes y en negrita. Si un nombre o un plato no entra, termina en puntos suspensivos; el dato completo sigue estando en la lista de preparación. La referencia de la reserva, la revisión y el número de archivo <strong>ya no se imprimen</strong>: se consultan en el sistema.</p>
+            <p>El archivo generado queda guardado: <strong>Descargar último PDF vigente</strong>, que aparece después de generar las etiquetas de la revisión vigente, lo baja otra vez igual. Los PDF anteriores conservan el formato con el que se hicieron: para obtener el tamaño nuevo hay que <strong>Generar etiquetas vigentes</strong>, no alcanza con volver a descargar uno viejo. La planilla del día y el anexo para la empresa siguen en A4. Descargar no lo manda a la impresora: imprimilo con el programa de la impresora.</p>
+            <p><strong>Si ya habías pegado etiquetas y la lista cambió.</strong></p>
+            <ol>
+            <li>Generá las etiquetas de la revisión nueva y abrí ese archivo.</li>
+            <li>Tocá <strong>Registrar sustitución</strong>.</li>
+            <li>En <strong>Archivo anterior</strong> elegí el archivo que realmente reemplazás. La lista ofrece solo archivos anteriores de la misma lista y no incluye el nuevo. Puede ser otro archivo anterior de esa misma revisión.</li>
+            <li>Completá <strong>Qué reemplazo físico de etiquetas se coordinó</strong> y tocá <strong>Registrar coordinación</strong>.</li>
+            </ol>
+            <p>Registrar o imprimir no confirma que se hayan quitado las etiquetas viejas: coordinalo con cocina. Generar un PDF con el formato nuevo tampoco registra por sí solo que se hayan reemplazado las etiquetas físicas.</p>
+            <p><strong>Anexo para la empresa.</strong> Es el detalle de viandas sin importes que acompaña la cotización de un período. Está en «Pedido para la empresa».</p>
+            <h2>Editar pendientes</h2>
+            <p><strong>Dónde.</strong> Desde la ficha de una reserva tocá <strong>Editar</strong>. Si estás en la lista tomada de un día (desde <strong>Menús</strong>), también podés abrir la reserva desde ahí.</p>
+            <p>El asistente muestra la vianda vigente, lo que el empleado pidió y su consulta, que figura como <strong>Solicitud recibida</strong>. Hay dos cosas distintas que pueden estar pendientes:</p>
+            <ul>
+            <li><strong>Opción pendiente:</strong> el empleado pidió otro plato o una reserva nueva después de la lista.</li>
+            <li><strong>Consulta escrita:</strong> el empleado escribió algo desde el detalle.</li>
+            </ul>
+            <p>Elegí qué querés hacer. En la pantalla las operaciones aparecen en otro orden que en esta tabla:</p>
+            <table class="table table-sm">
+            <thead>
+            <tr>
+            <th>Operación</th>
+            <th>Cuándo usarla</th>
+            <th>Ejemplo</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td>Aplicar elección pendiente</td>
+            <td>Cocina puede hacer lo pedido</td>
+            <td>Juan pidió Pescado después de la lista y todavía hay: lo aplicás</td>
+            </tr>
+            <tr>
+            <td>Rechazar el cambio de opción</td>
+            <td>No se puede hacer el cambio</td>
+            <td>Ya no queda Pescado: rechazás y le explicás; sigue su vianda vigente</td>
+            </tr>
+            <tr>
+            <td>Corregir opción</td>
+            <td>Hay que poner otra opción, aunque no esté en el menú</td>
+            <td>Se terminó el Guiso: le ponés Tarta como alternativa</td>
+            </tr>
+            <tr>
+            <td>Restaurar una elección tomada</td>
+            <td>Volver a una elección de una lista anterior</td>
+            <td>Se aplicó un cambio por error</td>
+            </tr>
+            <tr>
+            <td>Cancelar vianda</td>
+            <td>La persona no va a comer ese día</td>
+            <td>La empresa avisa que Paula está de licencia</td>
+            </tr>
+            <tr>
+            <td>Corregir empresa o día</td>
+            <td>La reserva quedó en la empresa o el día equivocados</td>
+            <td>—</td>
+            </tr>
+            <tr>
+            <td>Responder al empleado</td>
+            <td>Contestar sin cambiar el estado de la consulta</td>
+            <td>«Estamos revisando, te confirmamos antes del mediodía»</td>
+            </tr>
+            <tr>
+            <td>Cerrar solicitud sin cambiar la vianda</td>
+            <td>La consulta quedó resuelta</td>
+            <td>«La consulta quedó resuelta»</td>
+            </tr>
+            </tbody>
+            </table>
+            <p><strong>Terminar la actuación.</strong> Después de elegir la operación, completá el <strong>Motivo interno (obligatorio)</strong> y, si corresponde, la <strong>Respuesta al empleado</strong>. Después:</p>
+            <ul>
+            <li>para cambiar la vianda, tocá <strong>Aplicar esta corrección</strong>;</li>
+            <li>para responder, <strong>Responder sin cerrar</strong> si hay consulta abierta, o <strong>Enviar respuesta</strong> si no la hay;</li>
+            <li>para resolver solo la consulta, <strong>Cerrar solicitud</strong>.</li>
+            </ul>
+            <p>El botón <strong>Cancelar</strong> del pie cierra el asistente sin hacer nada: no es lo mismo que la operación <strong>Cancelar vianda</strong>.</p>
+            <p>Al terminar aparece un aviso breve con el resultado. <strong>Responder sin cerrar</strong> mantiene abierta la consulta; <strong>Cerrar solicitud</strong> cierra solo la consulta; <strong>Aplicar esta corrección</strong> confirma la actuación y avisa si la consulta sigue abierta. La fila sale de <strong>Pendientes · todas las fechas</strong> solo cuando ya no queda nada por atender.</p>
+            <p>Si la reserva cambió mientras tenías abierta la atención, porque el empleado anuló o cambió su pedido, mandó otra consulta, o alguien más la corrigió, la actuación no se aplica. El asistente vuelve a abrirse con el estado actualizado y conserva tu motivo y tu respuesta, con el aviso <strong>Esta reserva cambió mientras la atendías. No se aplicó la actuación. Revisá el estado actualizado y confirmá de nuevo; conservamos tu motivo y respuesta.</strong> Revisá qué cambió, ajustá la operación si hace falta, por ejemplo si la opción pendiente ya no existe, y confirmá de nuevo. No hace falta volver a escribir los textos.</p>
+            <p><strong>Responder y cerrar son distintos.</strong> <strong>Responder al empleado</strong> envía un mensaje y conserva el estado de la consulta: no cierra una abierta ni vuelve a abrir una cerrada. <strong>Cerrar solicitud sin cambiar la vianda</strong> cierra solo la consulta escrita: no aplica ni rechaza una opción pendiente. Si hay ambas cosas, resolvé la opción y cerrá también la consulta cuando corresponda.</p>
+            <p><strong>Responder al empleado</strong> sin cerrar es la excepción a la revisión anterior: si llegó algo nuevo mientras escribías, la respuesta igual se envía y aparece un aviso de que la reserva cambió. No aplica opciones ni cierra la consulta: revisá lo nuevo.</p>
+            <p><strong>Cómo responder al empleado.</strong> Escribí en <strong>Respuesta al empleado</strong>, dentro del asistente. El motivo interno no se le muestra. Si dejás la respuesta vacía, recibe un aviso genérico. Una nota común en la ficha no reemplaza esta respuesta. <strong>Nunca escribas importes, documentos comerciales ni datos de otros empleados.</strong></p>
+            <p><strong>Pedidos especiales.</strong> Si acordás algo especial, como preparar sin queso, coordinalo con cocina y corregí la vianda si hace falta. Escribirlo en la respuesta y cerrar la consulta no cambia la lista ni las etiquetas.</p>
+            <p><strong>Ejemplo: reserva nueva después de la lista.</strong> Paula figura como <strong>Nueva reserva</strong>, sin elección vigente. Si cocina puede prepararla, usá <strong>Aplicar elección pendiente</strong>. Si hay que cancelarla, usá <strong>Cancelar vianda</strong>, explicá el motivo y enviá la respuesta. No supongas que ya estaba incluida en cocina.</p>
+            <p>Si la lista ya estaba impresa, después de aplicar generá etiquetas nuevas y registrá la sustitución.</p>
+            <h2>Empleados</h2>
+            <p>La lista está en <strong>Viandas → Empleados → Empleados corporativos</strong>. Cada empleado tiene su propio contacto independiente y una cuenta individual, sin correo. El campo <strong>Empresa cliente</strong> lo asocia a quien paga. No lo agregues como subcontacto de esa empresa ni uses una cuenta de compras particular. No se envían invitaciones por correo.</p>
+            <p><strong>Dar de alta.</strong> Viandas → <strong>Empleados → Empleados corporativos</strong> y el botón <strong>Nuevo</strong> de la lista. En el mismo formulario completá empresa cliente, nombre, usuario, sitio corporativo y contraseña del portal, y guardá. Queda creada la cuenta con acceso al portal.</p>
+            <ol>
+            <li>Escribí nombre, usuario, empresa cliente y sitio. Si hay un solo sitio corporativo, ya viene propuesto.</li>
+            <li>El formulario propone una contraseña de seis números; podés reemplazarla por la que quieras.</li>
+            <li>Copiá usuario y contraseña <strong>antes de guardar</strong>. No incluye la dirección: enviá también el enlace del sitio corporativo.</li>
+            <li>Guardá y esperá la ficha del empleado antes de entregar el acceso.</li>
+            <li>Para dar de alta a otra persona, volvé a la lista y tocá <strong>Nuevo</strong> otra vez.</li>
+            </ol>
+            <p>La contraseña no se puede consultar después: si no la copiaste, usá <strong>Cambiar contraseña</strong> en el menú de acciones (el engranaje) de la ficha o de la lista.</p>
+            <p><strong>Cambiar contraseña.</strong> En la ficha o en la lista (podés seleccionar varios), abrí el menú de acciones (el engranaje) y tocá <strong>Cambiar contraseña</strong>, debajo de Exportar, Duplicar, Archivar y las demás acciones habituales. Se abre el mismo asistente que en Usuarios: una lista con el usuario y la columna <strong>Nueva contraseña</strong>. Escribí la clave, tocá <strong>Cambiar contraseña</strong> y copiá el acceso antes de cerrar: después no se puede consultar. La anterior deja de servir. Si la cuenta está deshabilitada, también tenés que marcar <strong>Habilitado para viandas</strong> en la ficha y guardar: cambiar la contraseña no la habilita.</p>
+            <p><strong>Deshabilitar o habilitar.</strong> En la ficha del empleado, editá <strong>Habilitado para viandas</strong> y guardá. Deshabilitar corta el acceso, pero no cancela sus viandas: revisá las futuras y los pendientes.</p>
+            <p><strong>Cambiar de empresa o sitio.</strong> En la misma ficha, editá <strong>Empresa cliente</strong> o <strong>Sitio corporativo</strong> y guardá. Revisá qué reservas necesitan corrección; la historia anterior no se reescribe sola.</p>
+            <p><strong>Estados de acceso:</strong> Sin cuenta · Sin primer ingreso · Ya ingresó · Deshabilitado · Revisar acceso. <strong>Revisar acceso</strong> indica que la cuenta necesita revisión: comprobá empresa, sitio y habilitación en la ficha. Si no se resuelve, pasale el caso al administrador de Odoo. No crees otra cuenta para probar ni borres la anterior.</p>
+            <h3>Alta desde padrón</h3>
+            <p>La función <strong>Alta desde padrón</strong> no está en el menú por ahora. Sigue disponible como acción. Para dar de alta de a una persona, usá <strong>Viandas → Empleados → Empleados corporativos</strong> y el botón <strong>Nuevo</strong>. Si abrís el asistente de padrón, elegí <strong>Empresa cliente</strong>, <strong>Sitio corporativo</strong> y el <strong>Prefijo para usuarios propuestos</strong>; valen para todo el lote.</p>
+            <p><strong>1. Cargar el padrón.</strong> Pegá la lista o elegí <strong>Archivo CSV</strong>, una sola entrada. Usá UTF-8, punto y coma, y el encabezado <code>nombre;usuario</code>; podés agregar <code>legajo</code>. <strong>Nombre</strong> es obligatorio; <strong>usuario</strong> puede quedar vacío. No incluyas correo, contraseña, empresa ni sitio por fila. Hasta <strong>200 personas por envío</strong>. Un padrón más grande se carga en varios envíos, cada uno con su propia vista previa, su confirmación y su CSV de accesos: por ejemplo, 450 personas se cargan en 200, 200 y 50. Controlá que la suma coincida con el padrón original; el sistema no recorta ni descarta filas.</p>
+            <p>Si una fila no trae usuario, se propone <code>prefijo.nombre.apellido</code>, sin acentos; con legajo, <code>prefijo.legajo</code>. Si esa propuesta ya existe, se agrega un número. Revisá cada usuario definitivo antes de confirmar.</p>
+            <p><strong>2. Vista previa.</strong> Tocá <strong>Leer padrón</strong>. Todavía no hay cuentas creadas ni correo enviado. Corregí las filas en la <strong>Vista previa</strong> y tocá <strong>Validar vista previa</strong>.</p>
+            <ul>
+            <li>Los usuarios que escribas tienen que ser nuevos: se controlan también los archivados y los de otros sitios.</li>
+            <li>Dos personas pueden llamarse igual, pero con usuarios distintos y marcando <strong>Confirmo que los nombres repetidos son personas diferentes</strong>.</li>
+            <li>Si una fila tiene usuario y legajo a la vez, elegí uno.</li>
+            <li>Si cambiás empresa, sitio, prefijo o cualquier fila, hay que <strong>validar otra vez</strong>.</li>
+            </ul>
+            <p><strong>3. Confirmar.</strong> Tocá <strong>Confirmar altas en segundo plano</strong>. <strong>Se crean todas o ninguna dentro de cada envío</strong>; si falla un envío, no se deshacen los anteriores. «Procesando N de M» es un avance provisional, no cuentas ya dadas de alta. Podés cerrar la pestaña y volver al mismo lote por la acción; no vuelvas a cargar el archivo en un lote nuevo para ver si terminó. Si falla, no queda ninguna cuenta de ese intento: corregí y validá de nuevo. En la prueba de referencia, 200 altas tardaron unos 80 segundos de procesamiento; el tiempo y la espera dependen de la carga del servidor.</p>
+            <p><strong>4. Entregar los accesos.</strong> Cuando aparece <strong>Altas confirmadas</strong>, solo vos, como creador del lote, podés <strong>Descargar CSV de accesos</strong>, y durante <strong>15 minutos</strong>. Si lo descargás otra vez dentro de ese plazo, es el mismo archivo. Entregalo únicamente al contacto autorizado de la empresa, para que reparta cada acceso individual; no lo pegues en notas, respuestas ni capturas.</p>
+            <p>Si el plazo venció o se perdió el archivo, no se vuelve a crear el lote: usá <strong>Cambiar contraseña</strong> en el menú de acciones de las cuentas ya creadas.</p>
+            <p><strong>Cuidados.</strong> En un padrón la descarga aparece recién después de confirmar todas las altas, y <strong>no hay una contraseña común por empresa</strong>. Una propuesta de usuario con un número al final puede estar avisándote que el usuario base ya existía: revisá que se trate de una persona nueva y no de alguien que ya tiene cuenta.</p>
+            <h2>Reservas y resúmenes</h2>
+            <p>Para cargar el pedido de la semana que un empleado te pasó por WhatsApp (sin que entre al portal) usá, en <strong>Pedidos</strong>, el botón <strong>Agregar pedido cliente</strong> o el enlace <strong>Nuevo pedido</strong> (ambos abren <strong>Crear pedidos de empleados</strong>). Elegí la empresa cliente (solo aparecen las que tienen empleados dados de alta, no archivados), el empleado y la semana (por defecto, la próxima con menús publicados). Los días publicados de la semana se precargan. Podés agregar o quitar renglones con el enlace <strong>Agregar pedido</strong> (en uno nuevo, elegí el día publicado de esa semana y después el plato, el postre y la bebida). Si ya están todos los días publicados de la semana, el enlace indica que uses <strong>Semana siguiente</strong>. Postre y bebida son opcionales y solo si hay plato. Al guardar (también con el Guardar del encabezado) se aplica la misma regla que en el portal, incluida la de aplicar los cambios hasta las 10:30 aunque la lista esté tomada, y queda registrado que lo cargó el operador. Si un día ya tenía reserva y lo dejás sin plato, o quitás el renglón, esa reserva no se modifica: para anularla usá <strong>Editar</strong> en la ficha de la reserva.</p>
+            <p>Las reservas también se revisan en <strong>Pedidos</strong> (por empresa y fecha) o desde <strong>Menús</strong>, abriendo esa fecha y, si la lista ya está tomada, <strong>Ver lista tomada</strong> o <strong>Elaborar y entregar</strong>.</p>
+            <p>Cuando una vianda ya está <strong>Elaborado</strong> o <strong>Entregado</strong>, usá <strong>Agregar a presupuesto</strong> (en la fila o, con varias seleccionadas, en el encabezado). Se arma o se actualiza un presupuesto en borrador por empresa y día: si la selección incluye varias empresas, hay un presupuesto por cada una; los productos iguales se acumulan en una sola línea. La orden de fabricación, en cambio, junta las viandas del mismo plato y día de todas las empresas. El presupuesto no se crea al quedar la vianda vigente ni al elaborarla, y queda en borrador hasta que lo confirmás en <strong>Pedidos → Ventas</strong>. Mientras no esté agregada, la columna <strong>Presupuesto</strong> queda vacía; después muestra el número como vínculo. La columna <strong>Monto</strong> solo muestra el importe (y lo suma por grupo) cuando la vianda ya está en el presupuesto, con el precio de la lista de la empresa para el plato, el postre y la bebida.</p>
+            <ul>
+            <li>La columna <strong>Atención</strong> indica lo que falta resolver.</li>
+            <li><strong>Momento del último acto</strong> dice si el empleado actuó antes o después de tomar la lista. Incluye elecciones, consultas y anulaciones, y no significa que haya un pendiente. La hora exacta está en la ficha de la reserva, en <strong>Último acto del empleado · hora de La Fija</strong>.</li>
+            <li>Para ver qué pasó antes, abrí <strong>Historia de elecciones y atención</strong> en la reserva. Los textos históricos no reemplazan el estado actual.</li>
+            <li><strong>Semana (fechas)</strong> se ordena cronológicamente, aunque abarque varios meses o años.</li>
+            <li>Preparar la cotización de un período no está en el menú por ahora (ver «Pedido para la empresa»).</li>
+            </ul>
+            <p>Ejemplo: para ver qué pidió cada persona de una empresa en una semana, filtrá <strong>Esta semana</strong>, escribí el nombre de la empresa en la búsqueda y elegí <strong>Búsqueda Empresa cliente para:</strong> en la lista que se abre, y agrupá por <strong>Empleado</strong>. Si apretás Enter sin elegir, busca por referencia y no encuentra nada.</p>
+            <h2>Pedido para la empresa</h2>
+            <p>La función <strong>Preparar cotización</strong> no está en el menú por ahora. Sigue disponible como acción y es el camino del cierre de mes y de cualquier otro período.</p>
+            <ol>
+            <li>Elegí <strong>Empresa cliente</strong>, <strong>Desde</strong> y <strong>Hasta</strong>. Empieza con el mes calendario anterior y podés cambiarlo. Las fechas muestran día, mes y año. Si las escribís, completá día/mes/año y pulsá Enter para aplicar la fecha y cerrar el calendario; después pasá al otro campo. Tab también aplica la fecha: fijate dónde quedó el cursor antes de seguir escribiendo. El calendario puede seguir mostrando el mes anterior mientras todavía estás tecleando.</li>
+            <li>Tocá <strong>Ver resumen</strong> para calcularlo. Si cambiás empresa, compañía o fechas, el resumen anterior se oculta y vuelve <strong>Elegir período</strong>: hay que tocar <strong>Ver resumen</strong> otra vez. Si mantenés los mismos criterios y querés volver a consultar, usá <strong>Actualizar resumen</strong>. Los dos actualizan esta misma pantalla y confirman con un aviso breve, <strong>Resumen actualizado.</strong> Puede aparecer aunque las cantidades sigan iguales; no prepara ninguna cotización. Las fechas del resumen y del anexo se muestran como día/mes/año. El <strong>Resumen para preparar cotización</strong> cuenta una unidad por vianda vigente y usa la empresa guardada en cada reserva, aunque el empleado después haya cambiado de empresa. Toma la revisión actual de cada lista, sin sumar las anteriores. Una reserva nueva pendiente sin vianda vigente no suma; un cambio pendiente conserva la vigente. Las consultas abiertas son avisos: la vianda vigente igual se incluye. Revisá las cantidades por producto y las reservas, empleados y fechas. No muestra importes.</li>
+            <li>Revisá <strong>Ya incluidas en un pedido</strong> y <strong>A revisar</strong>.</li>
+            <li>Con viandas disponibles y el resumen calculado, tocá <strong>Preparar cotización</strong>. Si no hay disponibles, el botón no aparece: revisá <strong>Ya incluidas en un pedido</strong> y <strong>A revisar</strong>; que no haya disponibles no significa que el período no tenga reservas. Si esas viandas ya están en los <strong>pedidos diarios</strong> confirmados al tomar cada lista, no se crea otro pedido: se abre ese pedido (o la lista de pedidos del período, si hay más de uno) para facturarlo. El plato lleva el precio de lista; el postre y la bebida van a precio 0, así que la factura cobra el plato. Solo se crea un pedido de período, en borrador, cuando quedan reservas tomadas sin pedido diario (casos históricos). En ambos casos el documento queda protegido, con las reservas de origen. Revisá importes, lista de precios e impuestos en Ventas.</li>
+            <li>Seguí con la confirmación y la facturación habituales de Odoo. Preparar no hace esos dos pasos.</li>
+            </ol>
+            <p><strong>A revisar.</strong> <strong>Días sin lista tomada</strong> muestra fecha, empresa y la cantidad que todavía no entra: abrí el menú y revisá la toma de lista; esa acción alcanza a todas las empresas de ese día. Una vianda cancelada que estuvo en preparación no entra: decidí cómo resolverla por el circuito habitual. Los pedidos cancelados anteriores y las consultas abiertas son avisos. Productos archivados o no vendibles, unidades distintas de Unidades, diferencias con la lista vigente y vínculos duplicados requieren revisión. No resuelvas incidencias borrando historia.</p>
+            <p><strong>Ya incluida no significa facturada.</strong> Ya incluida en un pedido significa vinculada a un pedido no cancelado, aunque esté en borrador; no significa cobrada ni facturada. No vuelvas a cargar las mismas viandas por otra vía. Preparar cotización carga las líneas y los vínculos juntos; si vinculás una reserva a mano desde Ventas, esa acción sola sigue sin cargar productos ni cantidades.</p>
+            <p><strong>Si el resumen cambió.</strong> Si algo cambió mientras revisabas, aparece un aviso de que el resumen cambió y no se creó ninguna cotización. No se carga una parte a escondidas: tocá <strong>Actualizar resumen</strong>, revisá de nuevo y confirmá. Repetir la misma operación abre su cotización con <strong>Abrir cotización preparada</strong>; para preparar otro conjunto, abrí una operación nueva.</p>
+            <p><strong>Consulta guardada.</strong> Al volver a una operación ya preparada, primero ves su cotización y un aviso. <strong>Consulta guardada del…</strong> indica cuándo se consultó; <strong>Disponibles en esa consulta</strong> y <strong>Ya incluidas en esa consulta</strong> corresponden a ese momento, no al actual. <strong>Actualizar resumen</strong> vuelve a consultar, pero no cambia la selección original ni el anexo del pedido.</p>
+            <p><strong>Ver pedidos del período.</strong> Abre la lista de pedidos de la empresa con reservas de esas fechas. La columna <strong>Estado</strong> es la del pedido: cotización, cotización enviada, orden de venta o cancelado; estar incluido sigue sin acreditar facturación. Desde esa lista podés continuar con las acciones habituales de Odoo sobre los pedidos que selecciones, por ejemplo facturar varios juntos. También muestra los cancelados relacionados, para revisar qué pasó; no los toma como pedidos pendientes de confirmar.</p>
+            <p><strong>Correcciones después de preparar.</strong> En la ficha de cada reserva, <strong>Pedidos vinculados</strong> muestra los pedidos relacionados y su estado: revisalo para no incluir una vianda dos veces. Si después corregís una vianda, el sistema no cambia las líneas del pedido: después de tocar <strong>Actualizar resumen</strong>, el resumen muestra los cambios que detecta respecto de lo preparado, y la pestaña <strong>La Fija</strong> del pedido también los muestra en <strong>Cambios respecto de lo preparado</strong>. La consulta guardada no se actualiza sola. La selección de origen permanece y no se sincronizan las líneas. Revisá el pedido y sus documentos por el circuito comercial habitual.</p>
+            <p><strong>Precios por cantidad.</strong> Se aplica la configuración vigente al crear la cotización. Una línea de 20 viandas puede tener otro precio por unidad que 20 líneas de una, si así está configurada la lista. Si la lista redondea, el precio de la línea puede no coincidir con el precio de venta cargado en el producto: es la regla de la lista, no un error. El resumen propio no muestra importes; la revisión de precios e impuestos se hace en Ventas.</p>
+            <p><strong>Anexo para la empresa.</strong> <strong>Imprimir anexo para la empresa</strong> está en el resumen y en la pestaña <strong>La Fija</strong> del pedido preparado. Entrega empleado, fecha, producto, referencia y cantidades, sin importes. Desde el pedido conserva lo incluido al prepararlo; no reemplaza la revisión de ajustes posteriores. Desde una consulta sin cotización, el PDF lo indica y muestra solo lo disponible; si no hay disponibles, dice «No hay viandas disponibles en esta consulta. Las ya incluidas y las incidencias se revisan en el resumen» y conserva empresa, período y momento, con <strong>0 viandas disponibles.</strong>, sin encabezados de detalle vacíos. Una consulta vacía no afirma que el período no tenga reservas. Imprimirlo no crea un pedido ni significa que no existan reservas en el período. Descargalo y entregalo por el canal comercial acordado: no se adjunta ni se envía solo, y nunca se entrega al empleado.</p>
+            <p><strong>Ejemplo de cierre mensual.</strong> El 1 de octubre elegís ABC y septiembre. Hay 18 viandas disponibles y 6 ya incluidas en una cotización anterior. Preparás solo las 18; revisás la nueva cotización y seguís en Odoo. Con <strong>Ver pedidos del período</strong> revisás también el pedido de las otras 6: excluirlas del nuevo resumen no significa que su circuito comercial esté terminado. Una consulta abierta aparece como aviso. Si faltó tomar la lista de un día, sus cantidades quedan a revisar y no desaparecen del cierre sin explicación.</p>
+            <p>Los pedidos y facturas protegidos quedan para la gestión interna de La Fija. Un enlace compartido no los abre a un particular ni a otro usuario externo. La documentación para la empresa se entrega por el circuito comercial acordado, nunca al empleado.</p>
+            <h2>Cuidados</h2>
+            <ul>
+            <li>No escribas importes en respuestas ni mandes facturas a un empleado.</li>
+            <li>No cambies la zona horaria del usuario administrador de Odoo: de ella dependen los horarios de pedido, Hoy y Esta semana.</li>
+            <li>No borres reservas ni listas para corregir un error: usá las correcciones, que dejan historia.</li>
+            </ul>
+            <h2>Preguntas frecuentes</h2>
+            <ul>
+            <li><strong>Un empleado no puede entrar.</strong> Verificá que use el enlace corporativo. Revisá en su ficha el estado de acceso. Si está bien, restablecé la contraseña.</li>
+            <li><strong>Un empleado no ve las opciones de un día.</strong> Revisá que el menú de ese día esté publicado y en el sitio corporativo.</li>
+            <li><strong>Buscar la lista de un día.</strong> En <strong>Menús</strong> abrí esa fecha. Si la lista ya está tomada, usá <strong>Ver lista tomada</strong> o <strong>Elaborar y entregar</strong>.</li>
+            <li><strong>¿Cuál lista mando a cocina?</strong> La revisión marcada como vigente. Las anteriores muestran un aviso de lista histórica.</li>
+            </ul>
+        </article>
+    </template>
+</odoo>

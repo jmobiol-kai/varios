@@ -2,7 +2,13 @@
 
 Este repositorio es una carpeta de addons para Odoo 19 Community. En el servidor, `addons_path` debe apuntar a la raíz de este repositorio, no a la carpeta de un módulo.
 
-Hay dos módulos de Odoo Mates, con el nombre técnico y la licencia del autor. El código de cada uno es el árbol de la revisión citada, sin renombrar archivos y sin cambiar avisos. Los textos de licencia que acompañan esa publicación están en `LICENSES/` y son las copias oficiales de la GNU. Esos archivos no cambian la licencia de ningún módulo.
+Módulos de esta rama:
+
+- `kai_viandas`: Viandas corporativas: pedidos de empleados por empresa, producción diaria por menú y presupuestos por empresa y día.
+- `om_whatsapp_base`: WhatsApp Connector Base, de Odoo Mates.
+- `om_whatsapp_device`: WhatsApp Connector QR, de Odoo Mates.
+
+`om_whatsapp_base` y `om_whatsapp_device` son de Odoo Mates, con el nombre técnico y la licencia del autor. El código de cada uno es el árbol de la revisión citada, sin renombrar archivos y sin cambiar avisos. Los textos de licencia que acompañan esa publicación están en `LICENSES/` y son las copias oficiales de la GNU. Esos archivos no cambian la licencia de ningún módulo.
 
 La ficha de Odoo Apps pide iniciar sesión para descargar el ZIP. La copia de esta rama sale del repositorio público del autor, `https://github.com/odoomates/odooapps`, rama `19.0`, revisión `18521763dcdfa3dced6cb24dfae893bf896eaa78` (5 Nov 2026, mensaje `[BOT] post-merge updates`). Ese commit no toca estos dos módulos. El árbol de cada uno coincide con el último commit que sí los cambia.
 
@@ -39,6 +45,17 @@ El puente Node.js va dentro del módulo, en `om_whatsapp_device/bridge`. `packag
 El autor advierte que WhatsApp puede bloquear un número que envía demasiado, demasiado rápido, o a quien no lo pidió. El secreto del puente lo genera Odoo en el primer uso (`ir.config_parameter` `om_whatsapp_device.secret`) y se muestra en la cuenta. No hay un secreto escrito en el código.
 
 LGPL-3 permite publicar estas copias literales. Esta rama conserva el aviso de licencia del manifiesto y adjunta `LICENSES/LGPL-3.0.txt` y `LICENSES/GPL-3.0.txt` (la LGPL-3 incorpora la GPL-3).
+
+## kai_viandas
+
+Viandas corporativas: pedidos de empleados por empresa, producción diaria por menú y presupuestos por empresa y día.
+
+- Nombre técnico: `kai_viandas`
+- Nombre del manifiesto: La Fija · Viandas corporativas
+- Versión de manifiesto: `19.0.2.0.0`
+- Licencia del manifiesto: AGPL-3
+- Autor: Kaizendo
+- Conserva la carpeta `migration_tools/`
 
 ## Puente y variables
 

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Fuente editorial: newvps19/docs/lafija/manuales/MANUAL-EMPLEADO.md (versión 10). Generado desde el Markdown; editar la fuente y regenerar. -->
+    <template id="help_employee_content" name="Texto del manual del empleado">
+        <h1>Ayuda · Mis viandas</h1>
+        <p>Acá elegís tu vianda de cada día: el menú y, si querés, el postre y la bebida. Tu empresa se encarga del pago: vos solo elegís. Solo ves tus propias viandas, sin precios ni facturas.</p>
+        <p>Podés volver a esta guía desde <strong>Ayuda</strong>, arriba.</p>
+        <h2>Pedir la semana</h2>
+        <ol>
+        <li>Si no ves la semana que querés, tocá <strong>Siguiente</strong>.</li>
+        <li>Tocá un día para ver sus opciones.</li>
+        <li>Las opciones con foto aparecen primero; las que no tienen foto se muestran como filas compactas. Elegí el menú y, si hay, el postre y la bebida. El postre y la bebida son opcionales: también podés dejar <strong>Sin postre</strong> o <strong>Sin bebida</strong>. Sin un plato no se puede pedir postre ni bebida. Después de completar el día, se pliega y deja a la vista <strong>Sin guardar</strong>. Todavía falta tocar <strong>Guardar mis elecciones</strong>.</li>
+        <li>Repetí con los días que quieras. Podés saltear días.</li>
+        <li>Tocá <strong>Guardar mis elecciones</strong>.</li>
+        </ol>
+        <p>Es una vianda por día, con un plato y, si los elegís, un postre y una bebida. Hasta que no tocás <strong>Guardar mis elecciones</strong>, no se envía nada.</p>
+        <p>Si tocás <strong>Ayuda</strong>, otro enlace o <strong>Salir</strong> con días sin guardar, aparece <strong>Tenés N días sin guardar</strong>. Tocá <strong>Seguir eligiendo</strong> para conservar tus elecciones, o <strong>Salir sin guardar</strong> para irte sin enviarlas. Las elecciones no se envían solas. Si cerrás la pestaña o usás los botones del navegador, el aviso depende del teléfono: guardá antes de salir.</p>
+        <p>Después de guardar, arriba aparece una confirmación por día:</p>
+        <ul>
+        <li><strong>elección guardada</strong>: quedó aplicada.</li>
+        <li><strong>reserva recibida para revisión</strong> o <strong>cambio recibido para revisión</strong>: quedó un pedido anterior pendiente de revisión (no se usa para los cambios nuevos antes de las 10:30).</li>
+        <li><strong>anulaste el cambio pedido</strong>: sigue tu vianda vigente.</li>
+        </ul>
+        <p>Una vez guardado un día, para dejarlo sin vianda tenés que pedir la cancelación: mirá <strong>Cancelar una vianda o pedir algo especial</strong>.</p>
+        <p>Los pedidos de la semana siguiente se cargan durante la semana, hasta el <strong>sábado a las 14:00</strong>, hora de La Fija. Después, en el transcurso de esa semana, podés agregar, cambiar o pedir una cancelación hasta las <strong>10:30</strong> de la mañana del día del menú. Después de las 10:30 ya no se puede modificar ese día en el portal: escribile a La Fija desde el detalle.</p>
+        <h2>Cambiar un día</h2>
+        <p>Para hoy o un día futuro, abrí el día, cambiá el menú, el postre o la bebida y tocá <strong>Guardar mis elecciones</strong>.</p>
+        <ul>
+        <li>Si es antes de las <strong>10:30</strong> de ese día, el cambio queda hecho, aunque La Fija ya haya tomado la lista.</li>
+        <li>Si el día dice <strong>Horario cerrado</strong>, ya no se puede cambiar en el portal. Para corregirlo, abrí su detalle y pedí una corrección.</li>
+        </ul>
+        <p>Si el día ya pasó, dice <strong>Día pasado</strong>: no se puede elegir ni cambiar. Para corregirlo, abrí su detalle y pedí una corrección. Si ese día no tenías reserva, pedile a tu empresa que contacte a La Fija.</p>
+        <h2>Anular un cambio que pediste</h2>
+        <p>Abrí el día y tocá la tarjeta <strong>Vigente · elegila para anular el cambio pedido</strong>. Tocá <strong>Guardar mis elecciones</strong>.</p>
+        <p>Sigue tu vianda vigente: solo anulaste el cambio. Si tenías una consulta abierta, sigue abierta. Esto también se puede hacer en un día pasado, si tenés una vianda vigente.</p>
+        <h2>Cancelar una vianda o pedir algo especial</h2>
+        <ol>
+        <li>Abrí el día y tocá <strong>Ver detalle / pedir una corrección</strong>.</li>
+        <li>Escribí qué necesitás, por ejemplo cancelar la vianda.</li>
+        <li>Tocá <strong>Enviar solicitud</strong>. Lo que enviaste figura como <strong>Consulta escrita abierta</strong>.</li>
+        </ol>
+        <p>Si tocás un enlace antes de enviar, aparece <strong>Tenés una consulta sin enviar</strong>: <strong>Seguir escribiendo</strong> conserva el texto y <strong>Salir sin guardar</strong> lo descarta.</p>
+        <p>La cancelación la hace La Fija: pedila lo antes posible. Así también se cancela una reserva nueva que todavía está pendiente.</p>
+        <p>La respuesta de La Fija aparece en el detalle de ese día; no llega por correo, y la semana no siempre avisa que hay una respuesta. Si La Fija actuó sobre un día, abrí su detalle. Fijate también cuál es tu vianda vigente: recibir una respuesta o ver la consulta cerrada no significa por sí solo que cambió tu vianda. Si no hay respuesta y lo necesitás, pedile a tu empresa que contacte a La Fija.</p>
+        <h2>Moverte entre semanas</h2>
+        <ul>
+        <li><strong>Anterior</strong> y <strong>Siguiente</strong> cambian de semana.</li>
+        <li><strong>Esta semana</strong> vuelve a la semana de hoy, según la hora de La Fija.</li>
+        <li><strong>Próxima disponible</strong> busca los próximos días abiertos para elegir. Si no encuentra, igual te muestra lo publicado: revisá los avisos de cada día.</li>
+        <li><strong>Volver a mis viandas</strong>, desde esta ayuda, te devuelve a la semana o al detalle desde donde la abriste. Si la abriste directamente, te lleva a tus viandas como al entrar.</li>
+        <li>En el detalle de un día, <strong>Volver a la semana del</strong> y la fecha te lleva a la semana de esa reserva; <strong>Esta semana</strong> te lleva a la de hoy.</li>
+        </ul>
+        <p>Para ver lo que reservaste antes, tocá <strong>Anterior</strong> hasta llegar a esa semana. En el detalle de cada día podés abrir <strong>Historia de tus elecciones</strong>.</p>
+        <h2>Qué significa cada aviso</h2>
+        <ul>
+        <li><strong>Vigente</strong>: la elección que cuenta para ese día.</li>
+        <li><strong>Sin guardar</strong>: elegiste, pero falta tocar <strong>Guardar mis elecciones</strong>.</li>
+        <li><strong>Horario cerrado</strong>: ya pasó el horario de las 10:30 de ese día, o todavía no está abierta la carga de esa semana (se carga la semana anterior hasta el sábado a las 14:00).</li>
+        <li><strong>Opción pendiente de revisión</strong>: pediste algo después de la lista y La Fija tiene que revisarlo. Al abrir el día se ve <strong>Reserva pendiente</strong> o <strong>Cambio pendiente</strong> con lo que pediste, y la tarjeta dice <strong>Solicitada · pendiente</strong>.</li>
+        <li><strong>Consulta escrita abierta</strong>: La Fija todavía no cerró tu consulta.</li>
+        <li><strong>Hay una respuesta de La Fija</strong>: abrí el detalle para leerla.</li>
+        <li><strong>Consulta escrita cerrada por La Fija</strong>: La Fija cerró tu consulta; fijate en el detalle si te respondió.</li>
+        <li><strong>Día pasado</strong>: ese día ya pasó. Para corregirlo, escribile a La Fija desde el detalle.</li>
+        <li><strong>Vianda cancelada por La Fija</strong>: esa vianda está cancelada. El nombre que queda a la vista no significa que vaya a prepararse.</li>
+        </ul>
+        <details class="history">
+        <summary>Si no se pudo guardar</summary>
+        <p>Si arriba dice <strong>No se guardó ningún día de este envío</strong>, buscá el día señalado. Puede pasar por dos motivos: La Fija cambió esa vianda mientras elegías, o pasó la medianoche y ese día ya es un día pasado.</p>
+        <ol>
+        <li>Si dice <strong>La Fija cambió esta vianda mientras elegías</strong>, el día muestra la vianda actual y lo que habías elegido. Si dice <strong>Borrador · requiere elegir una opción actual</strong>, elegí otra tarjeta disponible.</li>
+        <li>Si ese día ya pasó, dejá la vianda vigente como estaba, o elegí <strong>Dejar este día sin cambios</strong> si no tenías reserva. Si hace falta corregirlo, pedilo desde el detalle.</li>
+        <li>Los demás días siguen como <strong>Sin guardar</strong>. Tocá <strong>Guardar mis elecciones</strong> para enviar todo junto.</li>
+        </ol>
+        <p>Este borrador sí se conserva mientras sigas en la sesión, a diferencia de una elección común sin guardar. Si preferís empezar de nuevo, tocá <strong>Descartar este borrador y ver lo guardado</strong>.</p>
+        </details>
+        <h2>Entrar y salir</h2>
+        <ul>
+        <li>Entrá por el enlace de viandas que te dio tu empresa, con tu usuario y contraseña. Es distinto del sitio de compras de particulares.</li>
+        <li>Tocá <strong>Mostrar</strong> para revisar la contraseña y <strong>Ocultar</strong> para volver a esconderla.</li>
+        <li>Si aparece <strong>No se pudo iniciar sesión. Revisá tu usuario y contraseña.</strong>, revisá los datos y probá de nuevo.</li>
+        <li>Si aparece <strong>Entrá para continuar</strong>, ingresá con tu usuario y contraseña.</li>
+        <li>Si no podés entrar, tocá <strong>¿No podés entrar? Ayuda para recuperar el acceso</strong> en la pantalla de acceso. Tu empresa tiene que contactar a La Fija, que te da una contraseña nueva. No hay registro ni recuperación por correo.</li>
+        <li>Para salir, tocá <strong>Salir</strong>, arriba. Si el teléfono no es tuyo, salí siempre al terminar.</li>
+        </ul>
+    </template>
+</odoo>

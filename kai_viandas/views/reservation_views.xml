@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="menu_day_list" model="ir.ui.view">
+        <field name="name">lafija.menu.day.list</field><field name="model">lafija.menu.day</field>
+        <field name="arch" type="xml">
+            <list default_order="date desc"><field name="date"/><field name="day_title"/><field name="website_id"/><field name="product_ids" string="Platos" widget="many2many_tags"/><field name="dessert_ids" string="Postres" widget="many2many_tags"/><field name="drink_ids" string="Bebidas" widget="many2many_tags"/><field name="published"/><field name="preparation_status"/></list></field>
+    </record>
+    <record id="menu_day_form" model="ir.ui.view">
+        <field name="name">lafija.menu.day.form</field><field name="model">lafija.menu.day</field>
+        <field name="arch" type="xml">
+            <form js_class="lf_menu_form">
+            <header><button name="action_publish" type="object" string="Publicar menú" invisible="published or not date or not website_id" class="btn-primary"/><button name="action_refresh_options" type="object" string="Volver a copiar descripciones" invisible="not date or not website_id" help="Copia las descripciones actuales de los productos para nuevas elecciones; conserva las elecciones anteriores."/></header>
+            <sheet><h1><field name="day_title"/></h1>
+                <group><group><field name="date"/><field name="website_id" options="{'no_create': True, 'no_create_edit': True}" domain="[('lf_corporate_site', '=', True)]"/><field name="published"/></group>
+                    <group><field name="preparation_status"/><field name="revision" string="Revisión del menú" help="La creación, publicación y correcciones conservan revisiones; publicar un menú nuevo crea la revisión 2."/></group></group>
+                <p>Publicar permite elegir estas opciones en el sitio corporativo. Los productos no necesitan estar publicados en la tienda. El empleado elige el plato, y puede sumar un postre y una bebida si los cargás para ese día.</p>
+                <group name="lf_offer_plates" string="Platos del día"><field name="product_ids" widget="many2many_tags" string="Platos" options="{'no_create': True}"/></group>
+                <group name="lf_offer_desserts" string="Postres del día"><field name="dessert_ids" widget="many2many_tags" string="Postres" options="{'no_create': True}"/></group>
+                <group name="lf_offer_drinks" string="Bebidas del día"><field name="drink_ids" widget="many2many_tags" string="Bebidas" options="{'no_create': True}"/></group>
+                <notebook><page string="Reservas de este día"><field name="reservation_ids" readonly="1" class="lf-reservations"/></page>
+                    <page string="Historia del menú"><field name="revision_ids" readonly="1"><list><field name="number" string="Revisión"/><field name="date" string="Día del menú"/><field name="changed_local"/><field name="published" string="Publicado"/><field name="actor_id" string="Quién"/><field name="options_text"/></list></field></page>
+                </notebook>
+                <div class="text-muted small mt-3">Mensajes · hora de La Fija</div>
+            </sheet><chatter/>
+        </form></field>
+    </record>
+    <record id="menu_day_search" model="ir.ui.view">
+        <field name="name">lafija.menu.day.search</field><field name="model">lafija.menu.day</field>
+        <field name="arch" type="xml">
+            <search><field name="date"/><field name="product_ids"/><field name="dessert_ids"/><field name="drink_ids"/>
+            <filter name="upcoming" string="Próximos días" domain="[('is_upcoming', '=', True)]"/>
+            <separator/><filter name="published" string="Publicados" domain="[('published', '=', True)]"/>
+        </search></field>
+    </record>
+    <record id="menu_revision_form" model="ir.ui.view">
+        <field name="name">lafija.menu.revision.form</field><field name="model">lafija.menu.revision</field>
+        <field name="arch" type="xml">
+            <form string="Historia del menú" create="0" edit="0" delete="0"><sheet><group><field name="menu_id"/><field name="number"/><field name="date"/><field name="website_id"/><field name="published"/><field name="actor_id"/><field name="changed_local"/></group><field name="options_text"/></sheet></form>
+        </field>
+    </record>
+    <record id="menu_day_action" model="ir.actions.act_window">
+        <field name="name">Menús del día</field><field name="res_model">lafija.menu.day</field><field name="view_mode">list,form,calendar</field>
+        <field name="search_view_id" ref="menu_day_search"/><field name="context">{'search_default_upcoming': 1}</field>
+    </record>
+    <record id="menu_day_calendar" model="ir.ui.view">
+        <field name="name">lafija.menu.day.calendar</field><field name="model">lafija.menu.day</field>
+        <field name="arch" type="xml">
+            <calendar date_start="date" string="Menús" mode="month"><field name="name"/><field name="published"/></calendar></field>
+    </record>
+    <record id="reservation_list" model="ir.ui.view">
+        <field name="name">lafija.reservation.list</field><field name="model">lafija.reservation</field>
+        <field name="arch" type="xml">
+            <list class="lf-reservations" js_class="lf_reservation_list" create="0" delete="0" group_create="0" decoration-warning="pending">
+            <header/>
+            <field name="employee_partner_id" optional="show" width="90px"/>
+            <field name="customer_company_id" optional="show" width="130px"/>
+            <field name="date" optional="show" width="130px"/>
+            <field name="name" string="Vianda" optional="show" width="80px"/>
+            <field name="current_description" optional="show" width="160px"/>
+            <field name="current_dessert_description" optional="show" string="Postre" width="80px"/>
+            <field name="current_drink_description" optional="show" string="Bebida" width="80px"/>
+            <field name="pending_description" optional="show" width="150px"/>
+            <field name="attention_label" optional="show" width="80px"/>
+            <field name="timing_label" optional="show" width="170px"/>
+            <field name="week_label" optional="hide"/><field name="pending" column_invisible="True"/><field name="state" string="Vigencia" optional="hide"/>
+            <field name="after_reference_time" optional="hide"/><field name="after_preparation_cut" optional="hide"/>
+            <button name="action_correct" type="object" string="Editar" invisible="not pending"/>
+        </list></field>
+    </record>
+    <record id="reservation_event_form" model="ir.ui.view">
+        <field name="name">lafija.reservation.event.form</field>
+        <field name="model">lafija.reservation.event</field>
+        <field name="arch" type="xml">
+            <form string="Actuación de la reserva" create="0" edit="0" delete="0">
+                <group>
+                    <group>
+                        <field name="reservation_id" string="Reserva" options="{'no_open': True}"/>
+                        <field name="occurred_local"/>
+                    </group>
+                    <group>
+                        <field name="actor_id"/>
+                        <field name="kind"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="previous_description"/>
+                    <field name="received_description"/>
+                    <field name="applied_description"/>
+                    <field name="result_label"/>
+                </group>
+                <group string="Contexto de este acto">
+                    <field name="after_reference_time"/>
+                    <field name="after_preparation_cut"/>
+                    <field name="menu_revision"/>
+                </group>
+            </form>
+        </field>
+    </record>
+    <record id="reservation_form" model="ir.ui.view">
+        <field name="name">lafija.reservation.form</field><field name="model">lafija.reservation</field>
+        <field name="arch" type="xml">
+            <form create="0" delete="0">
+            <sheet><h1><field name="employee_partner_id" readonly="1"/></h1>
+                <group><group><field name="name" string="Vianda"/><field name="date"/><field name="customer_company_id" readonly="1"/><field name="menu_id" readonly="1"/><field name="state" string="Estado de la vianda"/></group>
+                    <group><field name="current_description"/><field name="current_dessert_description" string="Postre vigente"/><field name="current_drink_description" string="Bebida vigente"/><field name="pending_description"/><field name="pending_dessert_description" string="Postre pendiente"/><field name="pending_drink_description" string="Bebida pendiente"/><field name="attention_label"/><field name="change_local"/><field name="timing_label"/><field name="other_pending_count"/></group></group>
+                <field name="pending" invisible="True"/><field name="attention_pending" invisible="True"/>
+                <notebook><page string="Historia de elecciones y atención"><field name="event_ids" readonly="1" context="{'form_view_ref': 'kai_viandas.reservation_event_form'}"><list>
+                    <field name="occurred_local"/><field name="actor_id"/><field name="kind"/><field name="received_description"/><field name="applied_description"/><field name="result_label"/>
+                    <field name="previous_description" optional="hide"/>
+                </list></field></page><page string="Pedidos vinculados" groups="kai_viandas.group_operator"><field name="lf_sale_order_ids" readonly="1" options="{'no_create': True, 'no_create_edit': True}"><list create="0" edit="0" delete="0"><field name="name" string="Pedido"/><field name="state" string="Estado"/></list></field><p>Son los vínculos actuales con Ventas. No se crean ni se sincronizan líneas del pedido desde aquí.</p></page></notebook>
+                <div class="text-muted small mt-3">Mensajes · hora de La Fija</div>
+            </sheet><chatter/>
+        </form></field>
+    </record>
+    <record id="reservation_search" model="ir.ui.view">
+        <field name="name">lafija.reservation.search</field><field name="model">lafija.reservation</field>
+        <field name="arch" type="xml">
+            <search><field name="name"/><field name="date"/><field name="week_label" string="Semana (fecha de inicio)"/><field name="customer_company_id"/><field name="employee_partner_id"/><field name="state" string="Estado"/>
+            <filter name="upcoming_or_pending" string="Próximos y pendientes" domain="[('is_open_order', '=', True)]"/>
+            <filter name="today" string="Hoy" domain="[('is_today', '=', True)]"/>
+            <filter name="upcoming" string="Próximos días" domain="[('is_upcoming', '=', True)]"/>
+            <separator/><filter name="pending" string="Requieren atención" domain="[('pending', '=', True)]"/>
+            <separator/><filter name="state_active" string="Vigentes" domain="[('state', '=', 'active')]"/>
+            <filter name="state_cancelled" string="Canceladas" domain="[('state', '=', 'cancelled')]"/>
+            <separator/><filter name="late" string="Después del corte diario" domain="[('after_reference_time', '=', True)]"/>
+            <separator/><filter name="after_cut" string="Después de tomar lista" domain="[('after_preparation_cut', '=', True)]"/>
+            <separator/><filter name="this_week" string="Esta semana" domain="[('business_week', '=', 0)]"/>
+            <filter name="next_week" string="Semana próxima" domain="[('business_week', '=', 1)]"/>
+            <filter name="last_week" string="Semana pasada" domain="[('business_week', '=', -1)]"/>
+            <group><filter name="week_group" string="Semana (fechas)" context="{'group_by': 'week_label'}"/><filter name="employee_group" string="Empleado" context="{'group_by': 'employee_partner_id'}"/><filter name="date_group" string="Fecha" context="{'group_by': 'date:day'}"/><filter name="company_group" string="Empresa cliente" context="{'group_by': 'customer_company_id'}"/></group>
+        </search></field>
+    </record>
+    <record id="reservation_action" model="ir.actions.act_window">
+        <field name="name">Consultar reservas</field><field name="res_model">lafija.reservation</field><field name="view_mode">list,form</field><field name="search_view_id" ref="reservation_search"/>
+        <field name="help" type="html"><p>No hay reservas para estos filtros.</p><p>Probá otra fecha o el filtro «Requieren atención». Las reservas se crean desde las elecciones de los empleados o con «Agregar pedido cliente».</p></field>
+    </record>
+    <record id="pending_action" model="ir.actions.act_window">
+        <field name="name">Pendientes · todas las fechas</field><field name="res_model">lafija.reservation</field><field name="view_mode">list,form</field><field name="search_view_id" ref="reservation_search"/><field name="context">{'search_default_pending': 1}</field>
+        <field name="help" type="html"><p>No hay reservas por atender para estos filtros.</p><p>Si agregaste filtros de fecha o empresa, quitalos para revisar las demás solicitudes.</p></field>
+    </record>
+    <record id="workday_action" model="ir.actions.server"><field name="name">Viandas de hoy</field><field name="model_id" ref="model_lafija_menu_day"/><field name="state">code</field><field name="code">action = model.action_workday()</field></record>
+    <record id="orders_action" model="ir.actions.act_window">
+        <field name="name">Pedidos</field>
+        <field name="res_model">lafija.reservation</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="reservation_list"/>
+        <field name="search_view_id" ref="reservation_search"/>
+        <field name="context">{'search_default_upcoming_or_pending': 1, 'group_by': ['customer_company_id', 'date:day']}</field>
+        <field name="help" type="html"><p>No hay pedidos próximos ni pendientes para estos filtros.</p><p>Podés quitar el filtro «Próximos y pendientes» para ver todo, incluidas las canceladas. Las reservas se crean desde las elecciones de los empleados o con «Agregar pedido cliente».</p></field>
+    </record>
+    <menuitem id="menu_orders_group" name="Pedidos" parent="menu_root" sequence="1" groups="kai_viandas.group_operator"/>
+    <menuitem id="menu_orders" name="Pedidos" parent="menu_orders_group" action="orders_action" sequence="1" groups="kai_viandas.group_operator"/>
+    <menuitem id="menu_days" name="Menús" parent="menu_root" action="menu_day_action" sequence="5" groups="kai_viandas.group_operator"/>
+</odoo>

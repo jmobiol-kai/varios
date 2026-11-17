@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="label_minimal_layout"><html><head><meta charset="utf-8"/><style>body{font-family:Arial,sans-serif;color:#111}</style></head><body><t t-out="body"/></body></html></template>
+    <record id="preparation_revision_print" model="ir.ui.view">
+        <field name="name">lafija.preparation.revision.print</field><field name="model">lafija.preparation.revision</field><field name="inherit_id" ref="preparation_revision_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before"><header><button name="action_print_labels" type="object" string="Generar etiquetas vigentes" class="btn-primary" invisible="not is_current"/><button name="action_print_labels" type="object" string="Generar copia histórica" invisible="is_current"/></header></xpath>
+            <xpath expr="//sheet" position="inside"><field name="print_ids"><list><field name="name" string="Archivo"/><field name="generated_local"/><field name="actor_id" string="Generó"/><field name="is_current"/><button name="action_download" type="object" string="Descargar"/></list></field></xpath>
+        </field>
+    </record>
+    <record id="label_print_form" model="ir.ui.view">
+        <field name="name">lafija.label.print.form</field><field name="model">lafija.label.print</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+            <header><button name="action_download" type="object" string="Descargar PDF" class="btn-primary"/><button name="action_register_replacement" type="object" string="Registrar sustitución"/></header>
+            <sheet><h1><field name="name"/></h1><field name="is_current" invisible="True"/>
+                <div class="alert alert-warning" role="status" invisible="is_current">Archivo histórico: corresponde a una lista anterior. Para preparar las viandas, usá las etiquetas de la revisión vigente.</div>
+                <group><field name="revision_id" string="Lista de origen"/><field name="generated_local"/><field name="actor_id" string="Generó"/></group>
+                <p>Generar o descargar este archivo no declara entrega. Si reemplaza etiquetas ya pegadas, coordiná quitar las etiquetas anteriores y registrá la sustitución.</p>
+                <field name="handling_ids"><list><field name="old_print_id"/><field name="occurred_local"/><field name="actor_id"/><field name="note"/></list></field>
+            </sheet></form></field>
+    </record>
+    <record id="label_replacement_form" model="ir.ui.view">
+        <field name="name">lafija.label.replacement.form</field><field name="model">lafija.label.replacement</field>
+        <field name="arch" type="xml">
+            <form><group><field name="new_print_id"/><field name="cut_id" invisible="True"/><field name="new_generated_at" invisible="True"/>
+                <field name="old_print_id" options="{'no_create': True, 'no_create_edit': True}" domain="[('revision_id.cut_id', '=', cut_id), '|', ('generated_at', '&lt;', new_generated_at), '&amp;', ('generated_at', '=', new_generated_at), ('id', '&lt;', new_print_id)]"/>
+                <field name="note" class="o_field_highlight" placeholder="Describí qué etiquetas se reemplazaron y cómo se coordinó con preparación"/>
+            </group><footer><button name="action_apply" type="object" string="Registrar coordinación" class="btn-primary"/><button string="Volver" special="cancel"/></footer></form></field>
+    </record>
+    <record id="paperformat_vianda_label" model="report.paperformat">
+        <field name="name">La Fija · etiqueta de vianda 29 × 90 mm</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_width">29</field><field name="page_height">90</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">0</field><field name="margin_bottom">0</field>
+        <field name="margin_left">0</field><field name="margin_right">0</field>
+        <field name="header_line" eval="False"/><field name="header_spacing">0</field>
+        <field name="dpi">96</field><field name="disable_shrinking" eval="True"/>
+    </record>
+    <record id="report_labels" model="ir.actions.report">
+        <field name="name">Etiquetas de viandas</field><field name="model">lafija.label.print</field><field name="report_type">qweb-pdf</field>
+        <field name="report_name">kai_viandas.labels</field><field name="report_file">kai_viandas.labels</field><field name="group_ids" eval="[(4, ref('kai_viandas.group_operator'))]"/>
+        <field name="paperformat_id" ref="paperformat_vianda_label"/>
+    </record>
+    <template id="labels">
+        <html><head><meta charset="utf-8"/></head><body><main>
+            <div t-foreach="docs" t-as="batch" class="article" data-oe-model="lafija.label.print" t-att-data-oe-id="batch.id">
+                <!-- Odoo extrae cada article: el estilo viaja con las etiquetas de ese archivo.
+                     Solo este reporte pone márgenes HTML en cero; el layout compartido no cambia. -->
+                <style>
+                    html, body {margin:0;padding:0}
+                    .lf-label-sheet {position:relative;width:29mm;height:90mm;overflow:hidden;page-break-after:always}
+                    .lf-label-sheet:last-child {page-break-after:auto}
+                    .lf-label-canvas {position:absolute;top:0;left:0;width:90mm;height:29mm;box-sizing:border-box;
+                        padding:2mm 3mm;border:1px solid #000;font-family:Arial,sans-serif;color:#000;
+                        -webkit-transform-origin:0 0;transform-origin:0 0;
+                        -webkit-transform:translateX(29mm) rotate(90deg);transform:translateX(29mm) rotate(90deg)}
+                    .lf-label-line {display:block;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+                    .lf-label-company {font-size:9pt;line-height:1.15}
+                    .lf-label-employee {font-size:17pt;font-weight:bold;line-height:1.15;margin-top:1mm}
+                    .lf-label-choice {font-size:14pt;font-weight:bold;line-height:1.15;margin-top:1mm}
+                    .lf-label-sides {font-size:8pt;font-weight:normal;line-height:1.1;margin-top:0.6mm}
+                </style>
+                <div t-foreach="batch.revision_id.line_ids" t-as="line" class="lf-label-sheet">
+                    <div class="lf-label-canvas">
+                        <div class="lf-label-line lf-label-company"><t t-out="line.date.strftime('%d/%m')"/> · <t t-out="line.reservation_id.name"/> · <t t-out="line.company_name"/></div>
+                        <div class="lf-label-line lf-label-employee" t-out="line.employee_name"/>
+                        <div class="lf-label-line lf-label-choice" t-out="line.description"/>
+                        <div t-if="line.dessert_description or line.drink_description" class="lf-label-line lf-label-sides"><t t-out="' · '.join(part for part in (line.dessert_description, line.drink_description) if part)"/></div>
+                    </div>
+                </div>
+            </div>
+        </main></body></html>
+    </template>
+</odoo>

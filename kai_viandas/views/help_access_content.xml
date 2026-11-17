@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Fuente editorial: sección «Entrar y salir» de newvps19/docs/lafija/manuales/MANUAL-EMPLEADO.md (versión 10). Pública: sin datos. -->
+    <template id="help_access_content" name="Ayuda pública mínima de acceso">
+        <h1>¿No podés entrar?</h1>
+        <ul>
+        <li>Entrá por el enlace de viandas que te dio tu empresa, con tu usuario y contraseña. Es distinto del sitio de compras de particulares.</li>
+        <li>Tocá <strong>Mostrar</strong> para revisar la contraseña y <strong>Ocultar</strong> para volver a esconderla.</li>
+        <li>Si aparece <strong>No se pudo iniciar sesión. Revisá tu usuario y contraseña.</strong>, revisá los datos y probá de nuevo.</li>
+        <li>Si aparece <strong>Entrá para continuar</strong>, ingresá con tu usuario y contraseña.</li>
+        </ul>
+        <p>Si igual no podés entrar, pedile a tu empresa que contacte a La Fija, que te da una contraseña nueva. No hay registro ni recuperación por correo en este sitio.</p>
+    </template>
+</odoo>

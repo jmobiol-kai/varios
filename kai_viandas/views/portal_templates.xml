@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="layout" name="Espacio privado de viandas">
+        &lt;!DOCTYPE html&gt;
+        <html lang="es">
+            <head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content"/>
+                <title>Mis viandas · La Fija</title><link rel="icon" href="data:,"/><meta name="robots" content="noindex, nofollow"/>
+                <link rel="stylesheet" t-att-href="request.env['ir.qweb']._lf_resource_url('viandas.css')"/>
+            </head>
+            <body t-att-class="'lf-week-page' if lf_week_page else ''">
+                <header><div class="brand-row"><div class="brand">
+                    <t t-set="lf_brand" t-value="request.env['ir.qweb']._lf_brand()"/>
+                    <img t-if="lf_brand" t-att-src="lf_brand['url']" t-att-style="lf_brand['clip']" alt="La Fija"/>
+                    <strong t-else="">La Fija</strong>
+                </div><div t-if="lf_authenticated" class="header-actions"><a class="exit" t-att-href="lf_help_url or '/my/viandas/ayuda'">Ayuda</a><a class="exit" href="/web/session/logout?redirect=/web/login">Salir</a></div></div>
+                <span t-if="lf_identity" class="identity" t-out="lf_identity"/></header>
+                <main><t t-out="0"/></main>
+                <dialog t-if="lf_authenticated" id="lf-leave-dialog" aria-labelledby="lf-leave-title" aria-describedby="lf-leave-description">
+                    <h2 id="lf-leave-title">Tenés cambios sin guardar</h2>
+                    <p id="lf-leave-description">Si salís ahora, estas elecciones no se envían.</p>
+                    <div class="dialog-actions"><button type="button" data-keep-choosing="">Seguir eligiendo</button><button type="button" class="secondary" data-leave-unsaved="">Salir sin guardar</button></div>
+                </dialog>
+                <script t-att-src="request.env['ir.qweb']._lf_resource_url('viandas.js')"/>
+            </body>
+        </html>
+    </template>
+    <template id="corporate_login" name="Acceso corporativo">
+        <t t-call="kai_viandas.layout">
+            <div class="login"><h1>Entrá a tus viandas</h1><p>Usá el acceso individual que te entregó tu empresa.</p>
+                <p t-if="form_expired" class="error" role="alert">El formulario venció. Volvé a ingresar tu usuario y contraseña.</p><p t-elif="error" class="error" role="alert">No se pudo iniciar sesión. Revisá tu usuario y contraseña.</p>
+                <p t-elif="request.params.get('lf_session_ended') or request.params.get('lf_login_required')" class="notice" role="status">Entrá para continuar.</p>
+                <form action="/web/login" method="post">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="type" value="password"/><input type="hidden" name="redirect" value="/my/viandas"/>
+                    <label for="lf_login">Usuario</label><input id="lf_login" name="login" autocomplete="username" required="required" t-att-value="login or ''"/>
+                    <label for="lf_password">Contraseña</label>
+                    <div class="password-row"><input id="lf_password" name="password" type="password" autocomplete="current-password" required="required"/><button class="secondary" type="button" data-password-toggle="1" aria-controls="lf_password" aria-pressed="false">Mostrar</button></div>
+                    <p><button type="submit">Entrar</button></p>
+                </form>
+                <p class="access-help"><a class="back-link" href="/viandas/ayuda-acceso">¿No podés entrar? Ayuda para recuperar el acceso</a></p>
+            </div>
+        </t>
+    </template>
+    <template id="login_selection" inherit_id="web.login" priority="100">
+        <xpath expr="//t[@t-call='web.login_layout']" position="replace">
+            <t t-if="request.env.context.get('lf_corporate_route')"><t t-call="kai_viandas.corporate_login"/></t>
+            <t t-else="">$0</t>
+        </xpath>
+    </template>
+    <template id="public_login_help" inherit_id="web.login" priority="110">
+        <xpath expr="//form" position="inside">
+            <div t-if="lf_corporate_login_url" class="mt-3" id="lf_channel_help">
+                <p>Acceso para clientes y personal de La Fija. Si tu empresa te entregó un usuario para viandas, <a t-att-href="lf_corporate_login_url">entrá al sitio corporativo</a>.</p>
+            </div>
+        </xpath>
+        <xpath expr="//label[@for='login']" position="replace"><label for="login" class="form-label">Usuario o correo electrónico</label></xpath>
+    </template>
+    <template id="reservation_status">
+        <article class="reservation-card" t-att-data-reservation="reservation['id']">
+            <p t-if="reservation['state'] == 'cancelled'" class="notice">Vianda cancelada por La Fija.</p>
+            <p t-if="not compact_status">Vianda vigente: <strong t-out="reservation.get('current_label') or reservation['current'] or 'Todavía no incorporada a preparación'"/></p>
+            <p t-if="reservation['pending']" class="notice"><strong><t t-out="'Cambio pendiente: ' if reservation['current'] else 'Reserva pendiente: '"/><t t-out="reservation.get('pending_label') or reservation['pending']"/></strong><br/><t t-if="reservation['current']">La Fija ya tomó la lista. Esta opción todavía no reemplaza la vianda vigente.</t><t t-else="">La reserva fue recibida y aún no está incorporada a preparación. La Fija debe revisarla.</t></p>
+            <p t-if="reservation['attention_pending']" class="notice"><t t-if="reservation.get('request_answered')">Hay una respuesta de La Fija. </t>Tu consulta escrita sigue abierta hasta que La Fija la cierre.<t t-if="not detail_view"> Consultá las respuestas en el detalle.</t></p>
+            <p t-if="reservation.get('request_closed')" class="muted">Consulta escrita cerrada por La Fija.</p><a t-if="not detail_view" t-att-href="'/my/viandas/' + str(reservation['id'])">Ver detalle / pedir una corrección</a>
+        </article>
+    </template>
+    <template id="week" name="Mis viandas">
+        <t t-call="kai_viandas.layout">
+            <t t-set="lf_week_page" t-value="True"/>
+            <t t-set="lf_help_url" t-value="'/my/viandas/ayuda?week=' + week"/>
+            <div class="week-screen"><div class="week-scroll">
+            <h1>Mis viandas</h1>
+            <h2>Semana del <t t-out="week_label"/></h2>
+            <nav class="weeks" aria-label="Semanas"><a t-att-href="'/my/viandas?week=' + previous_week" aria-label="Semana anterior">Anterior</a><a class="this-week" t-att-href="'/my/viandas?week=' + this_week" t-att-aria-current="'date' if week == this_week else None">Esta semana</a><a t-att-href="'/my/viandas?week=' + next_week" aria-label="Semana siguiente">Siguiente</a><a class="available" href="/my/viandas">Próxima disponible</a></nav>
+            <section t-att-id="'resultado' if feedback or error else None" aria-live="polite"><div t-if="feedback" class="success" role="status"><p t-foreach="feedback" t-as="item" t-out="item"/></div><p t-if="error" class="error" role="alert" t-out="error"/></section>
+            <form id="lf-week-form" action="/my/viandas/reservar" method="post" autocomplete="off">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/><input type="hidden" name="week" t-att-value="week"/><input type="hidden" name="open_days" value=""/>
+                <input type="hidden" name="form_choices" t-att-value="form_choices"/>
+                <p t-if="has_draft" class="notice">Estas elecciones todavía no están guardadas. <a t-att-href="'/my/viandas?week=' + week + '&amp;discard_draft=1'">Descartar este borrador y ver lo guardado</a></p>
+                <p class="muted">Una vianda por día: elegí el plato y, si querés, el postre y la bebida. Podés saltear días. Los pedidos de la semana siguiente se cargan hasta el sábado a las 14:00, hora de La Fija. Después, durante esa semana, podés agregar, cambiar o cancelar hasta las 10:30 del día del menú.</p>
+                <details class="day" t-foreach="days" t-as="day" t-att-open="day['open']" t-att-data-menu="day['id']" t-att-data-selected="day['selected_id'] or ''" t-att-data-selected-dessert="day['selected_dessert_id'] or ''" t-att-data-selected-drink="day['selected_drink_id'] or ''" t-att-data-initial-choice="day['initial_id'] or ''" t-att-data-initial-dessert="day['initial_dessert_id'] or ''" t-att-data-initial-drink="day['initial_drink_id'] or ''" t-att-data-review="'1' if day['conflict'] else '0'">
+                    <summary><span><span class="day-title" t-out="day['date_label']"/>
+                        <span class="day-state"><t t-if="day['reservation'] and day['reservation']['current']">Vigente: <t t-out="day['reservation'].get('current_label') or day['reservation']['current']"/></t><t t-else="">Sin vianda reservada</t></span>
+                        <span class="state-badges"><span t-if="day['past']" class="badge cut-badge">Día pasado</span><span t-elif="day.get('window_closed')" class="badge cut-badge">Horario cerrado</span>
+                        <span t-if="day['reservation'] and day['reservation']['pending']" class="badge pending-badge">Opción pendiente de revisión</span><span t-if="day['reservation'] and day['reservation']['attention_pending']" class="badge pending-badge">Consulta escrita abierta</span>
+                        <span t-if="day['reservation'] and day['reservation']['state'] == 'cancelled'" class="badge pending-badge">Cancelada</span></span>
+                        <span class="draft-choice" t-att-hidden="not day['dirty']" aria-live="polite" t-out="day['draft_text']"/>
+                    </span><span class="open-hint">Ver opciones</span></summary>
+                    <p t-if="day['past']" class="notice">Día pasado · para corregir, escribile a La Fija.<t t-if="day['pending_id'] and day['current_id']"> Podés anular tu cambio pedido eligiendo la vianda vigente.</t></p>
+                    <p t-if="not day['past'] and day.get('window_closed')" class="notice"><t t-out="day.get('window_message') or 'El horario para pedir o cambiar este día ya cerró, hora de La Fija.'"/></p>
+                    <p t-if="day['conflict']" class="error day-conflict" role="alert" t-out="day['conflict_message']"/>
+                    <p class="error choice-unavailable-error" role="alert" t-att-hidden="not day['unavailable']">Tu elección anterior ya no está disponible para este día. Elegí una de las opciones actuales; los demás días siguen sin guardar.</p>
+                    <t t-if="day['reservation']"><t t-set="reservation" t-value="day['reservation']"/><t t-call="kai_viandas.reservation_status"><t t-set="compact_status" t-value="True"/></t></t>
+                    <p t-if="not day['past'] and not day.get('window_closed') and day['after_cut']" class="notice">La lista de este día ya está tomada: si guardás un cambio antes de las 10:30, se aplica en la lista.</p>
+                    <t t-set="photo_options" t-value="[option for option in day['options'] if option['image']]"/>
+                    <t t-set="compact_options" t-value="[option for option in day['options'] if not option['image']]"/>
+                    <fieldset t-if="day['show_options']" t-att-class="'options' + (' mixed-options' if photo_options and compact_options else '') + (' single-photo' if len(photo_options) == 1 else '') + (' many-photos' if len(photo_options) >= 3 else '')"><legend t-out="'Revisar el plato' if day['past'] else 'Elegí el menú'"/>
+                        <input t-if="(day['pending_id'] or day['pending_dessert_id'] or day['pending_drink_id']) and day['current_id']" type="hidden" t-att-name="'withdraw_' + str(day['id'])" t-att-value="day['current_id']" t-att-data-current-description="day['reservation'].get('current_label') or day['reservation']['current']"/>
+                        <input t-if="(day['pending_id'] or day['pending_dessert_id'] or day['pending_drink_id']) and day['current_id']" type="hidden" t-att-name="'withdraw_dessert_' + str(day['id'])" t-att-value="day['current_dessert_id'] or ''"/>
+                        <input t-if="(day['pending_id'] or day['pending_dessert_id'] or day['pending_drink_id']) and day['current_id']" type="hidden" t-att-name="'withdraw_drink_' + str(day['id'])" t-att-value="day['current_drink_id'] or ''"/>
+                        <label t-if="not day['selected_id']" class="option-card keep-option">
+                            <input type="radio" t-att-id="'lf-choice-' + str(day['id']) + '-none'" t-att-name="'menu_' + str(day['id'])" value="" t-att-checked="not day['initial_id']" autocomplete="off"/>
+                            <span class="option-copy"><strong t-out="'Dejar este día sin cambios' if day['past'] else 'No reservar este día'"/>
+                            </span>
+                        </label>
+                        <t t-set="group_name" t-value="'menu_' + str(day['id'])"/>
+                        <t t-set="group_initial" t-value="day['initial_id']"/>
+                        <t t-set="group_current" t-value="day['current_id']"/>
+                        <t t-set="group_pending" t-value="day['pending_id']"/>
+                        <div t-if="photo_options" class="photo-options"><t t-foreach="photo_options" t-as="option"><t t-call="kai_viandas.option_card"/></t></div>
+                        <div t-if="compact_options" class="compact-options"><t t-foreach="compact_options" t-as="option"><t t-call="kai_viandas.option_card"/></t></div>
+                    </fieldset>
+                    <fieldset t-if="day['show_options'] and day['desserts']" t-att-class="'options option-group side-group' + ('' if day['initial_id'] else ' sides-disabled')" t-att-data-side="'dessert'">
+                        <legend>Elegí el postre (opcional)</legend>
+                        <label class="option-card keep-option">
+                            <input type="radio" t-att-id="'lf-dessert-' + str(day['id']) + '-none'" t-att-name="'dessert_' + str(day['id'])" value="" t-att-checked="not day['initial_dessert_id']" autocomplete="off"/>
+                            <span class="option-copy"><strong>Sin postre</strong></span>
+                        </label>
+                        <t t-set="group_name" t-value="'dessert_' + str(day['id'])"/>
+                        <t t-set="group_initial" t-value="day['initial_dessert_id']"/>
+                        <t t-set="group_current" t-value="day['current_dessert_id']"/>
+                        <t t-set="group_pending" t-value="day['pending_dessert_id']"/>
+                        <div class="compact-options"><t t-foreach="day['desserts']" t-as="option"><t t-call="kai_viandas.option_card"/></t></div>
+                    </fieldset>
+                    <fieldset t-if="day['show_options'] and day['drinks']" t-att-class="'options option-group side-group' + ('' if day['initial_id'] else ' sides-disabled')" t-att-data-side="'drink'">
+                        <legend>Elegí la bebida (opcional)</legend>
+                        <label class="option-card keep-option">
+                            <input type="radio" t-att-id="'lf-drink-' + str(day['id']) + '-none'" t-att-name="'drink_' + str(day['id'])" value="" t-att-checked="not day['initial_drink_id']" autocomplete="off"/>
+                            <span class="option-copy"><strong>Sin bebida</strong></span>
+                        </label>
+                        <t t-set="group_name" t-value="'drink_' + str(day['id'])"/>
+                        <t t-set="group_initial" t-value="day['initial_drink_id']"/>
+                        <t t-set="group_current" t-value="day['current_drink_id']"/>
+                        <t t-set="group_pending" t-value="day['pending_drink_id']"/>
+                        <div class="compact-options"><t t-foreach="day['drinks']" t-as="option"><t t-call="kai_viandas.option_card"/></t></div>
+                    </fieldset>
+                </details>
+                <p t-if="not days" class="card"><t t-if="past_week">No hay un menú publicado para consultar en esta semana pasada.</t><t t-else="">La Fija todavía no publicó opciones para esta semana.</t> Las reservas que ya hiciste se conservan.</p>
+                <p t-if="days" class="muted save-help">Guardás las elecciones de toda esta semana. Si la lista del día ya fue tomada, lo enviado queda para revisión. Para cancelar, pedí una corrección en el detalle.</p>
+            </form>
+            <section t-if="orphan_reservations"><h2>Otras reservas de esta semana</h2><div class="card" t-foreach="orphan_reservations" t-as="reservation"><h3 t-out="reservation['date_label']"/><t t-call="kai_viandas.reservation_status"/></div></section>
+            <p t-if="not reservations" class="muted"><t t-if="past_week">No tenés reservas en esta semana.</t><t t-else="">Todavía no tenés reservas en esta semana.</t></p>
+            </div><div t-if="days" class="save-bar"><small class="muted" data-save-state="" aria-live="polite"><t t-if="draft_count"><t t-out="draft_count"/> <t t-out="'día sin guardar' if draft_count == 1 else 'días sin guardar'"/></t><t t-else="">Elegí los días que quieras reservar.</t></small><button type="submit" form="lf-week-form">Guardar mis elecciones</button></div></div>
+        </t>
+    </template>
+    <template id="option_card" name="Opción del día">
+        <label t-att-class="'option-card with-photo' if option['image'] else 'option-card'">
+            <input type="radio" t-att-id="'lf-choice-' + str(day['id']) + '-' + (group_name or ('menu_' + str(day['id']))) + '-' + str(option['id'])" t-att-name="group_name or ('menu_' + str(day['id']))" t-att-value="option['id'] or ''" t-att-checked="option['id'] == (group_initial if group_initial is not None else day['initial_id'])" t-att-data-unavailable="'1' if option.get('unavailable') else None" autocomplete="off"/>
+            <img t-if="option['image']" t-att-src="'/my/viandas/opcion/' + str(option['id']) + '/imagen?menu_id=' + str(day['id'])" alt="" width="1024" height="576" loading="lazy"/>
+            <span class="option-copy"><strong t-out="option['name']"/><small t-if="option['description'] != option['name']" t-out="option['description']"/>
+                <span t-if="option.get('unavailable')" class="badge pending-badge">Borrador · requiere elegir una opción actual</span>
+                <span t-if="option['id'] == (group_current if group_current is not None else day['current_id'])" class="badge current-badge"><t t-if="(group_pending if group_pending is not None else day['pending_id'])">Vigente · elegila para anular el cambio pedido</t><t t-else="">Vigente</t></span>
+                <span t-if="option['id'] == (group_pending if group_pending is not None else day['pending_id'])" class="badge pending-badge">Solicitada · pendiente</span>
+            </span>
+        </label>
+    </template>
+    <template id="detail" name="Detalle de mi vianda">
+        <t t-call="kai_viandas.layout">
+            <t t-set="detail_view" t-value="True"/>
+            <t t-set="lf_identity" t-value="reservation['identity']"/>
+            <t t-set="lf_help_url" t-value="'/my/viandas/ayuda?reservation=' + str(reservation['id'])"/>
+            <a class="back-link" t-att-href="'/my/viandas?week=' + reservation['week_start']">Volver a la semana del <t t-out="reservation['week_start_label']"/></a>
+            <h1 t-out="reservation['date_label']"/><small class="muted">Reserva <t t-out="reservation['reference']"/></small>
+            <div t-if="feedback" class="success" role="status"><p t-foreach="feedback" t-as="item" t-out="item"/></div>
+            <t t-call="kai_viandas.reservation_status"/>
+            <small class="muted" t-if="reservation['last_change']">Última acción que enviaste: <t t-out="reservation['last_change']"/> · hora de La Fija.</small>
+            <section class="conversation">
+            <h2>Mensajes con La Fija</h2>
+            <article class="message-card" t-foreach="reservation['messages']" t-as="message">
+                <div class="message-author"><strong t-out="message['author']"/><small class="muted" t-out="message['date']"/></div><p t-out="message['text']"/>
+            </article>
+            <p t-if="not reservation['messages']" class="muted">Todavía no hay mensajes en esta reserva.</p>
+            <form class="lf-correction-form" t-att-action="'/my/viandas/' + str(reservation['id']) + '/correccion'" method="post">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <label for="message">Pedir una corrección a La Fija</label>
+                <p t-if="error" class="error" role="alert" t-out="error"/>
+                <p class="error correction-error" role="alert" hidden="hidden">Escribí la corrección que necesitás, hasta 4000 caracteres.</p>
+                <textarea id="message" name="message" required="required" maxlength="4000" rows="4" aria-describedby="message_help" t-out="correction_text or ''"/>
+                <small id="message_help" class="muted">Hasta 4000 caracteres. Podés pedir un cambio o una cancelación; La Fija lo revisa. La respuesta se verá acá.</small>
+                <p><button type="submit">Enviar solicitud</button></p>
+            </form>
+            <details class="history"><summary>Historia de tus elecciones</summary><div class="message-card" t-foreach="reservation['choices']" t-as="choice"><small><t t-out="choice['author']"/> · <t t-out="choice['date']"/> · hora de La Fija</small><strong t-out="choice['text']"/><p t-out="choice['outcome']"/></div></details></section>
+        </t>
+    </template>
+    <template id="access_denied" name="Acceso no disponible">
+        <t t-call="kai_viandas.layout"><section class="denial"><h1>No se puede abrir esta página con este acceso</h1><p t-out="message"/>
+            <nav aria-label="Opciones de acceso"><a t-foreach="links" t-as="link" t-att-href="link[0]" t-att-class="'button' if link_first else 'button secondary'" t-out="link[1]"/></nav>
+        </section></t>
+    </template>
+</odoo>

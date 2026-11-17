@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="employee_access_form" model="ir.ui.view">
+        <field name="name">lafija.employee.access.form</field>
+        <field name="model">lafija.employee.access</field>
+        <field name="arch" type="xml">
+            <form string="Gestionar acceso corporativo">
+                <group>
+                    <field name="operation"/>
+                    <field name="employee_id" options="{'no_open': True}" invisible="operation == 'create'"/>
+                    <field name="existing_login" invisible="operation == 'create'"/>
+                    <field name="name" invisible="operation != 'create'" required="operation == 'create'"/>
+                    <field name="login" invisible="operation != 'create'" required="operation == 'create'"/>
+                    <field name="customer_company_id" options="{'no_create': True}" invisible="operation not in ['create', 'update']" required="operation in ['create', 'update']"/>
+                    <field name="website_id" options="{'no_create': True, 'no_create_edit': True}" invisible="operation not in ['create', 'update']" required="operation in ['create', 'update']"/>
+                    <field name="new_password" invisible="operation not in ['create', 'reset']" required="operation in ['create', 'reset']"/>
+                    <field name="credential_bundle" widget="lf_credentials" invisible="operation not in ['create', 'reset']"/>
+                    <field name="reason" placeholder="Por ejemplo: alta solicitada por la empresa cliente"/>
+                </group>
+                <div class="alert alert-info" role="status" invisible="operation not in ['create', 'reset']">
+                    Primero completá los datos y copiá el acceso con el botón de copia. Después confirmá la operación y entregalo por el canal acordado. La contraseña no se conserva para consultarla más tarde. Si olvidaste copiarla, usá Restablecer contraseña.
+                </div>
+                <footer>
+                    <button name="action_apply" type="object" context="{'lf_access_feedback': True}" string="Crear cuenta" class="btn-primary" invisible="operation != 'create'"/>
+                    <button name="action_apply" type="object" context="{'lf_access_feedback': True}" string="Restablecer contraseña" class="btn-primary" invisible="operation != 'reset'"/>
+                    <button name="action_apply" type="object" context="{'lf_access_feedback': True}" string="Deshabilitar cuenta" class="btn-primary" invisible="operation != 'disable'"/>
+                    <button name="action_apply" type="object" context="{'lf_access_feedback': True}" string="Habilitar cuenta" class="btn-primary" invisible="operation != 'enable'"/>
+                    <button name="action_apply" type="object" context="{'lf_access_feedback': True}" string="Guardar empresa y sitio" class="btn-primary" invisible="operation != 'update'"/>
+                    <button special="cancel" string="Cancelar" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="employee_access_action" model="ir.actions.act_window">
+        <field name="name">Alta de empleado</field>
+        <field name="res_model">lafija.employee.access</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

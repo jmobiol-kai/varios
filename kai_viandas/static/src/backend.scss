@@ -1,0 +1,71 @@
+.lf-preparation-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #eef6ef;
+    border-left: 4px solid #216449;
+    .lf-total { font-size: 2rem; font-weight: 700; }
+}
+// Do not force table or header widths: Odoo's native header-border
+// dragging writes inline px widths, and `width: auto !important` (or
+// `width: 100% !important` on the table) blocked that. Header labels
+// stay on one line; long cell values may wrap at word boundaries.
+.lf-reservations .o_list_table {
+    th {
+        white-space: nowrap;
+        overflow-wrap: normal;
+    }
+    th .o_column_title, th .text-truncate {
+        white-space: nowrap !important;
+        overflow-wrap: normal;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+    td .o_field_widget, td .o_field_widget span, td .o_field_widget a {
+        overflow-wrap: break-word;
+    }
+}
+
+// Manual en la ficha nativa, sin cambiar las demás aplicaciones.
+.lf-operator-help { max-width: 78ch; margin: 16px auto; font-size: 16px; line-height: 1.6;
+    h1 { font-size: 28px; } h2 { margin-top: 1.5em; font-size: 22px; }
+    li { margin: 8px 0; }
+}
+
+// La confirmación de recálculo no intercepta la X del diálogo ni otros
+// controles que queden debajo. Los demás avisos siguen siendo interactivos.
+.o_notification_manager:has(.lf-quotation-feedback) {
+    pointer-events: none;
+    .o_notification:not(.lf-quotation-feedback) { pointer-events: auto; }
+    .lf-quotation-feedback {
+        pointer-events: none;
+        .o_notification_close { display: none; }
+    }
+}
+
+
+// The "Agregar pedido" link stays visible even when the week has no free
+// published day; the list js_class shows a notification instead of an empty combo.
+
+// Hide the native group-create control; the JS injects
+// "Nuevo pedido" after groups, subgroups and at the end of the list.
+.o_list_view.lf-reservations,
+.o_lf_reservation_list_view {
+    button.o_list_group_add:not(.lf_add_client_order):not(.lf_nuevo_pedido),
+    .o_list_footer .input-group:has(.o_list_group_input) {
+        display: none !important;
+    }
+}
+
+.o_list_view.lf-reservations .lf_nuevo_pedido_row td,
+.o_lf_reservation_list_view .lf_nuevo_pedido_row td {
+    padding-top: 0.15rem;
+    padding-bottom: 0.15rem;
+    border-top: none;
+}
+.o_list_view.lf-reservations .lf_nuevo_pedido_row a,
+.o_lf_reservation_list_view .lf_nuevo_pedido_row a {
+    padding-left: 0.25rem;
+}

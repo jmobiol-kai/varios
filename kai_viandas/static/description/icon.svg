@@ -1,0 +1,15 @@
+<svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <!-- plate thickness -->
+  <ellipse cx="25" cy="41.6" rx="23" ry="7.2" fill="#F78613"/>
+  <!-- plate -->
+  <ellipse cx="25" cy="39.4" rx="23" ry="7.2" fill="#FBB945"/>
+  <!-- food on the plate, visible through the cloche -->
+  <ellipse cx="25" cy="37.4" rx="13.5" ry="4.6" fill="#F86126"/>
+  <!-- dome shell (hollow so the plate shows through) -->
+  <path fill-rule="evenodd" d="M5 38a20 20 0 0 1 40 0H39.2A14.2 14.2 0 0 0 10.8 38H5Z" fill="#1AD3BB"/>
+  <!-- front lip of the dome -->
+  <path d="M5 38c0 1.8 9 3.4 20 3.4S45 39.8 45 38c0 1-9 2.2-20 2.2S5 39 5 38Z" fill="#1A6F66"/>
+  <!-- knob -->
+  <rect x="22.6" y="16.4" width="4.8" height="5.4" rx="1.2" fill="#985184"/>
+  <circle cx="25" cy="14.6" r="3.7" fill="#985184"/>
+</svg>

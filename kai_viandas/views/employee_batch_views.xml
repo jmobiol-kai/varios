@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="employee_batch_list" model="ir.ui.view">
+        <field name="name">lafija.employee.batch.list</field><field name="model">lafija.employee.batch</field>
+        <field name="arch" type="xml">
+            <list delete="0"><field name="name"/><field name="customer_company_id"/><field name="website_id"/>
+                <field name="row_count"/><field name="state"/><field name="create_date"/><field name="create_uid"/>
+            </list>
+        </field>
+    </record>
+    <record id="employee_batch_form" model="ir.ui.view">
+        <field name="name">lafija.employee.batch.form</field><field name="model">lafija.employee.batch</field>
+        <field name="arch" type="xml">
+            <form string="Alta desde padrón" delete="0" js_class="lf_employee_batch_form">
+                <header>
+                    <button name="action_load" type="object" string="Leer padrón" class="btn-primary" invisible="state in ['queued', 'done']"/>
+                    <button name="action_validate" type="object" string="Validar vista previa" invisible="state in ['queued', 'done'] or not line_ids"/>
+                    <button name="action_confirm" type="object" string="Confirmar altas en segundo plano" class="btn-primary" invisible="state != 'validated'" confirm="Se crearán todas las cuentas de esta vista previa o ninguna. Cuando estén confirmadas todas las altas, el CSV estará disponible durante 15 minutos. ¿Continuar?"/>
+                    <button name="action_download" type="object" string="Descargar CSV de accesos" class="btn-primary" invisible="not download_available"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,validated,queued,done"/>
+                </header>
+                <sheet>
+                    <h1><field name="name"/></h1>
+                    <div class="alert alert-info" role="status"><field name="progress_text" nolabel="1"/></div>
+                    <div class="alert alert-warning" invisible="not notice or state == 'done'"><field name="notice" nolabel="1"/></div>
+                    <div class="alert alert-success" invisible="not notice or state != 'done'"><field name="notice" nolabel="1"/></div>
+                    <group><group>
+                        <field name="customer_company_id" required="1" readonly="state in ['queued', 'done']" options="{'no_create': True}"/>
+                        <field name="website_id" required="1" readonly="state in ['queued', 'done']" options="{'no_create': True}"/>
+                        <field name="prefix" readonly="state in ['queued', 'done']" placeholder="abc"/>
+                    </group><group>
+                        <field name="row_count"/><field name="create_uid" string="Operador creador" readonly="1"/>
+                        <field name="credentials_status"/><field name="download_available" invisible="1"/>
+                        <field name="credentials_until" invisible="1"/>
+                    </group></group>
+                    <group invisible="state in ['queued', 'done']">
+                        <p>Usá CSV UTF-8 o texto pegado con nombre;usuario. Podés agregar la columna legajo para proponer el usuario con el prefijo; no combines usuario explícito y legajo. No incluyas correo, contraseña, empresa ni sitio por fila.</p>
+                        <p>Si falta usuario y legajo, se propone prefijo.nombre.apellido, sin acentos; si se repite, agrega un número. El usuario definitivo empieza con una letra. Hasta 200 personas por envío. Un padrón más grande se carga en varios envíos, cada uno con su propia vista previa, confirmación y CSV de accesos.</p>
+                        <field name="upload" filename="upload_name" options="{'accepted_file_extensions': '.csv'}"/><field name="upload_name" invisible="1"/>
+                        <field name="source_text" placeholder="nombre;usuario&#10;Juan Pérez;&#10;Ana Gómez;abc.agomez"/>
+                        <field name="confirm_duplicate_names"/>
+                    </group>
+                    <p invisible="state != 'queued'">El avance es provisional hasta confirmar todo el lote. Cerrar o recargar esta pantalla no cancela el trabajo ni crea otro lote. Solo su creador puede descargar los accesos.</p>
+                    <p invisible="state != 'done'">El CSV se entrega solo al contacto autorizado de la empresa, que distribuye los accesos individuales. No se conserva como adjunto permanente.</p>
+                    <field name="line_ids" readonly="state in ['queued', 'done']">
+                        <list editable="bottom" decoration-danger="error" decoration-warning="warning and not error">
+                            <field name="row_number"/><field name="name"/><field name="login"/><field name="legajo" optional="hide"/>
+                            <field name="error" column_invisible="parent.state == 'done'"/><field name="warning" column_invisible="parent.state == 'done'"/>
+                            <field name="partner_id" optional="show"/><field name="user_id" optional="hide"/>
+                        </list>
+                    </field>
+                </sheet><chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="employee_batch_action" model="ir.actions.act_window">
+        <field name="name">Alta desde padrón</field><field name="res_model">lafija.employee.batch</field><field name="view_mode">list,form</field>
+        <field name="help" type="html"><p>Creá un lote para una empresa. La vista previa no da de alta cuentas.</p></field>
+    </record>
+    <data noupdate="1">
+        <record id="cron_employee_batch" model="ir.cron">
+            <field name="name">La Fija: procesar padrones y eliminar accesos vencidos</field>
+            <field name="model_id" ref="model_lafija_employee_batch"/><field name="state">code</field>
+            <field name="code">model._cron_process()</field><field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field><field name="interval_type">hours</field><field name="active">True</field>
+        </record>
+    </data>
+    <function model="lafija.employee.batch" name="_set_cron_interval"/>
+</odoo>

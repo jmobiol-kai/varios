@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="quotation_preparation_form" model="ir.ui.view">
+        <field name="name">lafija.quotation.preparation.form</field>
+        <field name="model">lafija.quotation.preparation</field>
+        <field name="arch" type="xml">
+            <form string="Resumen para preparar cotización" duplicate="0" delete="0">
+                <header>
+                    <button name="action_refresh" type="object" string="Ver resumen" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_prepare" type="object" string="Preparar cotización" class="btn-primary" invisible="state != 'review' or not has_available" context="{'lf_seen_summary': snapshot_token}"/>
+                    <button name="action_open_order" type="object" string="Abrir cotización preparada" class="btn-primary" invisible="state != 'prepared'"/>
+                    <button name="action_refresh" type="object" string="Actualizar resumen" invisible="state == 'draft'"/>
+                    <button name="action_period_orders" type="object" string="Ver pedidos del período"/>
+                    <button name="action_print_annex" type="object" string="Imprimir anexo para la empresa" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <h1>Resumen para preparar cotización</h1>
+                    <group invisible="state != 'prepared'">
+                        <field name="order_id" readonly="1"/>
+                    </group>
+                    <div class="alert alert-info lf-saved-consultation-notice" role="status" invisible="state != 'prepared'">
+                        Esta operación ya preparó una cotización. La consulta guardada muestra lo disponible y lo incluido en el momento indicado, no el estado actual.
+                        Tocá Actualizar resumen para volver a consultar. La selección original y el anexo se conservan.
+                        Para preparar otra cotización, abrí una nueva operación desde el menú.
+                    </div>
+                    <field name="snapshot_token" invisible="1"/>
+                    <field name="has_available" invisible="1"/>
+                    <group>
+                        <field name="customer_company_id" readonly="state == 'prepared'" options="{'no_create': True, 'no_create_edit': True}"/>
+                        <field name="company_id" readonly="state == 'prepared'" groups="base.group_multi_company" options="{'no_create': True}"/>
+                    </group>
+                    <group name="quotation_period">
+                        <group><field name="date_from" readonly="state == 'prepared'" options="{'numeric': True}"/></group>
+                        <group><field name="date_to" readonly="state == 'prepared'" options="{'numeric': True}"/></group>
+                    </group>
+                    <div class="alert alert-warning" role="alert" invisible="not notice"><field name="notice" nolabel="1"/></div>
+                    <p>Una reserva cuenta como una vianda. Se usa la elección vigente, aunque haya un cambio solicitado. Una consulta abierta no la excluye.</p>
+                    <p>Preparar crea un borrador en Ventas. Odoo calcula precios e impuestos con la configuración de la empresa cliente y la cantidad agrupada. No confirma pedidos ni crea facturas.</p>
+                    <field name="summary_html" nolabel="1" readonly="1" invisible="state == 'draft'"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="quotation_preparation_action" model="ir.actions.act_window">
+        <field name="name">Preparar cotización</field><field name="res_model">lafija.quotation.preparation</field>
+        <field name="view_mode">form</field><field name="view_id" ref="quotation_preparation_form"/>
+    </record>
+    <record id="sale_quotation_preparation" model="ir.ui.view">
+        <field name="name">sale.order.lafija.quotation.preparation</field>
+        <field name="model">sale.order</field><field name="inherit_id" ref="sale_order_protection"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='lf_protection']" position="inside">
+                <group invisible="not lf_quotation_preparation_ids">
+                    <field name="lf_quotation_preparation_ids" readonly="1">
+                        <list create="0" delete="0"><field name="name"/><field name="state"/></list>
+                    </field>
+                    <button name="action_lf_quotation_annex" type="object" string="Imprimir anexo para la empresa"/>
+                </group>
+                <div class="alert alert-warning" role="alert" invisible="not lf_quotation_difference"><field name="lf_quotation_difference" nolabel="1"/></div>
+                <p invisible="not lf_quotation_preparation_ids">La selección de origen se conserva. Corregir una reserva después no modifica las líneas de este pedido: revisá los avisos y ajustalo por el circuito habitual.</p>
+            </xpath>
+        </field>
+    </record>
+    <template id="quotation_summary">
+        <div class="lf-quotation-summary">
+            <p><strong t-out="summary['company']"/> · Compañía vendedora: <t t-out="summary['seller']"/></p>
+            <p>Período: <t t-out="quotation_date(summary['date_from'])"/> al <t t-out="quotation_date(summary['date_to'])"/>.</p>
+            <p><strong t-if="prepared">Consulta guardada del <t t-out="reviewed_at"/> · hora de La Fija.</strong><t t-else="">Consultado el <t t-out="reviewed_at"/> · hora de La Fija.</t></p>
+            <h2><t t-out="'Disponibles en esa consulta' if prepared else 'Disponibles para preparar'"/> · <t t-out="len(summary['eligible'])"/> <t t-out="'vianda' if len(summary['eligible']) == 1 else 'viandas'"/></h2>
+            <p t-if="not summary['eligible']">No hay viandas disponibles con estos criterios. Revisá las incluidas en pedidos y los casos a revisar.</p>
+            <div class="table-responsive" t-if="summary['products']"><table class="table table-sm">
+                <thead><tr><th>Producto (variante)</th><th>Cantidad</th><th>Reserva · empleado · fecha · revisión de origen</th></tr></thead>
+                <tbody><tr t-foreach="summary['products']" t-as="product">
+                    <td><strong t-out="product['name']"/></td><td t-out="product['quantity']"/>
+                    <td><div t-foreach="product['reservations']" t-as="row"><a t-att-href="'/odoo/lafija.reservation/%s' % row['id']" t-out="row['reference']"/> · <t t-out="row['employee']"/> · <t t-out="quotation_date(row['date'])"/> · R<t t-out="row['revision']"/></div></td>
+                </tr></tbody>
+            </table></div>
+            <h2><t t-out="'Ya incluidas en esa consulta' if prepared else 'Ya incluidas en un pedido'"/> · <t t-out="len(summary['included'])"/> <t t-out="'reserva' if len(summary['included']) == 1 else 'reservas'"/></h2>
+            <p>Incluida significa vinculada a un pedido no cancelado, aunque siga en borrador. No acredita su confirmación, cobro ni entrega. Usá «Ver pedidos del período» para continuar en Ventas.</p>
+            <p t-if="not summary['included']">No hay reservas de este período incluidas en pedidos no cancelados.</p>
+            <div class="table-responsive" t-if="summary['included']"><table class="table table-sm">
+                <thead><tr><th>Reserva</th><th>Empleado / fecha</th><th>Pedido y estado</th></tr></thead><tbody>
+                    <tr t-foreach="summary['included']" t-as="row"><td><a t-att-href="'/odoo/lafija.reservation/%s' % row['id']" t-out="row['reference']"/></td><td><t t-out="row['employee']"/> · <t t-out="quotation_date(row['date'])"/></td>
+                        <td><div t-foreach="row['orders']" t-as="order"><a t-att-href="'/odoo/sale.order/%s' % order['id']" t-out="order['name']"/> · <t t-out="order['state_label']"/></div></td></tr>
+                </tbody></table></div>
+            <h2>A revisar</h2>
+            <p t-if="not summary['missing_days'] and not summary['issues']">No se detectaron incidencias en este resumen.</p>
+            <div t-if="summary['missing_days']" class="alert alert-warning">
+                <h3>Días sin lista tomada</h3>
+                <p>No se incluyen sus viandas. Abrí el menú para revisar y tomar su lista: esa acción alcanza a todas las empresas de ese menú, no solo a la seleccionada aquí.</p>
+                <ul><li t-foreach="summary['missing_days']" t-as="day"><a t-att-href="'/odoo/lafija.menu.day/%s' % day['menu_id']" t-out="quotation_date(day['date'])"/> · <t t-out="day['website']"/> · <t t-out="day['company']"/>: <strong><t t-out="day['quantity']"/> <t t-out="'vianda' if day['quantity'] == 1 else 'viandas'"/></strong></li></ul>
+            </div>
+            <div class="table-responsive" t-if="summary['issues']"><table class="table table-sm">
+                <thead><tr><th>Reserva / empleado / fecha</th><th>Qué revisar</th><th>Pedidos relacionados</th></tr></thead><tbody>
+                    <tr t-foreach="summary['issues']" t-as="row"><td><t t-if="row.get('id')"><a t-att-href="'/odoo/lafija.reservation/%s' % row['id']" t-out="row.get('reference', '')"/><br/><t t-out="row.get('employee', '')"/> · <t t-out="quotation_date(row.get('date', ''))"/><br/><t t-out="row.get('product', '')"/><t t-if="row.get('revision')"> · R<t t-out="row['revision']"/></t></t></td>
+                    <td t-out="row['text']"/><td><div t-foreach="row.get('orders', [])" t-as="order"><a t-att-href="'/odoo/sale.order/%s' % order['id']" t-out="order['name']"/> · <t t-out="order['state_label']"/></div></td></tr>
+                </tbody></table></div>
+            <p>El botón controla sus propios reintentos. Los vínculos modificados o pedidos copiados desde Ventas requieren revisión; este resumen no sincroniza documentos comerciales.</p>
+        </div>
+    </template>
+    <record id="report_quotation_annex" model="ir.actions.report">
+        <field name="name">Anexo de viandas por empresa</field><field name="model">lafija.quotation.preparation</field>
+        <field name="report_type">qweb-pdf</field><field name="report_name">kai_viandas.quotation_annex</field>
+        <field name="report_file">kai_viandas.quotation_annex</field>
+        <field name="group_ids" eval="[(4, ref('kai_viandas.group_operator'))]"/>
+        <field name="print_report_name">'Anexo de viandas %s' % (object.order_reference or object.name)</field>
+    </record>
+    <template id="quotation_annex">
+        <html data-report-margin-top="12" data-report-margin-bottom="12"><head><meta charset="utf-8"/></head><body><main>
+            <div t-foreach="sheets" t-as="sheet" class="article page lf-quotation-annex" data-oe-model="lafija.quotation.preparation" t-att-data-oe-id="sheet['id']">
+                <style>
+                    .lf-quotation-annex {font-family:Arial,sans-serif;font-size:13px;color:#111;padding:16px}
+                    .lf-quotation-annex h1 {font-size:22px} .lf-quotation-annex h2 {font-size:17px}
+                    .lf-quotation-annex table {border-collapse:collapse;width:100%;margin:10px 0 20px}
+                    .lf-quotation-annex th,.lf-quotation-annex td {padding:6px;border-bottom:1px solid #999;text-align:left;vertical-align:top}
+                    .lf-quotation-annex thead {display:table-header-group} .lf-quotation-annex tr {page-break-inside:avoid}
+                </style>
+                <h1>Anexo de viandas · <t t-out="sheet['summary']['company']"/></h1>
+                <p><t t-out="quotation_date(sheet['summary']['date_from'])"/> al <t t-out="quotation_date(sheet['summary']['date_to'])"/> · <strong t-out="sheet['order'] or 'Resumen sin cotización preparada'"/></p>
+                <p>Detalle sin importes. No acredita pago ni entrega. <t t-if="sheet['prepared']">Se conserva la selección incluida al preparar el pedido; los ajustes comerciales posteriores se revisan por separado.</t><t t-else="">Contiene solo las viandas disponibles del resumen consultado; imprimir no crea una cotización.</t></p>
+                <p>Generado el <t t-out="sheet['generated_at']"/> · hora de La Fija.</p>
+                <p t-if="not sheet['summary']['eligible']"><strong>0 viandas disponibles.</strong><br/>No hay viandas disponibles en esta consulta. Las ya incluidas y las incidencias se revisan en el resumen.</p>
+                <h2 t-if="sheet['summary']['products']">Cantidades por plato</h2>
+                <table t-if="sheet['summary']['products']"><thead><tr><th>Producto</th><th>Cantidad</th></tr></thead><tbody>
+                    <tr t-foreach="sheet['summary']['products']" t-as="product"><td t-out="product['name']"/><td t-out="product['quantity']"/></tr>
+                </tbody></table>
+                <h2 t-if="sheet['summary'].get('desserts')">Cantidades por postre</h2>
+                <table t-if="sheet['summary'].get('desserts')"><thead><tr><th>Postre</th><th>Cantidad</th></tr></thead><tbody>
+                    <tr t-foreach="sheet['summary']['desserts']" t-as="product"><td t-out="product['name']"/><td t-out="product['quantity']"/></tr>
+                </tbody></table>
+                <h2 t-if="sheet['summary'].get('drinks')">Cantidades por bebida</h2>
+                <table t-if="sheet['summary'].get('drinks')"><thead><tr><th>Bebida</th><th>Cantidad</th></tr></thead><tbody>
+                    <tr t-foreach="sheet['summary']['drinks']" t-as="product"><td t-out="product['name']"/><td t-out="product['quantity']"/></tr>
+                </tbody></table>
+                <h2 t-if="sheet['summary']['eligible']">Detalle por empleado y fecha · <t t-out="len(sheet['summary']['eligible'])"/> <t t-out="'vianda' if len(sheet['summary']['eligible']) == 1 else 'viandas'"/></h2>
+                <table t-if="sheet['summary']['eligible']"><thead><tr><th>Empleado</th><th>Fecha</th><th>Producto</th><th>Reserva</th><th>Revisión de origen</th></tr></thead><tbody>
+                    <tr t-foreach="sorted(sheet['summary']['eligible'], key=lambda row: (row['employee'], row['date'], row['id']))" t-as="row">
+                        <td t-out="row['employee']"/><td t-out="quotation_date(row['date'])"/><td><t t-out="row['product']"/><t t-if="row['description'] != row['product']"><br/><t t-out="row['description']"/></t><t t-if="row.get('dessert')"><br/>Postre: <t t-out="row['dessert']"/></t><t t-if="row.get('drink')"><br/>Bebida: <t t-out="row['drink']"/></t></td><td t-out="row['reference']"/><td>R<t t-out="row['revision']"/></td>
+                    </tr>
+                </tbody></table>
+            </div>
+        </main></body></html>
+    </template>
+</odoo>

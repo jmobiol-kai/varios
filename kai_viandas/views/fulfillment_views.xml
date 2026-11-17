@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="cut_form_fulfillment" model="ir.ui.view">
+        <field name="name">lafija.preparation.cut.fulfillment</field>
+        <field name="model">lafija.preparation.cut</field>
+        <field name="inherit_id" ref="cut_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('lf-preparation-summary')]" position="inside">
+                <div><span class="lf-total"><field name="to_prepare_count" nolabel="1"/></span><div>Por elaborar</div></div>
+                <div><span class="lf-total"><field name="in_progress_count" nolabel="1"/></span><div>En elaboración</div></div>
+                <div><span class="lf-total"><field name="prepared_count" nolabel="1"/></span><div>Elaboradas</div></div>
+                <div><span class="lf-total"><field name="delivered_count" nolabel="1"/></span><div>Entregadas</div></div>
+            </xpath>
+            <xpath expr="//page[.//field[@name='pending_ids']]" position="before">
+                <page name="lf_fulfillment" string="Elaboración y entrega">
+                    <field name="current_line_ids">
+                        <list create="0" delete="0" decoration-success="fulfillment_state == 'delivered'" decoration-info="fulfillment_state == 'prepared'" decoration-warning="fulfillment_state == 'in_progress'">
+                            <field name="reservation_name" string="Vianda"/>
+                            <field name="employee_name"/>
+                            <field name="company_name"/>
+                            <field name="product_id"/>
+                            <field name="dessert_id" optional="show" string="Postre"/>
+                            <field name="drink_id" optional="show" string="Bebida"/>
+                            <field name="fulfillment_state" string="Estado de elaboración"/>
+                            <field name="lf_daily_order_id" string="Presupuesto" optional="show"/>
+                            <field name="fulfillment_production_ids" widget="many2many_tags" optional="show" string="Órdenes de fabricación"/>
+                            <button name="action_mark_delivered" type="object" string="Entregado" invisible="fulfillment_state != 'prepared'" class="btn-primary" groups="kai_viandas.group_operator"/>
+                            <button name="action_unmark_delivered" type="object" string="Deshacer entrega" invisible="fulfillment_state != 'delivered'" groups="kai_viandas.group_operator"/>
+                            <button name="action_open_daily_order" type="object" string="Ver pedido" invisible="not lf_daily_order_id" groups="kai_viandas.group_operator"/>
+                            <button name="action_open_production" type="object" string="Ver orden" invisible="not fulfillment_production_ids" groups="kai_viandas.group_operator"/>
+                        </list>
+                    </field>
+                    <p>Hay <strong>una sola orden de fabricación en borrador por plato y día</strong> (todas las empresas juntas): se crea o se ajusta cuando una vianda queda vigente, y también al tomar o revisar la lista. El postre o la bebida solo generan OF si tienen receta. El origen de la OF es la fecha y el plato (por ejemplo, 2026-11-20 · Pastel De Papa); los pedidos y los números de vianda se ven en la pestaña Viandas de la orden. Si una vianda se suma o sale mientras la OF sigue en borrador, se ajusta la cantidad. Si la OF ya está confirmada, no se cambia esa cantidad: las viandas nuevas de ese plato quedan en otra OF en borrador. La orden de fabricación en borrador se arma sola cuando la vianda queda vigente (también antes de tomar la lista) y se ajusta si hay un cambio o una cancelación. Si la OF ya está confirmada, una vianda nueva de ese plato va a otra OF en borrador y una que sale se desvincula sin cambiar la cantidad confirmada. Queda «Elaborado» cuando el chef, en Manufactura o en Pedidos → Producción del día, marca la orden como hecha (en Componentes se puede comprobar la disponibilidad de insumos); no pasa a «Entregado» sola. El presupuesto se arma después, con «Agregar a presupuesto», juntando las viandas elaboradas o entregadas de la misma empresa y el mismo día. Entregado (el botón) valida el remito de salida si ese presupuesto ya está confirmado.</p>
+                </page>
+            </xpath>
+            <xpath expr="//field[@name='pending_ids']/list/field[@name='attention_label']" position="before">
+                <field name="name" string="Vianda" optional="show"/>
+                <field name="fulfillment_state" string="Estado de elaboración" optional="show" groups="kai_viandas.group_operator"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="reservation_list_fulfillment" model="ir.ui.view">
+        <field name="name">lafija.reservation.list.fulfillment</field>
+        <field name="model">lafija.reservation</field>
+        <field name="inherit_id" ref="reservation_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_add_to_quotation" type="object" string="Agregar a presupuesto" groups="kai_viandas.group_operator"/>
+                <button name="action_mark_delivered" type="object" string="Entregado" groups="kai_viandas.group_operator"/>
+            </xpath>
+            <xpath expr="//field[@name='attention_label']" position="before">
+                <field name="fulfillment_state" string="Estado de elaboración" optional="show" width="160px" groups="kai_viandas.group_operator"/>
+                <field name="lf_quotation_id" string="Presupuesto" widget="lf_quotation_link" optional="show" width="100px" groups="kai_viandas.group_operator"/>
+                <field name="lf_daily_order_id" column_invisible="True" groups="kai_viandas.group_operator"/>
+                <field name="currency_id" column_invisible="True" groups="kai_viandas.group_operator"/>
+                <field name="lf_amount" string="Monto" sum="Monto" widget="monetary" optional="show" width="80px" groups="kai_viandas.group_operator"/>
+                <field name="fulfillment_production_ids" widget="many2many_tags" string="Órdenes de fabricación" optional="show" width="160px" groups="kai_viandas.group_operator"/>
+            </xpath>
+            <xpath expr="//button[@name='action_correct']" position="before">
+                <button name="action_add_to_quotation" type="object" string="Agregar a presupuesto" invisible="fulfillment_state not in ('prepared', 'delivered') or lf_quotation_id" groups="kai_viandas.group_operator"/>
+                <button name="action_open_production" type="object" string="Ver orden" invisible="not fulfillment_production_ids" groups="kai_viandas.group_operator"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="reservation_search_fulfillment" model="ir.ui.view">
+        <field name="name">lafija.reservation.search.fulfillment</field>
+        <field name="model">lafija.reservation</field>
+        <field name="inherit_id" ref="reservation_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='pending']" position="after">
+                <separator/>
+                <filter name="to_prepare" string="Por elaborar" domain="[('fulfillment_state', '=', 'to_prepare')]" groups="kai_viandas.group_operator"/>
+                <filter name="in_progress" string="En elaboración" domain="[('fulfillment_state', '=', 'in_progress')]" groups="kai_viandas.group_operator"/>
+                <filter name="to_deliver" string="Por entregar" domain="[('to_deliver', '=', True)]" groups="kai_viandas.group_operator"/>
+                <filter name="delivered" string="Entregadas" domain="[('fulfillment_state', '=', 'delivered')]" groups="kai_viandas.group_operator"/>
+                <separator/>
+                <filter name="in_quotation" string="En presupuesto" domain="[('lf_quotation_id', '!=', False)]" groups="kai_viandas.group_operator"/>
+                <filter name="not_in_quotation" string="Sin presupuesto" domain="[('lf_quotation_id', '=', False), ('fulfillment_state', 'in', ('prepared', 'delivered'))]" groups="kai_viandas.group_operator"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="reservation_form_fulfillment" model="ir.ui.view">
+        <field name="name">lafija.reservation.form.fulfillment</field>
+        <field name="model">lafija.reservation</field>
+        <field name="inherit_id" ref="reservation_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="fulfillment_state" string="Estado de elaboración"/>
+                <field name="fulfillment_started_at" invisible="not fulfillment_started_at"/>
+                <field name="fulfillment_started_by" invisible="not fulfillment_started_by"/>
+                <field name="prepared_at" invisible="not prepared_at"/>
+                <field name="prepared_by" invisible="not prepared_by"/>
+                <field name="delivered_at" invisible="not delivered_at"/>
+                <field name="delivered_by" invisible="not delivered_by"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="lf_amount" string="Monto" widget="monetary" invisible="not lf_amount"/>
+                <field name="lf_quotation_id" invisible="1"/>
+                <field name="lf_daily_order_id" string="Presupuesto" invisible="not lf_daily_order_id"/>
+                <field name="fulfillment_production_ids" widget="many2many_tags" invisible="not fulfillment_production_ids"/>
+            </xpath>
+            <xpath expr="//page[.//field[@name='lf_sale_order_ids']]/p" position="replace">
+                <p>El presupuesto diario de la empresa y el día se arma en borrador con «Agregar a presupuesto», cuando la vianda ya está elaborada o entregada. No se crea solo por quedar vigente ni al elaborar. El presupuesto se confirma en Ventas. Si esa vianda ya está en un presupuesto, Preparar cotización del período no crea otro pedido.</p>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="reservation_header_fulfillment" model="ir.ui.view">
+        <field name="name">lafija.reservation.header.fulfillment</field>
+        <field name="model">lafija.reservation</field>
+        <field name="inherit_id" ref="reservation_correction_button"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_correct']" position="before">
+                <field name="on_taken_list" invisible="1"/>
+                <field name="fulfillment_state" invisible="1"/>
+                <field name="lf_quotation_id" invisible="1"/>
+                <field name="lf_daily_order_id" invisible="1"/>
+                <field name="fulfillment_production_ids" invisible="1"/>
+                <button name="action_add_to_quotation" type="object" string="Agregar a presupuesto" class="btn-primary" invisible="fulfillment_state not in ('prepared', 'delivered') or lf_quotation_id" groups="kai_viandas.group_operator"/>
+                <button name="action_mark_delivered" type="object" string="Entregado" class="btn-primary" invisible="fulfillment_state != 'prepared' or not on_taken_list" groups="kai_viandas.group_operator"/>
+                <button name="action_unmark_delivered" type="object" string="Deshacer entrega" invisible="fulfillment_state != 'delivered'" groups="kai_viandas.group_operator"/>
+                <button name="action_open_daily_order" type="object" string="Ver presupuesto" invisible="not lf_daily_order_id" groups="kai_viandas.group_operator"/>
+                <button name="action_open_production" type="object" string="Ver orden" invisible="not fulfillment_production_ids" groups="kai_viandas.group_operator"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="delivery_list" model="ir.ui.view">
+        <field name="name">lafija.reservation.delivery.list</field>
+        <field name="model">lafija.reservation</field>
+        <field name="arch" type="xml">
+            <list class="lf-reservations" create="0" delete="0" default_group_by="customer_company_id"
+                  decoration-success="fulfillment_state == 'delivered'" decoration-info="fulfillment_state == 'prepared'" decoration-warning="fulfillment_state == 'in_progress'">
+                <header>
+                    <button name="action_mark_delivered" type="object" string="Entregado" groups="kai_viandas.group_operator"/>
+                </header>
+                <field name="name" string="Vianda"/>
+                <field name="date"/>
+                <field name="employee_partner_id"/>
+                <field name="customer_company_id"/>
+                <field name="current_description"/>
+                <field name="current_dessert_description" optional="hide" string="Postre"/>
+                <field name="current_drink_description" optional="hide" string="Bebida"/>
+                <field name="fulfillment_state" string="Estado de elaboración"/>
+                <field name="lf_daily_order_id" string="Presupuesto" optional="show"/>
+                <field name="fulfillment_production_ids" widget="many2many_tags" optional="show" string="Órdenes de fabricación"/>
+                <button name="action_mark_delivered" type="object" string="Entregado" invisible="fulfillment_state != 'prepared'" class="btn-primary" groups="kai_viandas.group_operator"/>
+                <button name="action_unmark_delivered" type="object" string="Deshacer entrega" invisible="fulfillment_state != 'delivered'" groups="kai_viandas.group_operator"/>
+                <button name="action_open_daily_order" type="object" string="Ver pedido" invisible="not lf_daily_order_id" groups="kai_viandas.group_operator"/>
+                <button name="action_open_production" type="object" string="Ver orden" invisible="not fulfillment_production_ids" groups="kai_viandas.group_operator"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="delivery_action" model="ir.actions.act_window">
+        <field name="name">Entregas del día</field>
+        <field name="res_model">lafija.reservation</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="delivery_list"/>
+        <field name="search_view_id" ref="reservation_search"/>
+        <field name="domain">[('on_taken_list', '=', True)]</field>
+        <field name="context">{'search_default_today': 1, 'search_default_company_group': 1}</field>
+        <field name="help" type="html"><p>No hay viandas tomadas para estos filtros.</p><p>Al confirmar una vianda vigente, el sistema suma una unidad a la orden de fabricación en borrador de ese plato y día. El chef confirma y produce la orden en Manufactura o en Pedidos → Producción del día. El presupuesto se agrega después, con «Agregar a presupuesto». Entregado marca las ya elaboradas.</p></field>
+    </record>
+
+    <record id="action_server_elaborate" model="ir.actions.server">
+        <field name="name">Elaborar</field>
+        <field name="model_id" ref="model_lafija_reservation"/>
+        <field name="binding_model_id" eval="False"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_open_production() if len(records) == 1 else records.action_elaborate()</field>
+    </record>
+    <record id="action_server_deliver" model="ir.actions.server">
+        <field name="name">Entregado</field>
+        <field name="model_id" ref="model_lafija_reservation"/>
+        <field name="binding_model_id" ref="model_lafija_reservation"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_mark_delivered()</field>
+    </record>
+    <record id="action_server_undeliver" model="ir.actions.server">
+        <field name="name">Deshacer entrega</field>
+        <field name="model_id" ref="model_lafija_reservation"/>
+        <field name="binding_model_id" ref="model_lafija_reservation"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_unmark_delivered()</field>
+    </record>
+
+    <record id="menu_day_fulfillment" model="ir.ui.view">
+        <field name="name">lafija.menu.day.fulfillment</field>
+        <field name="model">lafija.menu.day</field>
+        <field name="inherit_id" ref="menu_day_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/h1" position="after">
+                <field name="list_taken" invisible="1"/>
+                <div class="alert alert-info" role="status" invisible="not list_taken" name="lf_taken_banner">
+                    <p><strong>Lista tomada.</strong> Para elaborar y entregar, abrí la lista de preparación.</p>
+                    <button name="action_open_fulfillment" type="object" string="Elaborar y entregar" class="btn-primary" groups="kai_viandas.group_operator"/>
+                </div>
+            </xpath>
+            <xpath expr="//group[@name='lf_offer_plates']" position="attributes">
+                <attribute name="invisible">list_taken</attribute>
+            </xpath>
+            <xpath expr="//group[@name='lf_offer_desserts']" position="attributes">
+                <attribute name="invisible">list_taken</attribute>
+            </xpath>
+            <xpath expr="//group[@name='lf_offer_drinks']" position="attributes">
+                <attribute name="invisible">list_taken</attribute>
+            </xpath>
+            <xpath expr="//field[@name='reservation_ids']" position="inside">
+                <list class="lf-reservations" create="0" delete="0" decoration-warning="pending" decoration-info="fulfillment_state == 'prepared'" decoration-success="fulfillment_state == 'delivered'">
+                    <field name="name" string="Vianda"/>
+                    <field name="employee_partner_id"/>
+                    <field name="customer_company_id"/>
+                    <field name="current_description"/>
+                    <field name="current_dessert_description" optional="hide" string="Postre"/>
+                    <field name="current_drink_description" optional="hide" string="Bebida"/>
+                    <field name="fulfillment_state" string="Estado de elaboración" groups="kai_viandas.group_operator"/>
+                    <field name="lf_daily_order_id" string="Presupuesto" optional="show" groups="kai_viandas.group_operator"/>
+                    <field name="fulfillment_production_ids" widget="many2many_tags" optional="show" string="Órdenes de fabricación" groups="kai_viandas.group_operator"/>
+                    <field name="attention_label"/>
+                    <field name="timing_label"/>
+                    <field name="pending" column_invisible="True"/>
+                    <button name="action_correct" type="object" string="Editar" invisible="not pending"/>
+                </list>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page name="lf_offer" string="Oferta del día" invisible="not list_taken">
+                    <group>
+                        <group string="Platos del día"><field name="product_ids" widget="many2many_tags" string="Platos" options="{'no_create': True}"/></group>
+                        <group string="Postres del día"><field name="dessert_ids" widget="many2many_tags" string="Postres" options="{'no_create': True}"/></group>
+                        <group string="Bebidas del día"><field name="drink_ids" widget="many2many_tags" string="Bebidas" options="{'no_create': True}"/></group>
+                    </group>
+                    <p>Estas son las opciones publicadas del menú. Seguí editándolas acá si hace falta; para elaborar y entregar usá la lista de preparación.</p>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="mrp_production_viandas" model="ir.ui.view">
+        <field name="name">mrp.production.lafija.viandas</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_lf_open_sale_orders" type="object" class="oe_stat_button" icon="fa-usd" invisible="not lf_sale_order_count" groups="kai_viandas.group_operator">
+                    <field name="lf_sale_order_count" widget="statinfo" string="Pedidos de venta"/>
+                </button>
+                <button name="action_lf_open_reservations" type="object" class="oe_stat_button" icon="fa-cutlery" invisible="not lf_reservation_ids" groups="kai_viandas.group_operator">
+                    <field name="lf_reservation_ids" invisible="1"/>
+                    <div class="o_stat_info"><span class="o_stat_text">Viandas</span></div>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page name="lf_viandas" string="Viandas" groups="kai_viandas.group_operator">
+                    <group>
+                        <field name="lf_sale_order_ids" widget="many2many_tags" options="{'no_create': True, 'no_create_edit': True}"/>
+                    </group>
+                    <field name="lf_reservation_ids" mode="list" options="{'no_create': True, 'no_create_edit': True}">
+                        <list create="0" delete="0">
+                            <field name="name" string="Vianda"/>
+                            <field name="customer_company_id" string="Empresa"/>
+                            <field name="employee_partner_id" string="Empleado"/>
+                            <field name="lf_daily_order_id" string="Presupuesto"/>
+                            <field name="fulfillment_state" string="Estado de elaboración"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sale_order_viandas_buttons" model="ir.ui.view">
+        <field name="name">sale.order.lafija.fulfillment.buttons</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_lf_open_productions" type="object" class="oe_stat_button" icon="fa-industry" invisible="not lf_production_count" groups="kai_viandas.group_operator">
+                    <field name="lf_production_count" widget="statinfo" string="Órdenes de fabricación"/>
+                </button>
+                <button name="action_lf_open_reservations" type="object" class="oe_stat_button" icon="fa-cutlery" invisible="not lf_reservation_count" groups="kai_viandas.group_operator">
+                    <field name="lf_reservation_count" widget="statinfo" string="Viandas"/>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_id']" position="after">
+                <field name="lf_reservation_ref" string="Viandas" optional="show" groups="kai_viandas.group_operator"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="daily_sale_order_list" model="ir.ui.view">
+        <field name="name">sale.order.lafija.daily.list</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <list string="Ventas" default_group_by="partner_id" create="0">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="lf_preparation_date" string="Día"/>
+                <field name="date_order"/>
+                <field name="state"/>
+                <field name="lf_reservation_count" string="Viandas"/>
+                <field name="amount_untaxed" string="Base imponible" sum="Base imponible"/>
+                <field name="amount_total" string="Total" sum="Total"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+    <record id="daily_sale_order_search" model="ir.ui.view">
+        <field name="name">sale.order.lafija.daily.search</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="lf_preparation_date"/>
+                <filter name="draft" string="Borrador" domain="[('state', 'in', ('draft', 'sent'))]"/>
+                <filter name="sale" string="Confirmados" domain="[('state', '=', 'sale')]"/>
+                <group>
+                    <filter name="group_partner" string="Empresa" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_date" string="Día" context="{'group_by': 'lf_preparation_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="daily_sale_order_action" model="ir.actions.act_window">
+        <field name="name">Ventas</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="daily_sale_order_list"/>
+        <field name="search_view_id" ref="daily_sale_order_search"/>
+        <field name="domain">[('lf_preparation_date', '!=', False)]</field>
+        <field name="context">{'search_default_group_partner': 1}</field>
+        <field name="help" type="html"><p>Todavía no hay pedidos diarios de viandas. Se arman en borrador con «Agregar a presupuesto», uno por empresa y día, cuando la vianda ya está elaborada o entregada. Se confirman acá, en Ventas.</p></field>
+    </record>
+    <menuitem id="menu_daily_sales" name="Ventas" parent="menu_orders_group" action="daily_sale_order_action" sequence="2" groups="kai_viandas.group_operator"/>
+
+    <record id="lf_day_production_list" model="ir.ui.view">
+        <field name="name">mrp.production.lafija.day.list</field>
+        <field name="model">mrp.production</field>
+        <field name="arch" type="xml">
+            <list default_group_by="lf_meal_date:day" default_order="lf_meal_date desc, product_id, id" create="0">
+                <field name="lf_meal_date" string="Día"/>
+                <field name="product_id" string="Menú"/>
+                <field name="product_qty" string="Cantidad"/>
+                <field name="state" string="Estado"/>
+                <field name="components_availability" optional="show" string="Disponibilidad"/>
+                <field name="name" string="Orden de elaboración"/>
+                <field name="lf_sale_order_ids" widget="many2many_tags" string="Orden de venta"/>
+                <field name="lf_reservation_ids" widget="many2many_tags" string="Viandas" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="lf_day_production_search" model="ir.ui.view">
+        <field name="name">mrp.production.lafija.day.search</field>
+        <field name="model">mrp.production</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_id"/>
+                <field name="lf_meal_date"/>
+                <field name="name" string="Orden de elaboración"/>
+                <field name="lf_sale_order_ids" string="Orden de venta"/>
+                <field name="origin"/>
+                <filter name="today" string="Hoy" domain="[('lf_meal_date', '=', context_today())]"/>
+                <separator/>
+                <filter name="draft" string="Borrador" domain="[('state', '=', 'draft')]"/>
+                <filter name="confirmed" string="Confirmadas" domain="[('state', 'in', ('confirmed', 'progress'))]"/>
+                <filter name="done" string="Hechas" domain="[('state', '=', 'done')]"/>
+                <group>
+                    <filter name="group_date" string="Día" context="{'group_by': 'lf_meal_date:day'}"/>
+                    <filter name="group_product" string="Menú" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="lf_day_production_action" model="ir.actions.act_window">
+        <field name="name">Producción del día</field>
+        <field name="res_model">mrp.production</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('lf_meal_date', '!=', False)]</field>
+        <field name="context">{'search_default_today': 1, 'search_default_group_date': 1}</field>
+        <field name="view_id" ref="lf_day_production_list"/>
+        <field name="search_view_id" ref="lf_day_production_search"/>
+        <field name="help" type="html"><p>No hay órdenes de fabricación de viandas para estos filtros.</p><p>Al confirmar una vianda se suma a la orden en borrador de ese plato y día. El chef la confirma y la marca hecha en Manufactura o desde esta lista.</p></field>
+    </record>
+    <menuitem id="menu_day_production" name="Producción del día" parent="menu_orders_group"
+              action="lf_day_production_action" sequence="3" groups="kai_viandas.group_operator"/>
+</odoo>
+

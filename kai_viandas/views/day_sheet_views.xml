@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="cut_day_sheet_button" model="ir.ui.view">
+        <field name="name">lafija.preparation.cut.day.sheet</field>
+        <field name="model">lafija.preparation.cut</field>
+        <field name="inherit_id" ref="cut_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_print_day_sheet" type="object" string="Imprimir planilla del día"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="revision_day_sheet_button" model="ir.ui.view">
+        <field name="name">lafija.preparation.revision.day.sheet</field>
+        <field name="model">lafija.preparation.revision</field>
+        <field name="inherit_id" ref="preparation_revision_print"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_print_day_sheet" type="object" string="Imprimir planilla del día" invisible="not is_current"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="report_day_sheet" model="ir.actions.report">
+        <field name="name">Planilla del día · viandas para preparar</field>
+        <field name="model">lafija.preparation.revision</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">kai_viandas.day_sheet</field>
+        <field name="report_file">kai_viandas.day_sheet</field>
+        <field name="group_ids" eval="[(4, ref('kai_viandas.group_operator'))]"/>
+        <field name="print_report_name">'Planilla %s - R%s' % (object.cut_id.date, object.number)</field>
+    </record>
+    <template id="day_sheet">
+        <html data-report-margin-top="12" data-report-margin-bottom="12">
+            <head><meta charset="utf-8"/></head>
+            <body><main>
+                <div t-foreach="sheets" t-as="sheet" class="article page lf-day-sheet" data-oe-model="lafija.preparation.revision" t-att-data-oe-id="sheet['id']">
+                    <!-- El motor PDF extrae article: el estilo debe viajar con su contenido. -->
+                    <style>
+                        .lf-day-sheet {font-family:Arial,sans-serif;font-size:14px;color:#111;padding:16px}
+                        .lf-day-sheet h1 {font-size:22px} .lf-day-sheet h2 {font-size:17px;margin-top:20px}
+                        .lf-day-sheet table {border-collapse:collapse;width:100%;margin:8px 0 16px}
+                        .lf-day-sheet th,.lf-day-sheet td {padding:7px;border-bottom:1px solid #aaa;text-align:left;vertical-align:top}
+                        .lf-day-sheet th {background:#eee} .lf-day-sheet thead {display:table-header-group}
+                        .lf-day-sheet tr {page-break-inside:avoid}
+                        .lf-day-sheet .quantity {text-align:right;width:80px} .lf-day-sheet .context {font-size:12px}
+                    </style>
+                    <h1>Planilla del día · <t t-out="sheet['date']"/></h1>
+                    <p><strong>Revisión R<t t-out="sheet['revision']"/> · <t t-out="sheet['total']"/> <t t-out="'vianda' if sheet['total'] == 1 else 'viandas'"/> para preparar</strong></p>
+                    <p t-if="not sheet['current']"><strong>LISTA HISTÓRICA: existe una revisión posterior.</strong></p>
+                    <p class="context">Generada el <t t-out="sheet['generated_at']"/> · hora de La Fija. Imprimir no confirma entrega.</p>
+                    <h2>Cantidades por plato</h2>
+                    <table><thead><tr><th>Producto</th><th class="quantity">Cantidad</th></tr></thead><tbody>
+                        <tr t-foreach="sheet['products']" t-as="product"><td t-out="product['name']"/><td class="quantity" t-out="product['quantity']"/></tr>
+                    </tbody></table>
+                    <h2 t-if="sheet['desserts']">Cantidades por postre</h2>
+                    <table t-if="sheet['desserts']"><thead><tr><th>Postre</th><th class="quantity">Cantidad</th></tr></thead><tbody>
+                        <tr t-foreach="sheet['desserts']" t-as="product"><td t-out="product['name']"/><td class="quantity" t-out="product['quantity']"/></tr>
+                    </tbody></table>
+                    <h2 t-if="sheet['drinks']">Cantidades por bebida</h2>
+                    <table t-if="sheet['drinks']"><thead><tr><th>Bebida</th><th class="quantity">Cantidad</th></tr></thead><tbody>
+                        <tr t-foreach="sheet['drinks']" t-as="product"><td t-out="product['name']"/><td class="quantity" t-out="product['quantity']"/></tr>
+                    </tbody></table>
+                    <p t-if="not sheet['total']">Esta revisión no contiene viandas para preparar.</p>
+                    <section t-foreach="sheet['companies']" t-as="company">
+                        <h2 t-out="company['name']"/>
+                        <table><thead><tr><th>Empleado</th><th>Vianda</th><th>Opción elegida</th><th class="quantity">Cantidad</th></tr></thead><tbody>
+                            <tr t-foreach="company['lines']" t-as="line"><td t-out="line['employee']"/><td t-out="line['reference']"/><td><strong t-out="line['product']"/><t t-if="line['product'] != line['choice']"><br/><t t-out="line['choice']"/></t><t t-if="line['dessert']"><br/>Postre: <t t-out="line['dessert']"/></t><t t-if="line['drink']"><br/>Bebida: <t t-out="line['drink']"/></t></td><td class="quantity" t-out="line['quantity']"/></tr>
+                        </tbody></table>
+                    </section>
+                    <h2>Pendientes de atención al imprimir</h2>
+                    <p>Las opciones solicitadas y las reservas nuevas pendientes no se suman a las cantidades. Si una vianda ya tiene una elección vigente, se prepara la que figura arriba hasta que La Fija aplique la corrección.</p>
+                    <p t-if="not sheet['pending']">No hay pendientes de atención para este día.</p>
+                    <table t-if="sheet['pending']"><thead><tr><th>Empresa / empleado</th><th>Vianda</th><th>Qué requiere atención</th><th>Opción solicitada (sin aplicar)</th></tr></thead><tbody>
+                        <tr t-foreach="sheet['pending']" t-as="pending"><td><t t-out="pending['company']"/><br/><t t-out="pending['employee']"/></td><td t-out="pending['reference']"/><td t-out="pending['type']"/><td><t t-out="pending['choice']"/><t t-if="pending['dessert']"><br/>Postre: <t t-out="pending['dessert']"/></t><t t-if="pending['drink']"><br/>Bebida: <t t-out="pending['drink']"/></t></td></tr>
+                    </tbody></table>
+                </div>
+            </main></body>
+        </html>
+    </template>
+</odoo>
