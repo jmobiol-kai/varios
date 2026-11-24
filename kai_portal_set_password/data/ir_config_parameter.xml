@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="param_disable_portal_invite_email" model="ir.config_parameter">
+        <field name="key">kai_portal_set_password.disable_portal_invite_email</field>
+        <field name="value">True</field>
+    </record>
+</odoo>

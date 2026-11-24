@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_portal_set_password" model="res.groups">
+        <field name="name">Puede establecer contraseña de portal</field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+        <field name="comment">Puede crear usuarios de portal y fijarles la contraseña desde Contactos (sin correo).</field>
+    </record>
+    <!-- Los administradores (Ajustes) lo heredan -->
+    <record id="base.group_system" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('kai_portal_set_password.group_portal_set_password'))]"/>
+    </record>
+</odoo>
