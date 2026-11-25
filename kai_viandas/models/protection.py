@@ -60,7 +60,7 @@ class ProtectedDocument(models.AbstractModel):
     _description = "Clasificación permanente de documentos corporativos"
 
     lf_protected = fields.Boolean("Documento corporativo protegido", copy=True, groups="base.group_user", tracking=True)
-    lf_reservation_ids = fields.Many2many("lafija.reservation", string="Reservas de origen", copy=True, groups="base.group_user")
+    lf_reservation_ids = fields.Many2many("lafija.reservation", string="Reservas de origen", copy=False, groups="base.group_user")
     lf_origin = fields.Text("Procedencia conservada", readonly=True, copy=True, groups="base.group_user")
 
     def _lf_inherited_protection(self):
@@ -105,10 +105,15 @@ class ProtectedDocument(models.AbstractModel):
 
     def copy(self, default=None):
         default = dict(default or {})
-        if self.lf_protected:
-            default.update(lf_protected=True, lf_origin=self.lf_origin,
-                           lf_reservation_ids=[Command.set(self.lf_reservation_ids.ids)])
-        return super().copy(default)
+        protected = self.lf_protected
+        reservations = self.sudo().lf_reservation_ids.ids if protected else []
+        if protected:
+            default.update(lf_protected=True, lf_origin=self.lf_origin)
+        result = super().copy(default)
+        if reservations:
+            # Los usuarios comerciales no tienen acceso a las reservas: el vínculo se copia como sistema.
+            result.sudo().write({"lf_reservation_ids": [Command.set(reservations)]})
+        return result
 
 
 class SaleOrder(models.Model):

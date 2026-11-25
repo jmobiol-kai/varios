@@ -26,10 +26,17 @@
                 <group><field name="current_choice"/><field name="pending_choice" invisible="not pending_choice"/><field name="request_text"/></group></group>
             <field name="attention_open" invisible="True"/>
             <div class="alert alert-info" role="status" invisible="not attention_open or operation in ['note', 'close_request']">Esta reserva también tiene una consulta escrita abierta. Aplicar la opción y enviar una respuesta no cierra esa consulta. Usá Cerrar solicitud cuando esté resuelta.</div>
+            <field name="change_block_reason" invisible="1"/>
+            <div class="alert alert-danger" role="alert" invisible="not change_block_reason or operation != 'change'"><field name="change_block_reason" nolabel="1"/></div>
+            <div class="alert alert-info" role="status" invisible="operation != 'change' or change_block_reason">Hasta el corte del día de elaboración, mientras la vianda siga «Por elaborar» y su orden esté en borrador, podés cambiar el plato, el postre o la bebida con esta opción: la vianda sale de la orden de fabricación anterior (baja su cantidad, o se cancela si queda en cero) y pasa a la orden del plato nuevo para ese día. El plato nuevo tiene que estar en el menú del día.</div>
             <group><field name="operation"/>
+                <field name="offer_product_ids" invisible="1"/><field name="offer_dessert_ids" invisible="1"/><field name="offer_drink_ids" invisible="1"/>
                 <field name="product_id" invisible="operation != 'replace'" required="operation == 'replace'"/>
                 <field name="dessert_id" invisible="operation != 'replace'"/>
                 <field name="drink_id" invisible="operation != 'replace'"/>
+                <field name="product_id" string="Plato" invisible="operation != 'change'" required="operation == 'change'" domain="[('id', 'in', offer_product_ids)]" options="{'no_create': True, 'no_quick_create': True}"/>
+                <field name="dessert_id" string="Postre" invisible="operation != 'change'" domain="[('id', 'in', offer_dessert_ids)]" options="{'no_create': True, 'no_quick_create': True}"/>
+                <field name="drink_id" string="Bebida" invisible="operation != 'change'" domain="[('id', 'in', offer_drink_ids)]" options="{'no_create': True, 'no_quick_create': True}"/>
                 <field name="previous_line_id" domain="[('reservation_id', '=', reservation_id)]" invisible="operation != 'restore'" required="operation == 'restore'"/>
                 <field name="customer_company_id" invisible="operation != 'reassign'"/>
                 <field name="target_menu_id" invisible="operation != 'reassign'"/>
@@ -43,7 +50,7 @@
             <footer><button name="action_apply" type="object" string="Responder sin cerrar" class="btn-primary" invisible="operation != 'note' or not attention_open"/>
                 <button name="action_apply" type="object" string="Enviar respuesta" class="btn-primary" invisible="operation != 'note' or attention_open"/>
                 <button name="action_apply" type="object" string="Cerrar solicitud" class="btn-primary" invisible="operation != 'close_request'"/>
-                <button name="action_apply" type="object" string="Aplicar esta corrección" class="btn-primary" invisible="operation in ['note', 'close_request']"/>
+                <button name="action_apply" type="object" string="Aplicar esta corrección" class="btn-primary" invisible="operation in ['note', 'close_request'] or (change_block_reason and operation == 'change')"/>
                 <button string="Cancelar" special="cancel"/></footer>
         </form></field>
     </record>

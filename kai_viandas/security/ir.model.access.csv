@@ -23,3 +23,6 @@ access_mrp_production_operator,mrp.production.operator,mrp.model_mrp_production,
 access_change_password_wizard_operator,change.password.wizard.operator,base.model_change_password_wizard,kai_viandas.group_operator,1,1,1,0
 access_change_password_user_operator,change.password.user.operator,base.model_change_password_user,kai_viandas.group_operator,1,1,1,0
 access_order_window_settings_operator,order.window.settings.operator,model_lafija_order_window_settings,kai_viandas.group_operator,1,1,1,0
+access_menu_duplicate_operator,menu.duplicate.operator,model_lafija_menu_duplicate,kai_viandas.group_operator,1,1,1,1
+access_menu_duplicate_line_operator,menu.duplicate.line.operator,model_lafija_menu_duplicate_line,kai_viandas.group_operator,1,1,1,1
+access_menu_change_operator,menu.change.operator,model_lafija_menu_change,kai_viandas.group_operator,1,1,1,1

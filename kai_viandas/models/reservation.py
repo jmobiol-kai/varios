@@ -109,12 +109,90 @@ class MenuDay(models.Model):
         if set(values) & {"revision", "option_snapshot", "dessert_snapshot", "drink_snapshot", "operation_version"}:
             check_operation(self.env)
         changed = bool(set(values) & {"date", "website_id", "product_ids", "dessert_ids", "drink_ids", "published"})
+        offer_fields = [name for name in ("product_ids", "dessert_ids", "drink_ids") if name in values]
+        before = {menu.id: {name: set(menu[name].ids) for name in offer_fields} for menu in self} if offer_fields else {}
         if changed:
             self._lock_for_operation()
         result = super().write(values)
         if changed:
             self._record_revision()
+        if offer_fields and not self.env.context.get("_lf_skip_category_check"):
+            self._lf_note_offer_change(before)
         return result
+
+    def _lf_note_offer_change(self, before):
+        """Deja en el chatter qué se quitó y qué se agregó, y cuántos ya lo habían pedido.
+
+        Las reservas ya tomadas no cambian: se cumplen con lo que el empleado eligió.
+        Sirve tanto para el asistente «Cambiar plato agotado» como para quien edita la oferta a mano.
+        """
+        Product = self.env["product.product"].with_context(active_test=False)
+        for menu in self:
+            old = before.get(menu.id) or {}
+            removed, added = Product, Product
+            for name, ids in old.items():
+                now = set(menu[name].ids)
+                removed |= Product.browse(sorted(ids - now))
+                added |= Product.browse(sorted(now - ids))
+            if not (removed or added):
+                continue
+            reservations = menu.sudo().reservation_ids.filtered(lambda r: r.state == "active")
+            lines = []
+            if removed:
+                parts = []
+                for product in removed:
+                    taken = len(reservations.filtered(lambda r: product in (
+                        r.current_product_id | r.current_dessert_id | r.current_drink_id
+                        | r.pending_product_id | r.pending_dessert_id | r.pending_drink_id)))
+                    parts.append(product.display_name + (_(" (ya lo habían elegido %s)", taken) if taken else ""))
+                lines.append(_("Dejó de ofrecerse: %s.", "; ".join(parts)))
+            if added:
+                lines.append(_("Se ofrece desde ahora: %s.", "; ".join(added.mapped("display_name"))))
+            lines.append(_("Las viandas ya pedidas no cambian: se cumplen con lo que eligió cada empleado."))
+            reason = (self.env.context.get("lf_offer_change_reason") or "").strip()
+            if reason:
+                lines.append(_("Motivo: %s", reason))
+            menu.message_post(
+                body=_("Oferta del día modificada (revisión %(rev)s). %(detail)s", rev=menu.revision, detail=" ".join(lines)),
+                subtype_xmlid="mail.mt_note")
+
+    @api.model
+    def _lf_copyable_options(self, menu):
+        """Opciones que se ofrecen hoy: activas y vendibles. Los archivados no se arrastran."""
+        def usable(products):
+            return products.filtered(lambda p: p.active and p.sale_ok)
+        plates, desserts, drinks = usable(menu.product_ids), usable(menu.dessert_ids), usable(menu.drink_ids)
+        return {"plates": plates, "desserts": desserts, "drinks": drinks, "all": plates | desserts | drinks}
+
+    def copy_data(self, default=None):
+        """Duplicar un menú (engranaje, API o código) copia solo el menú.
+
+        Nunca arrastra la historia (revisión, instantáneas), ni reservas, pedidos o
+        viandas: el menú nuevo arma su propia primera revisión, queda sin publicar y
+        toma el primer día libre de ese sitio, a partir de una semana después.
+        """
+        result = []
+        for menu, values in zip(self, super().copy_data(default)):
+            for key in ("revision", "option_snapshot", "dessert_snapshot", "drink_snapshot",
+                        "operation_version", "revision_ids", "reservation_ids"):
+                values.pop(key, None)
+            if not (default and "date" in default):
+                new_date = menu.date + timedelta(days=7)
+                site = menu.website_id.id
+                while self.sudo().search_count([("date", "=", new_date), ("website_id", "=", site)]):
+                    new_date += timedelta(days=7)
+                values["date"] = new_date
+            options = self._lf_copyable_options(menu)
+            for field, key in (("product_ids", "plates"), ("dessert_ids", "desserts"), ("drink_ids", "drinks")):
+                if not (default and field in default):
+                    values[field] = [(6, 0, options[key].ids)]
+            if not (default and "published" in default):
+                values["published"] = False
+            result.append(values)
+        return result
+
+    def copy(self, default=None):
+        return super(MenuDay, self.with_context(**operation_context())).copy(default)
 
     @api.model
     def _option_category(self, name):
@@ -278,6 +356,21 @@ class MenuDay(models.Model):
             "message": (_("Menú publicado. Las opciones ya están disponibles para ese día.")
                         if unpublished else _("El menú ya estaba publicado. No se hicieron cambios.")),
         }}
+
+    def action_open_change_wizard(self):
+        check_operator(self.env)
+        self.ensure_one()
+        return {"type": "ir.actions.act_window", "name": _("Cambiar plato agotado"),
+                "res_model": "lafija.menu.change", "view_mode": "form", "target": "new",
+                "context": {"default_menu_id": self.id}}
+
+    def action_open_duplicate_wizard(self):
+        check_operator(self.env)
+        if not self:
+            raise ValidationError(_("Elegí al menos un menú para duplicar."))
+        return {"type": "ir.actions.act_window", "name": _("Duplicar menú"),
+                "res_model": "lafija.menu.duplicate", "view_mode": "form", "target": "new",
+                "context": {"default_menu_ids": self.ids}}
 
     def action_refresh_options(self):
         check_operator(self.env)

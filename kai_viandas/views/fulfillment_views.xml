@@ -234,7 +234,7 @@
                         <group string="Postres del día"><field name="dessert_ids" widget="many2many_tags" string="Postres" options="{'no_create': True}"/></group>
                         <group string="Bebidas del día"><field name="drink_ids" widget="many2many_tags" string="Bebidas" options="{'no_create': True}"/></group>
                     </group>
-                    <p>Estas son las opciones publicadas del menú. Seguí editándolas acá si hace falta; para elaborar y entregar usá la lista de preparación.</p>
+                    <p>Estas son las opciones publicadas del menú. Se pueden editar acá aunque ya haya pedidos y lista tomada: las viandas ya pedidas no cambian y el cambio queda en la historia. Para un plato agotado, lo más simple es el botón «Cambiar plato agotado». Para elaborar y entregar usá la lista de preparación.</p>
                 </page>
             </xpath>
         </field>

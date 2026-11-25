@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="menu_change_form" model="ir.ui.view">
+        <field name="name">lafija.menu.change.form</field>
+        <field name="model">lafija.menu.change</field>
+        <field name="arch" type="xml">
+            <form string="Cambiar plato agotado">
+                <field name="current_plate_ids" invisible="1"/>
+                <field name="current_dessert_ids" invisible="1"/>
+                <field name="current_drink_ids" invisible="1"/>
+                <p>Lo que quitás deja de ofrecerse en el sitio desde ahora. Las viandas ya pedidas se cumplen tal como las eligió cada empleado: no cambian ni se tocan sus órdenes. El cambio queda en la historia del menú.</p>
+                <group>
+                    <field name="menu_id" options="{'no_open': True}"/>
+                    <field name="sold_out_ids" widget="many2many_tags" options="{'no_create': True}"
+                           domain="['|', '|', ('id', 'in', current_plate_ids), ('id', 'in', current_dessert_ids), ('id', 'in', current_drink_ids)]"/>
+                    <field name="already_ordered" nolabel="1" colspan="2" invisible="not already_ordered" class="text-muted"/>
+                    <field name="add_plate_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    <field name="add_dessert_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    <field name="add_drink_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    <field name="reason"/>
+                </group>
+                <footer>
+                    <button name="action_apply" type="object" string="Aplicar cambio" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

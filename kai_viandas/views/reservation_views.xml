@@ -3,13 +3,13 @@
     <record id="menu_day_list" model="ir.ui.view">
         <field name="name">lafija.menu.day.list</field><field name="model">lafija.menu.day</field>
         <field name="arch" type="xml">
-            <list default_order="date desc"><field name="date"/><field name="day_title"/><field name="website_id"/><field name="product_ids" string="Platos" widget="many2many_tags"/><field name="dessert_ids" string="Postres" widget="many2many_tags"/><field name="drink_ids" string="Bebidas" widget="many2many_tags"/><field name="published"/><field name="preparation_status"/></list></field>
+            <list default_order="date desc" duplicate="0" multi_edit="1"><field name="date" readonly="1"/><field name="day_title"/><field name="website_id" readonly="1"/><field name="product_ids" string="Platos" widget="many2many_tags" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}"/><field name="dessert_ids" string="Postres" widget="many2many_tags" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}"/><field name="drink_ids" string="Bebidas" widget="many2many_tags" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}"/><field name="published" readonly="1"/><field name="preparation_status"/></list></field>
     </record>
     <record id="menu_day_form" model="ir.ui.view">
         <field name="name">lafija.menu.day.form</field><field name="model">lafija.menu.day</field>
         <field name="arch" type="xml">
-            <form js_class="lf_menu_form">
-            <header><button name="action_publish" type="object" string="Publicar menú" invisible="published or not date or not website_id" class="btn-primary"/><button name="action_refresh_options" type="object" string="Volver a copiar descripciones" invisible="not date or not website_id" help="Copia las descripciones actuales de los productos para nuevas elecciones; conserva las elecciones anteriores."/></header>
+            <form js_class="lf_menu_form" duplicate="0">
+            <header><button name="action_open_duplicate_wizard" type="object" string="Duplicar menú" invisible="not id"/><button name="action_open_change_wizard" type="object" string="Cambiar plato agotado" invisible="not id or not published" help="Quita lo que se agotó y ofrece otra cosa desde ahora. Las viandas ya pedidas no cambian."/><button name="action_publish" type="object" string="Publicar menú" invisible="published or not date or not website_id" class="btn-primary"/><button name="action_refresh_options" type="object" string="Volver a copiar descripciones" invisible="not date or not website_id" help="Copia las descripciones actuales de los productos para nuevas elecciones; conserva las elecciones anteriores."/></header>
             <sheet><h1><field name="day_title"/></h1>
                 <group><group><field name="date"/><field name="website_id" options="{'no_create': True, 'no_create_edit': True}" domain="[('lf_corporate_site', '=', True)]"/><field name="published"/></group>
                     <group><field name="preparation_status"/><field name="revision" string="Revisión del menú" help="La creación, publicación y correcciones conservan revisiones; publicar un menú nuevo crea la revisión 2."/></group></group>
@@ -50,20 +50,24 @@
     <record id="reservation_list" model="ir.ui.view">
         <field name="name">lafija.reservation.list</field><field name="model">lafija.reservation</field>
         <field name="arch" type="xml">
-            <list class="lf-reservations" js_class="lf_reservation_list" create="0" delete="0" group_create="0" decoration-warning="pending">
+            <list class="lf-reservations" js_class="lf_reservation_list" create="0" delete="0" group_create="0" multi_edit="1" decoration-warning="pending">
             <header/>
-            <field name="employee_partner_id" optional="show" width="90px"/>
-            <field name="customer_company_id" optional="show" width="130px"/>
-            <field name="date" optional="show" width="130px"/>
-            <field name="name" string="Vianda" optional="show" width="80px"/>
-            <field name="current_description" optional="show" width="160px"/>
-            <field name="current_dessert_description" optional="show" string="Postre" width="80px"/>
-            <field name="current_drink_description" optional="show" string="Bebida" width="80px"/>
-            <field name="pending_description" optional="show" width="150px"/>
-            <field name="attention_label" optional="show" width="80px"/>
-            <field name="timing_label" optional="show" width="170px"/>
-            <field name="week_label" optional="hide"/><field name="pending" column_invisible="True"/><field name="state" string="Vigencia" optional="hide"/>
-            <field name="after_reference_time" optional="hide"/><field name="after_preparation_cut" optional="hide"/>
+            <field name="employee_partner_id" readonly="1" optional="show" width="90px"/>
+            <field name="customer_company_id" readonly="1" optional="show" width="130px"/>
+            <field name="date" readonly="1" optional="show" width="130px"/>
+            <field name="name" readonly="1" string="Vianda" optional="show" width="80px"/>
+            <field name="lf_new_product_id" optional="show" width="160px" groups="kai_viandas.group_operator" readonly="pending or not lf_can_change" domain="[('id', 'in', lf_offer_product_ids)]" options="{'no_create': True, 'no_quick_create': True, 'no_open': True}"/>
+            <field name="lf_new_dessert_id" optional="show" width="80px" groups="kai_viandas.group_operator" readonly="pending or not lf_can_change" domain="[('id', 'in', lf_offer_dessert_ids)]" options="{'no_create': True, 'no_quick_create': True, 'no_open': True}"/>
+            <field name="lf_new_drink_id" optional="show" width="80px" groups="kai_viandas.group_operator" readonly="pending or not lf_can_change" domain="[('id', 'in', lf_offer_drink_ids)]" options="{'no_create': True, 'no_quick_create': True, 'no_open': True}"/>
+            <field name="pending_description" readonly="1" optional="show" width="150px"/>
+            <field name="attention_label" readonly="1" optional="show" width="80px"/>
+            <field name="timing_label" readonly="1" optional="show" width="170px"/>
+            <field name="week_label" readonly="1" optional="hide"/><field name="pending" column_invisible="True"/><field name="state" readonly="1" string="Vigencia" optional="hide"/>
+            <field name="after_reference_time" readonly="1" optional="hide"/><field name="after_preparation_cut" readonly="1" optional="hide"/>
+            <field name="lf_can_change" column_invisible="True" groups="kai_viandas.group_operator"/>
+            <field name="lf_offer_product_ids" column_invisible="True" groups="kai_viandas.group_operator"/>
+            <field name="lf_offer_dessert_ids" column_invisible="True" groups="kai_viandas.group_operator"/>
+            <field name="lf_offer_drink_ids" column_invisible="True" groups="kai_viandas.group_operator"/>
             <button name="action_correct" type="object" string="Editar" invisible="not pending"/>
         </list></field>
     </record>

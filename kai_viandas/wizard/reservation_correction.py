@@ -14,7 +14,8 @@ class Correction(models.TransientModel):
 
     reservation_id = fields.Many2one("lafija.reservation", "Reserva", required=True, readonly=True)
     operation = fields.Selection([
-        ("accept", "Aplicar elección pendiente"), ("replace", "Corregir opción"),
+        ("accept", "Aplicar elección pendiente"), ("change", "Cambiar elección antes del corte"),
+        ("replace", "Corregir opción"),
         ("restore", "Restaurar una elección tomada"), ("reject", "Rechazar el cambio de opción"),
         ("cancel", "Cancelar vianda"), ("reassign", "Corregir empresa o día"),
         ("note", "Responder al empleado"),
@@ -73,6 +74,80 @@ class Correction(models.TransientModel):
                      'views': [(self.env.ref('kai_viandas.correction_form').id, 'form')]},
         }}
 
+    @api.depends("reservation_id")
+    def _compute_offer(self):
+        for wizard in self:
+            record = wizard.reservation_id.sudo()
+            menu = record.menu_id.sudo()
+            wizard.offer_product_ids = menu.product_ids | record.current_product_id
+            wizard.offer_dessert_ids = menu.dessert_ids | record.current_dessert_id
+            wizard.offer_drink_ids = menu.drink_ids | record.current_drink_id
+
+    @api.depends("reservation_id")
+    def _compute_change_block_reason(self):
+        for wizard in self:
+            wizard.change_block_reason = wizard.reservation_id._lf_change_block_reason() if wizard.reservation_id else False
+
+    def _check_choice_change(self, record):
+        """Cambiar plato, postre o bebida: hasta el corte, sin elaboración y con opciones del menú del día."""
+        reason = record._lf_change_block_reason()
+        if reason:
+            raise ValidationError(reason)
+        menu = record.sudo().menu_id
+        current = record.sudo()
+        if (self.product_id == current.current_product_id and self.dessert_id == current.current_dessert_id
+                and self.drink_id == current.current_drink_id):
+            raise ValidationError(_("No cambiaste nada: elegí otro plato, postre o bebida."))
+        for new, now, offered, label in (
+                (self.product_id, current.current_product_id, menu.product_ids, _("plato")),
+                (self.dessert_id, current.current_dessert_id, menu.dessert_ids, _("postre")),
+                (self.drink_id, current.current_drink_id, menu.drink_ids, _("bebida"))):
+            if new and new != now and new not in offered:
+                raise ValidationError(_(
+                    "«%(name)s» no está en la oferta del menú de ese día (%(label)s). "
+                    "Agregalo al menú con «Cambiar plato agotado» y volvé a intentar.",
+                    name=new.display_name, label=label))
+
+    @api.model
+    def _mo_snapshot(self, record):
+        return {mo.id: (mo, mo.product_qty) for mo in record.sudo().fulfillment_production_ids}
+
+    def _mo_trace(self, record, before, who, reason):
+        """Qué pasó con las órdenes de fabricación; queda en cada orden y en el historial de la vianda."""
+        record = record.sudo()
+        record.invalidate_recordset(["fulfillment_production_ids"])
+        after = {mo.id: mo for mo in record.fulfillment_production_ids}
+        lines = []
+        for mo_id, (mo, qty_before) in before.items():
+            if mo_id in after:
+                continue
+            mo.invalidate_recordset(["product_qty", "state"])
+            if mo.state == "cancel":
+                text = _("%(name)s (%(product)s): se canceló porque quedó sin viandas (era %(qty)s).",
+                         name=mo.name, product=mo.product_id.display_name, qty=int(qty_before))
+            else:
+                text = _("%(name)s (%(product)s): cantidad %(old)s → %(new)s.",
+                         name=mo.name, product=mo.product_id.display_name,
+                         old=int(qty_before), new=int(mo.product_qty))
+            mo.message_post(
+                body=_("Se quitó la vianda %(vianda)s por un cambio de elección (%(who)s). %(detail)s Motivo: %(reason)s",
+                       vianda=record.name, who=who, detail=text, reason=reason),
+                subtype_xmlid="mail.mt_note")
+            lines.append(text)
+        for mo_id, mo in after.items():
+            if mo_id in before:
+                continue
+            mo.invalidate_recordset(["product_qty"])
+            text = _("%(name)s (%(product)s): cantidad %(old)s → %(new)s.",
+                     name=mo.name, product=mo.product_id.display_name,
+                     old=max(int(mo.product_qty) - 1, 0), new=int(mo.product_qty))
+            mo.message_post(
+                body=_("Se sumó la vianda %(vianda)s por un cambio de elección (%(who)s). %(detail)s Motivo: %(reason)s",
+                       vianda=record.name, who=who, detail=text, reason=reason),
+                subtype_xmlid="mail.mt_note")
+            lines.append(text)
+        return " ".join(lines)
+
     def _compute_request_text(self):
         for wizard in self:
             history = wizard.reservation_id.event_ids
@@ -83,6 +158,10 @@ class Correction(models.TransientModel):
     product_id = fields.Many2one("product.product", "Plato correcto", domain=[("sale_ok", "=", True)])
     dessert_id = fields.Many2one("product.product", "Postre correcto", domain=[("sale_ok", "=", True)])
     drink_id = fields.Many2one("product.product", "Bebida correcta", domain=[("sale_ok", "=", True)])
+    offer_product_ids = fields.Many2many("product.product", "lafija_correction_offer_plate", compute="_compute_offer")
+    offer_dessert_ids = fields.Many2many("product.product", "lafija_correction_offer_dessert", compute="_compute_offer")
+    offer_drink_ids = fields.Many2many("product.product", "lafija_correction_offer_drink", compute="_compute_offer")
+    change_block_reason = fields.Char(compute="_compute_change_block_reason")
     previous_line_id = fields.Many2one("lafija.preparation.line", "Vianda anterior")
     customer_company_id = fields.Many2one("res.partner", "Empresa correcta", domain=[("is_company", "=", True)])
     target_menu_id = fields.Many2one("lafija.menu.day", "Menú y día correctos")
@@ -105,6 +184,9 @@ class Correction(models.TransientModel):
         changed_since_open = self.observed_state != observed_state
         if changed_since_open and self.operation != 'note':
             return self._show_current_state(observed_state)
+        if self.operation == "change":
+            self._check_choice_change(record)
+        mo_before = self._mo_snapshot(record) if self.operation in ("replace", "change", "restore") else {}
         original_company = record.customer_company_id
         before = choice_label(record.current_description, record.current_dessert_description, record.current_drink_description) or ""
         values = {}
@@ -118,7 +200,7 @@ class Correction(models.TransientModel):
                           current_drink_id=record.pending_drink_id.id,
                           current_drink_description=record.pending_drink_description or False,
                           state="active")
-        elif self.operation == "replace":
+        elif self.operation in ("replace", "change"):
             if not self.product_id or not self.product_id.active or not self.product_id.sale_ok:
                 raise ValidationError(_("Elegí un plato activo y vendible."))
             if self.dessert_id and (not self.dessert_id.active or not self.dessert_id.sale_ok):
@@ -172,11 +254,16 @@ class Correction(models.TransientModel):
         if self.operation == "reassign":
             result += (f" | Empresa: {original_company.display_name} → {record.customer_company_id.display_name}"
                        f" | Menú: {original_menu.display_name} → {record.menu_id.display_name}")
+        if self.operation in ("replace", "change", "restore"):
+            trace = self._mo_trace(record, mo_before, self.env.user.display_name, self.reason.strip())
+            if trace:
+                result += " | OF: " + trace
         kind = "response" if self.operation == "note" else "closure" if self.operation == "close_request" else "resolution"
         applied = choice_label(record.current_description, record.current_dessert_description, record.current_drink_description)
         record._record_event(self.env.user, fields.Datetime.now(), kind, before,
                              "", applied or "", result)
         defaults = {"accept": "La Fija aplicó tu cambio.", "replace": "La Fija corrigió tu elección.",
+                    "change": "La Fija cambió tu elección.",
                     "restore": "La Fija restauró una elección anterior.", "reject": "La Fija atendió tu solicitud sin aplicar el cambio.",
                     "cancel": "La Fija canceló esta vianda.", "reassign": "La Fija corrigió la atribución de tu reserva.",
                     "note": ("La Fija respondió. Tu solicitud sigue pendiente de resolución." if record.attention_pending

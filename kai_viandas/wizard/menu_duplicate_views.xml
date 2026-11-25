@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="menu_duplicate_form" model="ir.ui.view">
+        <field name="name">lafija.menu.duplicate.form</field>
+        <field name="model">lafija.menu.duplicate</field>
+        <field name="arch" type="xml">
+            <form string="Duplicar menú">
+                <p>Se copian el sitio, los platos, los postres y las bebidas del menú (solo los que siguen activos y vendibles), y se arma su primera revisión. <strong>Nunca se copian pedidos, viandas ni órdenes de fabricación.</strong> El menú nuevo queda sin publicar para que lo revises. Elegí la fecha de cada uno.</p>
+                <field name="line_ids" nolabel="1">
+                    <list editable="bottom" create="0" delete="0">
+                        <field name="menu_id" options="{'no_open': True}"/>
+                        <field name="new_date"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_apply" type="object" string="Duplicar" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancelar" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="menu_duplicate_action" model="ir.actions.act_window">
+        <field name="name">Duplicar menú</field>
+        <field name="res_model">lafija.menu.duplicate</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <record id="menu_day_duplicate_server_action" model="ir.actions.server">
+        <field name="name">Duplicar menú</field>
+        <field name="model_id" ref="model_lafija_menu_day"/>
+        <field name="binding_model_id" ref="model_lafija_menu_day"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="group_ids" eval="[(4, ref('kai_viandas.group_operator'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_open_duplicate_wizard()</field>
+    </record>
+</odoo>
