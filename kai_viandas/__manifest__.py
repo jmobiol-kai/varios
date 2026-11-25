@@ -1,7 +1,7 @@
 {
     "name": "La Fija · Viandas corporativas",
     "summary": "Reservas diarias, preparación y acceso corporativo separado",
-    "version": "19.0.2.0.0",
+    "version": "19.0.2.3.1",
     "author": "Kaizendo",
     "license": "AGPL-3",
     "depends": [
@@ -17,6 +17,8 @@
         "security/monetary_rules.xml",
         "wizard/employee_access_views.xml",
         "wizard/employee_order_views.xml",
+        "wizard/menu_duplicate_views.xml",
+        "wizard/menu_change_views.xml",
         "views/identity_views.xml",
         "views/employee_batch_views.xml",
         "views/reservation_views.xml",

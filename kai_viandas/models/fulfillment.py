@@ -4,6 +4,7 @@ from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, UserError, ValidationError
 
 from .identity import check_operator
+from . import order_windows
 from .reservation import check_operation, choice_label, operation_context
 from .time_utils import business_datetime, business_today, day_label
 
@@ -263,6 +264,127 @@ class Reservation(models.Model):
         for record in self:
             record.fulfillment_label = labels.get(record.fulfillment_state) or ""
 
+    lf_can_change = fields.Boolean(
+        "Se puede cambiar", compute="_compute_lf_can_change", groups="kai_viandas.group_operator")
+
+    # Campos editables en la lista Pedidos (multi_edit): muestran la vianda vigente y, al guardar,
+    # aplican «Cambiar elección antes del corte» (mismas validaciones y mismo movimiento entre OF).
+    lf_new_product_id = fields.Many2one(
+        "product.product", "Elección vigente", compute="_compute_lf_edit_choice",
+        inverse="_inverse_lf_edit_choice", groups="kai_viandas.group_operator")
+    lf_new_dessert_id = fields.Many2one(
+        "product.product", "Postre", compute="_compute_lf_edit_choice",
+        inverse="_inverse_lf_edit_choice", groups="kai_viandas.group_operator")
+    lf_new_drink_id = fields.Many2one(
+        "product.product", "Bebida", compute="_compute_lf_edit_choice",
+        inverse="_inverse_lf_edit_choice", groups="kai_viandas.group_operator")
+    lf_offer_product_ids = fields.Many2many(
+        "product.product", "lafija_reservation_offer_plate", compute="_compute_lf_offer",
+        groups="kai_viandas.group_operator")
+    lf_offer_dessert_ids = fields.Many2many(
+        "product.product", "lafija_reservation_offer_dessert", compute="_compute_lf_offer",
+        groups="kai_viandas.group_operator")
+    lf_offer_drink_ids = fields.Many2many(
+        "product.product", "lafija_reservation_offer_drink", compute="_compute_lf_offer",
+        groups="kai_viandas.group_operator")
+
+    @api.depends("current_product_id", "current_dessert_id", "current_drink_id")
+    def _compute_lf_edit_choice(self):
+        for record in self:
+            record.lf_new_product_id = record.current_product_id
+            record.lf_new_dessert_id = record.current_dessert_id
+            record.lf_new_drink_id = record.current_drink_id
+
+    @api.depends("menu_id.product_ids", "menu_id.dessert_ids", "menu_id.drink_ids",
+                 "current_product_id", "current_dessert_id", "current_drink_id")
+    def _compute_lf_offer(self):
+        for record in self:
+            menu = record.sudo().menu_id
+            record.lf_offer_product_ids = menu.product_ids | record.current_product_id
+            record.lf_offer_dessert_ids = menu.dessert_ids | record.current_dessert_id
+            record.lf_offer_drink_ids = menu.drink_ids | record.current_drink_id
+
+    _LF_INLINE_FIELDS = ("lf_new_product_id", "lf_new_dessert_id", "lf_new_drink_id")
+
+    def _inverse_lf_edit_choice(self):
+        """Sin efecto: `write` aplica el cambio antes (ver _lf_inline_change)."""
+
+    def _lf_inline_change(self, edited):
+        """Guardar desde la lista = «Cambiar elección antes del corte», vianda por vianda.
+
+        `edited` trae solo lo que se tocó en la lista; lo demás se toma de cada vianda.
+        """
+        check_operator(self.env)
+        Correction = self.env["lafija.reservation.correction"]
+        Product = self.env["product.product"]
+        for record in self:
+            current = record.sudo()
+            product = Product.browse(edited["lf_new_product_id"]) if "lf_new_product_id" in edited else current.current_product_id
+            dessert = Product.browse(edited["lf_new_dessert_id"]) if "lf_new_dessert_id" in edited else current.current_dessert_id
+            drink = Product.browse(edited["lf_new_drink_id"]) if "lf_new_drink_id" in edited else current.current_drink_id
+            if (product, dessert, drink) == (
+                    current.current_product_id, current.current_dessert_id, current.current_drink_id):
+                continue
+            if current.pending_product_id or current.pending_dessert_id or current.pending_drink_id:
+                raise ValidationError(_(
+                    "%s tiene un cambio pendiente: resolvelo con «Editar» antes de cambiar la elección.",
+                    current.name))
+            try:
+                Correction.create({
+                    "reservation_id": record.id, "operation": "change",
+                    "product_id": product.id, "dessert_id": dessert.id, "drink_id": drink.id,
+                    "reason": _("Cambio desde la lista de Pedidos"),
+                }).action_apply()
+            except ValidationError as error:
+                raise ValidationError(_("%(name)s: %(error)s", name=current.name, error=error.args[0])) from error
+
+    def _lf_change_block_reason(self):
+        """Por qué ya no se puede cambiar la elección de esta vianda (o False si se puede).
+
+        Se puede hasta el corte del día de elaboración (10:30, hora de La Fija) y mientras la
+        vianda siga «Por elaborar» y sus órdenes de fabricación estén en borrador.
+        """
+        self.ensure_one()
+        record = self.sudo()
+        if record.state != "active":
+            return _("La vianda está cancelada.")
+        cutoff = order_windows.daily_cutoff_datetime(self.env, record.date)
+        if fields.Datetime.now() >= cutoff:
+            return _(
+                "Pasó el corte de las %(hour)s del %(day)s (hora de La Fija): la elección ya no se puede cambiar.",
+                hour=order_windows.daily_cutoff_label(self.env), day=day_label(record.date))
+        labels = dict(FULFILLMENT_STATES)
+        if record.fulfillment_state != "to_prepare":
+            return _(
+                "La vianda ya está «%s»: no se puede cambiar la elección.",
+                labels.get(record.fulfillment_state, record.fulfillment_state))
+        started = record.fulfillment_production_ids.filtered(lambda mo: mo.state not in ("draft", "cancel"))
+        if started:
+            return _(
+                "La orden de fabricación %(names)s ya está confirmada o empezó: no se puede cambiar la elección.",
+                names=", ".join(started.mapped("name")))
+        return False
+
+    @api.depends("state", "date", "fulfillment_state", "fulfillment_production_ids.state")
+    def _compute_lf_can_change(self):
+        for record in self:
+            record.lf_can_change = not record._lf_change_block_reason()
+
+    def action_change_choice(self):
+        """Abre «Editar» ya en «Corregir opción», con la elección vigente cargada."""
+        check_operator(self.env)
+        self.ensure_one()
+        reason = self._lf_change_block_reason()
+        if reason:
+            raise ValidationError(reason)
+        record = self.sudo()
+        return {"type": "ir.actions.act_window", "name": _("Cambiar vianda"),
+                "res_model": "lafija.reservation.correction", "view_mode": "form", "target": "new",
+                "context": {"default_reservation_id": self.id, "default_operation": "change",
+                            "default_product_id": record.current_product_id.id,
+                            "default_dessert_id": record.current_dessert_id.id,
+                            "default_drink_id": record.current_drink_id.id}}
+
     def _current_preparation_line(self):
         self.ensure_one()
         cut = self.sudo().menu_id.cut_ids[:1]
@@ -292,6 +414,12 @@ class Reservation(models.Model):
         return [("id", "in" if positive else "not in", records.ids)]
 
     def write(self, values):
+        inline = {name: values[name] for name in self._LF_INLINE_FIELDS if name in values}
+        if inline:
+            values = {key: value for key, value in values.items() if key not in inline}
+            self._lf_inline_change(inline)
+            if not values:
+                return True
         tracked = {
             "fulfillment_state", "fulfillment_started_at", "fulfillment_started_by",
             "prepared_at", "prepared_by", "delivered_at", "delivered_by",
@@ -1216,8 +1344,8 @@ class PreparationCut(models.Model):
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    lf_preparation_date = fields.Date("Día de la lista de preparación", copy=False, index=True,
-                                      groups="kai_viandas.group_operator")
+    # Sin groups: action_confirm y otros flujos comerciales lo leen con cualquier usuario de ventas.
+    lf_preparation_date = fields.Date("Día de la lista de preparación", copy=False, index=True)
     lf_production_ids = fields.Many2many(
         "mrp.production", compute="_compute_lf_production_buttons",
         string="Órdenes de fabricación", groups="kai_viandas.group_operator")
@@ -1264,7 +1392,7 @@ class SaleOrder(models.Model):
 
     def action_confirm(self):
         result = super().action_confirm()
-        self.filtered("lf_preparation_date")._lf_sync_outgoing_to_delivered()
+        self.filtered(lambda order: order.sudo().lf_preparation_date)._lf_sync_outgoing_to_delivered()
         return result
 
     def _lf_sync_outgoing_to_delivered(self):

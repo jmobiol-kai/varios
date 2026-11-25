@@ -77,7 +77,7 @@ class TestRelease1176(SidesCommon, PreparationCommon):
         self.assertIn('scopeName: "list"', js)
 
         module = self.env["ir.module.module"].search([("name", "=", "kai_viandas")], limit=1)
-        self.assertEqual(module.latest_version, "19.0.2.0.0")
+        self.assertTrue(module.latest_version.startswith("19.0.2."), module.latest_version)
 
     def test_no_automatic_quotation_on_confirm_or_elaborate_or_take_list(self):
         self.assertFalse(self.reservation._lf_daily_orders())

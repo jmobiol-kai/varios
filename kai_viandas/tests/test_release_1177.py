@@ -88,7 +88,7 @@ class TestRelease1177(SidesCommon, PreparationCommon):
         self.assertIn("sábado a las 14:00", help_arch)
 
         module = self.env["ir.module.module"].search([("name", "=", "kai_viandas")], limit=1)
-        self.assertEqual(module.latest_version, "19.0.2.0.0")
+        self.assertTrue(module.latest_version.startswith("19.0.2."), module.latest_version)
 
     def test_defaults_are_saturday_14_and_daily_1030(self):
         self.env["ir.config_parameter"].sudo().search([
