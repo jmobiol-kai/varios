@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_kai_spec" model="ir.ui.view">
+        <field name="name">product.template.form.kai.spec</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_kai_ensure_spec" type="object" class="oe_stat_button" icon="fa-flask"
+                        groups="kai_whatsapp_ai.group_user,kai_whatsapp_ai.group_trainer"
+                        invisible="not kai_spec_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Ficha técnica</span>
+                    </div>
+                </button>
+            </div>
+            <notebook position="inside">
+                <page string="Ficha técnica" name="kai_spec"
+                      groups="kai_whatsapp_ai.group_user,kai_whatsapp_ai.group_trainer">
+                    <field name="kai_spec_id" invisible="1"/>
+                    <field name="product_variant_count" invisible="1"/>
+                    <field name="product_variant_id" invisible="1"/>
+                    <div class="mb-2" invisible="kai_spec_id or product_variant_count != 1">
+                        <button name="action_kai_ensure_spec" type="object" string="Crear ficha técnica"
+                                class="btn-secondary"/>
+                    </div>
+                    <group invisible="not kai_spec_id or product_variant_count != 1">
+                        <group string="Medidas">
+                            <field name="kai_capacity"/>
+                            <field name="kai_capacity_uom"/>
+                            <field name="kai_mouth_mm"/>
+                            <field name="kai_height_mm"/>
+                            <field name="kai_diameter_mm"/>
+                            <field name="kai_finish"/>
+                            <field name="kai_thread_type"/>
+                            <field name="kai_material"/>
+                        </group>
+                        <group string="Uso">
+                            <field name="kai_food_grade"/>
+                            <field name="kai_hot_fill"/>
+                            <field name="kai_pasteurization"/>
+                            <field name="kai_verified"/>
+                            <field name="kai_uses"/>
+                            <field name="kai_verification_note"/>
+                        </group>
+                    </group>
+                    <separator string="Compatibilidad de envases y tapas"
+                               invisible="product_variant_count != 1"/>
+                    <field name="kai_fit_ids" invisible="product_variant_count != 1"
+                           context="{'default_jar_product_id': product_variant_id, 'default_company_id': company_id}">
+                        <list editable="bottom">
+                            <field name="closure_product_id" string="Tapa"/>
+                            <field name="note" string="Nota"/>
+                            <field name="verified" string="Verificado" widget="boolean_toggle"/>
+                            <field name="verification_note" string="Nota de verificación"/>
+                            <field name="company_id" column_invisible="1"/>
+                            <field name="jar_product_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <div invisible="product_variant_count &lt;= 1">
+                        La ficha se carga en cada variante.
+                    </div>
+                    <field name="product_variant_ids" invisible="product_variant_count &lt;= 1" nolabel="1">
+                        <list create="0" delete="0">
+                            <field name="display_name" string="Variante"/>
+                            <button name="action_kai_open_spec" type="object" string="Ficha técnica"/>
+                        </list>
+                    </field>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>

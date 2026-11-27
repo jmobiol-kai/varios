@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="kai_whatsapp_ai_config_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.config.list</field>
+        <field name="model">kai.whatsapp.ai.config</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="account_id"/>
+                <field name="enabled"/>
+                <field name="client_label"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="kai_whatsapp_ai_config_view_form" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.config.form</field>
+        <field name="model">kai.whatsapp.ai.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Shop assistant"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="enabled"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="account_id"/>
+                            <field name="client_label"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="provider_preset" groups="kai_whatsapp_ai.group_manager"/>
+                            <field name="api_base_url" placeholder="https://host.example/v1" groups="kai_whatsapp_ai.group_manager"/>
+                            <field name="api_model" placeholder="model-name" groups="kai_whatsapp_ai.group_manager"/>
+                            <field name="api_key" password="True" groups="kai_whatsapp_ai.group_manager"/>
+                            <field name="api_timeout" groups="kai_whatsapp_ai.group_manager"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-warning" role="alert" groups="kai_whatsapp_ai.group_manager">
+                        Enabling photo interpretation sends the customer's WhatsApp photo to the external AI provider.
+                        Use a paid plan that does not train on customer data. This screen is not the notice the customer should receive.
+                    </div>
+                    <div class="alert alert-warning" role="alert" groups="kai_whatsapp_ai.group_manager">
+                        Responder al entrenador manda la respuesta solo a un número de Entrenadores.
+                        Responder a clientes manda la sugerencia solo a los números de la lista, y solo si ese interruptor está encendido.
+                        El chat interno con Agente IA responde solo cuando el proveedor está encendido.
+                    </div>
+                    <group groups="kai_whatsapp_ai.group_manager">
+                        <field name="auto_reply_trainer"/>
+                        <field name="auto_reply_customers"/>
+                        <field name="restrict_to_allowlist"/>
+                        <field name="block_numbers"/>
+                        <field name="send_as_user_id"/>
+                        <field name="catalog_limit"/>
+                    </group>
+                    <group groups="kai_whatsapp_ai.group_manager">
+                        <group>
+                            <field name="vision_supported"/>
+                            <field name="allow_images"/>
+                        </group>
+                        <group>
+                            <field name="max_image_bytes"/>
+                            <field name="allowed_image_mimes"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Blocked numbers" name="blocked" groups="kai_whatsapp_ai.group_manager">
+                            <field name="block_ids" groups="kai_whatsapp_ai.group_manager">
+                                <list editable="bottom">
+                                    <field name="phone"/>
+                                    <field name="phone_e164"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Customer numbers" name="allowlist" groups="kai_whatsapp_ai.group_manager">
+                            <field name="allow_ids" groups="kai_whatsapp_ai.group_manager">
+                                <list editable="bottom">
+                                    <field name="phone"/>
+                                    <field name="phone_e164"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="FAQ" name="faq">
+                            <field name="faq_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="question"/>
+                                    <field name="answer"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Catalog" name="catalog">
+                            <field name="catalog_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="kai_whatsapp_ai_config_action" model="ir.actions.act_window">
+        <field name="name">AI Provider</field>
+        <field name="res_model">kai.whatsapp.ai.config</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="kai_whatsapp_ai_faq_view_list" model="ir.ui.view">
+        <field name="name">kai.whatsapp.ai.faq.list</field>
+        <field name="model">kai.whatsapp.ai.faq</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="question"/>
+                <field name="answer"/>
+                <field name="active"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+    <record id="kai_whatsapp_ai_faq_action" model="ir.actions.act_window">
+        <field name="name">FAQ</field>
+        <field name="res_model">kai.whatsapp.ai.faq</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>
